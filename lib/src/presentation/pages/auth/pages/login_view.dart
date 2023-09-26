@@ -1,0 +1,15 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+
+@RoutePage()
+class LoginView extends StatelessWidget {
+  final Function(bool?) onResult;
+  const LoginView({Key? key, required this.onResult}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: Text('Login view')),
+    );
+  }
+}
