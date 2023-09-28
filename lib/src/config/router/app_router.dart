@@ -6,23 +6,27 @@ import 'app_router.gr.dart';
 class AppRouter extends $AppRouter {
   @override
   List<AutoRoute> get routes => [
-        CustomRoute(page: AuthView.page, path: '/welcome', children: [
-          AutoRoute(page: FirstTimeView.page, path: 'first-time'),
-          AutoRoute(page: LoginView.page, path: 'login'),
-          AutoRoute(page: SignUpView.page, path: 'signup'),
-          AutoRoute(page: RestorePassword.page, path: 'restore-password'),
-        ]),
         CustomRoute(
-            page: DashBoardView.page,
-            path: '/dashboard',
-            initial: true,
-            guards: [
-              AuthGuard()
-            ],
-            children: [
-              AutoRoute(page: SearchView.page, path: 'home'),
-              AutoRoute(page: ProfileView.page, path: 'profile'),
-              AutoRoute(page: ProfileView.page, path: 'settings'),
-            ])
+          page: AuthView.page,
+          path: '/welcome',
+          transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+          children: [
+            AutoRoute(page: FirstTimeView.page, path: 'first-time'),
+            AutoRoute(page: LoginView.page, path: 'login'),
+            AutoRoute(page: SignUpView.page, path: 'signup'),
+            AutoRoute(page: RestorePassword.page, path: 'restore-password'),
+          ],
+        ),
+        CustomRoute(
+          page: DashBoardView.page,
+          path: '/dashboard',
+          initial: true,
+          guards: [AuthGuard()],
+          children: [
+            AutoRoute(page: SearchView.page, path: 'home'),
+            AutoRoute(page: ProfileView.page, path: 'profile'),
+            AutoRoute(page: ProfileView.page, path: 'settings'),
+          ],
+        )
       ];
 }

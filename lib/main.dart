@@ -1,23 +1,20 @@
-import 'dart:io';
-
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:heroes_app/firebase_options.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:heroes_app/firebase_options.dart';
 import 'package:heroes_app/src/config/app_themes.dart';
 import 'package:heroes_app/src/config/router/app_router.dart';
+import 'package:heroes_app/src/locator.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-
-  Platform.isAndroid || Platform.isIOS
-      ? await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform)
-      : null;
+  await initializeDependencies();
+  //Firebase dependencies
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(MyApp());
 }
