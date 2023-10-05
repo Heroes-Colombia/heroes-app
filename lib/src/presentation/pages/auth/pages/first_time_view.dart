@@ -1,13 +1,16 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 
 @RoutePage()
 class FirstTimeView extends StatelessWidget {
-  const FirstTimeView({Key? key}) : super(key: key);
-
+  FirstTimeView({Key? key}) : super(key: key);
+  final GetIt locator = GetIt.instance;
   @override
   Widget build(BuildContext context) {
+    final authTexts = locator.get<AppConstants>().authTexts['welcomeView']!;
     var theme = Theme.of(context);
     return CustomScrollView(
       slivers: [
@@ -32,7 +35,7 @@ class FirstTimeView extends StatelessWidget {
                 Container(
                   margin: const EdgeInsets.only(top: 100),
                   child: Text(
-                    '¡Bienvenido, Héroe!',
+                    authTexts['welcome']!,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 24,
@@ -42,16 +45,14 @@ class FirstTimeView extends StatelessWidget {
                 ),
                 const Spacer(),
                 FilledButton(
-                  onPressed: () {
-                    AutoRouter.of(context).push(LoginView(onResult: (p0) {}));
-                  },
-                  child: const Text('Iniciar sesión'),
+                  onPressed: () =>
+                      AutoRouter.of(context).push(LoginView(onResult: (p0) {})),
+                  child: Text(authTexts['login']!),
                 ),
                 TextButton(
-                  onPressed: () {
-                    AutoRouter.of(context).push(const SignUpView());
-                  },
-                  child: const Text('Registrarse'),
+                  onPressed: () => AutoRouter.of(context)
+                      .push(SignUpView(onResult: (p0) {})),
+                  child: Text(authTexts['register']!),
                 ),
               ],
             ),

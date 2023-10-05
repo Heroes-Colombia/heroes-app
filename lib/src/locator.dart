@@ -1,6 +1,9 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
+import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 
 final locator = GetIt.instance;
 
@@ -10,7 +13,15 @@ Future<void> initializeDependencies() async {
 
   //Repositories dependencies
   locator.registerSingleton<Dio>(dio);
+  locator.registerSingleton<AppConstants>(AppConstants());
   locator.registerSingleton<AuthService>(
     AuthService(),
+  );
+  locator.registerSingleton<FirestoreService>(
+    FirestoreService(),
+  );
+
+  locator.registerSingleton<AppMethods>(
+    AppMethods(),
   );
 }

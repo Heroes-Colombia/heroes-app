@@ -10,10 +10,10 @@ class AuthView extends StatelessWidget {
   Widget build(BuildContext context) {
     return AutoTabsRouter(
       routes: [
-        const FirstTimeView(),
-        LoginView(onResult: (p0) {}),
-        const SignUpView(),
-        const RestorePassword()
+        FirstTimeView(),
+        LoginView(onResult: (willRedirectToDashboard) {}),
+        SignUpView(onResult: (willRedirectToDashboard) {}),
+        RestorePassword()
       ],
       builder: (context, child) {
         return Scaffold(body: child);

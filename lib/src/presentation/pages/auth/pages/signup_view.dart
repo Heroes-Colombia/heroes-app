@@ -1,21 +1,32 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:get_it/get_it.dart';
+import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/src/config/router/app_router.gr.dart';
+import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
+import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
 
 final _formKey = GlobalKey<FormBuilderState>();
 
 @RoutePage()
 class SignUpView extends StatelessWidget {
-  const SignUpView({Key? key}) : super(key: key);
+  SignUpView({Key? key, required this.onResult}) : super(key: key);
+  final Function(bool?) onResult;
+  final locator = GetIt.instance;
 
   @override
   Widget build(BuildContext context) {
+    final texts = locator.get<AppConstants>().authTexts['signupView']!;
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: CustomScrollView(
         slivers: [
-          const SliverAppBar.large(
-            title: Text('Registrarse'),
+          SliverAppBar.large(
+            title: Text(texts['title']!),
             pinned: true,
             floating: true,
             snap: true,
@@ -31,43 +42,84 @@ class SignUpView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     FormBuilderTextField(
-                      name: 'email',
-                      key: const Key('_register_email'),
-                      decoration: const InputDecoration(
-                        labelText: 'Correo electrónico',
-                        hintText: 'Ingresa tu correo electrónico',
-                        border: OutlineInputBorder(),
+                      name: 'username',
+                      key: const Key('username'),
+                      decoration: InputDecoration(
+                        labelText: texts['username-label']!,
+                        hintText: texts['username-hint']!,
+                        border: const OutlineInputBorder(),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa tu correo electrónico';
-                        }
-                        return null;
-                      },
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
                     ),
                     const SizedBox(height: 12),
-                    FormBuilderTextField(
-                      name: 'password',
-                      key: const Key('_register_password'),
-                      decoration: const InputDecoration(
-                        labelText: 'Contraseña',
-                        hintText: 'Ingresa tu contraseña',
-                        border: OutlineInputBorder(),
-                      ),
-                      obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa tu contraseña';
-                        }
-                        return null;
-                      },
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                            child: FormBuilderTextField(
+                          name: 'first_name',
+                          key: const Key('_register_first_name'),
+                          decoration: InputDecoration(
+                            labelText: texts['firstname-label']!,
+                            hintText: texts['firstname-hint']!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(
+                            child: FormBuilderTextField(
+                          name: 'second_name',
+                          key: const Key('_register_second_name'),
+                          decoration: InputDecoration(
+                            labelText: texts['secondname-label']!,
+                            hintText: texts['secondname-hint']!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        )),
+                      ],
                     ),
                     const SizedBox(height: 12),
-                    FilledButton(
-                      onPressed: () {},
-                      child: const Text('Registrarse'),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                            child: FormBuilderTextField(
+                          name: 'last_name',
+                          key: const Key('_register_last_name'),
+                          decoration: InputDecoration(
+                            labelText: texts['lastname-label']!,
+                            hintText: texts['lastname-hint']!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        )),
+                        const SizedBox(width: 12),
+                        Expanded(
+                            child: FormBuilderTextField(
+                          name: 'rank',
+                          decoration: InputDecoration(
+                            labelText: texts['rank-label']!,
+                            hintText: texts['rank-hint']!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        )),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    EmailInputWidget(
+                        keyName: 'signup_email',
+                        key: const Key('signup_email'),
+                        name: 'email',
+                        label: texts['email-label']!,
+                        hintText: texts['email-hint']!),
+                    const SizedBox(height: 12),
+                    PasswordInput(
+                        keyName: '_register_password',
+                        name: 'password',
+                        label: texts['password-label']!,
+                        hintText: texts['password-hint']!),
+                    const SizedBox(height: 12),
+                    AsyncButtonWidget(
+                      onPressed: () => doRegister(context, texts),
+                      buttonText: texts['signupButton']!,
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -78,5 +130,26 @@ class SignUpView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> doRegister(BuildContext context, texts) async {
+    final formIsValid = _formKey.currentState!.saveAndValidate();
+    if (!formIsValid) return;
+
+    //create a modifiable copy of the form data
+    final userData = Map<String, dynamic>.from(_formKey.currentState!.value);
+    final isUserCreatedAndLoggedInd =
+        await context.read<AuthCubit>().signUp(userData);
+
+    if (!isUserCreatedAndLoggedInd) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
+      return;
+    }
+
+    if (!context.mounted) return;
+    onResult.call(true);
+    AutoRouter.of(context).replaceAll([const DashBoardView()]);
   }
 }

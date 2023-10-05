@@ -11,10 +11,10 @@ class AppRouter extends $AppRouter {
           path: '/welcome',
           transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
           children: [
-            AutoRoute(page: FirstTimeView.page, path: 'first-time'),
-            AutoRoute(page: LoginView.page, path: 'login'),
-            AutoRoute(page: SignUpView.page, path: 'signup'),
-            AutoRoute(page: RestorePassword.page, path: 'restore-password'),
+            AutoRoute(page: FirstTimeView.page, path: 'firstTime'),
+            AutoRoute(page: LoginView.page, path: 'logIn'),
+            AutoRoute(page: SignUpView.page, path: 'signUp'),
+            AutoRoute(page: RestorePassword.page, path: 'restorePassword'),
           ],
         ),
         CustomRoute(
@@ -23,8 +23,8 @@ class AppRouter extends $AppRouter {
           initial: true,
           guards: [AuthGuard()],
           children: [
-            AutoRoute(page: SearchView.page, path: 'home'),
-            AutoRoute(page: ProfileView.page, path: 'profile'),
+            AutoRoute(page: SearchView.page, path: 'search'),
+            AutoRoute(page: FavoritesView.page, path: 'favorites'),
             AutoRoute(page: ProfileView.page, path: 'settings'),
           ],
         )

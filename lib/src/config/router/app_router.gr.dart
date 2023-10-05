@@ -52,9 +52,11 @@ abstract class $AppRouter extends _i10.RootStackRouter {
       );
     },
     FirstTimeView.name: (routeData) {
+      final args = routeData.argsAs<FirstTimeViewArgs>(
+          orElse: () => const FirstTimeViewArgs());
       return _i10.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i4.FirstTimeView(),
+        child: _i4.FirstTimeView(key: args.key),
       );
     },
     LoginView.name: (routeData) {
@@ -74,9 +76,11 @@ abstract class $AppRouter extends _i10.RootStackRouter {
       );
     },
     RestorePassword.name: (routeData) {
+      final args = routeData.argsAs<RestorePasswordArgs>(
+          orElse: () => const RestorePasswordArgs());
       return _i10.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i7.RestorePassword(),
+        child: _i7.RestorePassword(key: args.key),
       );
     },
     SearchView.name: (routeData) {
@@ -86,9 +90,13 @@ abstract class $AppRouter extends _i10.RootStackRouter {
       );
     },
     SignUpView.name: (routeData) {
+      final args = routeData.argsAs<SignUpViewArgs>();
       return _i10.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i9.SignUpView(),
+        child: _i9.SignUpView(
+          key: args.key,
+          onResult: args.onResult,
+        ),
       );
     },
   };
@@ -138,16 +146,31 @@ class FavoritesView extends _i10.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i4.FirstTimeView]
-class FirstTimeView extends _i10.PageRouteInfo<void> {
-  const FirstTimeView({List<_i10.PageRouteInfo>? children})
-      : super(
+class FirstTimeView extends _i10.PageRouteInfo<FirstTimeViewArgs> {
+  FirstTimeView({
+    _i11.Key? key,
+    List<_i10.PageRouteInfo>? children,
+  }) : super(
           FirstTimeView.name,
+          args: FirstTimeViewArgs(key: key),
           initialChildren: children,
         );
 
   static const String name = 'FirstTimeView';
 
-  static const _i10.PageInfo<void> page = _i10.PageInfo<void>(name);
+  static const _i10.PageInfo<FirstTimeViewArgs> page =
+      _i10.PageInfo<FirstTimeViewArgs>(name);
+}
+
+class FirstTimeViewArgs {
+  const FirstTimeViewArgs({this.key});
+
+  final _i11.Key? key;
+
+  @override
+  String toString() {
+    return 'FirstTimeViewArgs{key: $key}';
+  }
 }
 
 /// generated route for
@@ -204,16 +227,31 @@ class ProfileView extends _i10.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i7.RestorePassword]
-class RestorePassword extends _i10.PageRouteInfo<void> {
-  const RestorePassword({List<_i10.PageRouteInfo>? children})
-      : super(
+class RestorePassword extends _i10.PageRouteInfo<RestorePasswordArgs> {
+  RestorePassword({
+    _i11.Key? key,
+    List<_i10.PageRouteInfo>? children,
+  }) : super(
           RestorePassword.name,
+          args: RestorePasswordArgs(key: key),
           initialChildren: children,
         );
 
   static const String name = 'RestorePassword';
 
-  static const _i10.PageInfo<void> page = _i10.PageInfo<void>(name);
+  static const _i10.PageInfo<RestorePasswordArgs> page =
+      _i10.PageInfo<RestorePasswordArgs>(name);
+}
+
+class RestorePasswordArgs {
+  const RestorePasswordArgs({this.key});
+
+  final _i11.Key? key;
+
+  @override
+  String toString() {
+    return 'RestorePasswordArgs{key: $key}';
+  }
 }
 
 /// generated route for
@@ -232,14 +270,38 @@ class SearchView extends _i10.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i9.SignUpView]
-class SignUpView extends _i10.PageRouteInfo<void> {
-  const SignUpView({List<_i10.PageRouteInfo>? children})
-      : super(
+class SignUpView extends _i10.PageRouteInfo<SignUpViewArgs> {
+  SignUpView({
+    _i11.Key? key,
+    required dynamic Function(bool?) onResult,
+    List<_i10.PageRouteInfo>? children,
+  }) : super(
           SignUpView.name,
+          args: SignUpViewArgs(
+            key: key,
+            onResult: onResult,
+          ),
           initialChildren: children,
         );
 
   static const String name = 'SignUpView';
 
-  static const _i10.PageInfo<void> page = _i10.PageInfo<void>(name);
+  static const _i10.PageInfo<SignUpViewArgs> page =
+      _i10.PageInfo<SignUpViewArgs>(name);
+}
+
+class SignUpViewArgs {
+  const SignUpViewArgs({
+    this.key,
+    required this.onResult,
+  });
+
+  final _i11.Key? key;
+
+  final dynamic Function(bool?) onResult;
+
+  @override
+  String toString() {
+    return 'SignUpViewArgs{key: $key, onResult: $onResult}';
+  }
 }

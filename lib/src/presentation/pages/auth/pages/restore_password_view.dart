@@ -1,21 +1,29 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:get_it/get_it.dart';
+import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
+import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 
 final _formKey = GlobalKey<FormBuilderState>();
 
 @RoutePage()
 class RestorePassword extends StatelessWidget {
-  const RestorePassword({Key? key}) : super(key: key);
+  RestorePassword({Key? key}) : super(key: key);
+  final locator = GetIt.instance;
 
   @override
   Widget build(BuildContext context) {
+    final texts = locator.get<AppConstants>().authTexts['restorePasswordView']!;
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: CustomScrollView(
         slivers: [
-          const SliverAppBar.large(
-            title: Text('¿Olvidaste tu contraseña?'),
+          SliverAppBar.large(
+            title: Text(texts['title']!),
             pinned: true,
             floating: true,
             snap: true,
@@ -30,26 +38,16 @@ class RestorePassword extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    FormBuilderTextField(
-                      name: 'email',
-                      key: const Key('_restore_email'),
-                      decoration: const InputDecoration(
-                        labelText: 'Correo electrónico',
-                        hintText: 'Ingresa tu correo electrónico',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa tu correo electrónico';
-                        }
-                        return null;
-                      },
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                    ),
+                    EmailInputWidget(
+                        keyName: 'restore_password_email',
+                        name: 'email',
+                        label: texts['email-label']!,
+                        hintText: texts['email-hint']!),
                     const SizedBox(height: 12),
                     FilledButton(
-                      onPressed: () {},
-                      child: const Text('Recuperar'),
+                      onPressed: () =>
+                          sentRecoverPasswordEmail(context, theme, texts),
+                      child: Text(texts['restoreButton']!),
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -59,6 +57,47 @@ class RestorePassword extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> sentRecoverPasswordEmail(
+      BuildContext context, theme, texts) async {
+    if (_formKey.currentState!.saveAndValidate()) {
+      final email = _formKey.currentState!.fields['email']!.value;
+      final emailWasSend =
+          await context.read<AuthCubit>().restorePassword(email);
+      if (!context.mounted) return;
+      if (emailWasSend) {
+        emailSentSnackBar(context, texts);
+      } else {
+        badEmailSnackBar(context, texts, theme);
+        //mark email field as invalid and focus it
+      }
+    }
+  }
+
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason> emailSentSnackBar(
+      BuildContext context, Map<String, String> texts) {
+    return ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(texts['email-sent']!),
+      ),
+    );
+  }
+
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason> badEmailSnackBar(
+      BuildContext context, Map<String, String> texts, ThemeData theme) {
+    return ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(texts['email-not-found']!),
+          backgroundColor: theme.colorScheme.inverseSurface,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+              textColor: theme.colorScheme.primary,
+              label: texts['try-again']!,
+              onPressed: () =>
+                  _formKey.currentState!.fields['email']!.focus())),
     );
   }
 }

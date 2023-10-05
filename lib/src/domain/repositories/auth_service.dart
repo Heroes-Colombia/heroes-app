@@ -1,8 +1,13 @@
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get_it/get_it.dart';
 
 class AuthService {
+  AuthService();
+
+  final locator = GetIt.instance;
+
   Future<void> signInWithEmailAndPassword(String email, String password) async {
     await FirebaseAuth.instance.signInWithEmailAndPassword(
       email: email,
@@ -10,27 +15,23 @@ class AuthService {
     );
   }
 
-  Future<void> signUpWithEmailAndPassword(
+  Future<String> signUpWithEmailAndPassword(
     String email,
     String password,
   ) async {
-    //TODO: implement signUpWithEmailAndPassword
-    try {
-      var credentials = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
-      log('credentials: $credentials');
-    } on FirebaseAuthException catch (e) {
-      log('error: $e');
-    } catch (e) {
-      log('error: $e');
-    }
+    var credentials = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: password);
+    log('credentials: ${credentials.user!.uid}');
+    return credentials.user!.uid;
   }
 
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
   }
 
-  Future<void> sendPasswordResetEmail(String email) async {}
+  Future<void> sendPasswordResetEmail(String email) async {
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+  }
 
   bool checkUserSession() {
     var isUserSignedIn = false;

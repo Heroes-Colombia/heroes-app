@@ -2,24 +2,30 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:get_it/get_it.dart';
+import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
+import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
 
 final _formKey = GlobalKey<FormBuilderState>();
 
 @RoutePage()
 class LoginView extends StatelessWidget {
   final Function(bool?) onResult;
-  const LoginView({Key? key, required this.onResult}) : super(key: key);
-
+  LoginView({Key? key, required this.onResult}) : super(key: key);
+  final locator = GetIt.instance;
   @override
   Widget build(BuildContext context) {
+    final authTexts = locator.get<AppConstants>().authTexts['loginView']!;
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: CustomScrollView(
         slivers: [
-          const SliverAppBar.large(
-            title: Text('Iniciar sesión'),
+          SliverAppBar.large(
+            title: Text(authTexts['title']!),
             pinned: true,
             floating: true,
             snap: true,
@@ -37,53 +43,32 @@ class LoginView extends StatelessWidget {
                     FormBuilderTextField(
                       name: 'email',
                       key: const Key('_login_email'),
-                      decoration: const InputDecoration(
-                        labelText: 'Correo electrónico',
-                        hintText: 'Ingresa tu correo electrónico',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: authTexts['email-label']!,
+                        hintText: authTexts['email-hint']!,
+                        border: const OutlineInputBorder(),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa tu correo electrónico';
-                        }
-                        if (!RegExp(
-                          r'^.+@[a-zA-Z]+\.{1}[a-zA-Z]+(\.{0,1}[a-zA-Z]+)$',
-                        ).hasMatch(value)) {
-                          return 'Por favor ingresa un correo electrónico válido';
-                        }
-                        return null;
-                      },
+                      validator: (value) => locator
+                          .get<AppMethods>()
+                          .validateEmail(value, authTexts),
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                     ),
                     const SizedBox(height: 12),
-                    FormBuilderTextField(
-                      name: 'password',
-                      key: const Key('_login_password'),
-                      decoration: const InputDecoration(
-                        labelText: 'Contraseña',
-                        hintText: 'Ingresa tu contraseña',
-                        border: OutlineInputBorder(),
-                      ),
-                      obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa tu contraseña';
-                        }
-                        return null;
-                      },
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                    ),
+                    PasswordInput(
+                        keyName: '_login_password',
+                        name: 'password',
+                        label: authTexts['password-label']!,
+                        hintText: authTexts['password-hint']!),
                     const SizedBox(height: 12),
-                    FilledButton(
-                      onPressed: () => doLogin(context),
-                      child: const Text('Iniciar sesión'),
+                    AsyncButtonWidget(
+                      onPressed: () => _loginUser(context, authTexts),
+                      buttonText: authTexts['loginButton']!,
                     ),
                     const SizedBox(height: 6),
                     TextButton(
-                      onPressed: () {
-                        AutoRouter.of(context).push(const RestorePassword());
-                      },
-                      child: const Text('Olvidé mi contraseña'),
+                      onPressed: () =>
+                          AutoRouter.of(context).push(RestorePassword()),
+                      child: Text(authTexts['forgotPassword']!),
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -96,42 +81,39 @@ class LoginView extends StatelessWidget {
     );
   }
 
-  Future<void> doLogin(BuildContext context) async {
-    if (_formKey.currentState!.saveAndValidate()) {
-      final userIsLoggedIn = await context.read<AuthCubit>().logIn(
-            _formKey.currentState!.value,
-          );
-      print(' userIsLoggedIn: $userIsLoggedIn');
+  Future<void> _loginUser(
+      BuildContext context, Map<String, String> texts) async {
+    final formIsValid = _formKey.currentState!.saveAndValidate();
+    if (formIsValid) {
+      final userIsLoggedIn =
+          await context.read<AuthCubit>().logIn(_formKey.currentState!.value);
+      if (!context.mounted) return;
       if (userIsLoggedIn) {
         onResult.call(true);
+        AutoRouter.of(context).replaceAll([const DashBoardView()]);
       }
-      if (!context.mounted) return;
-      _showMyDialog(context);
+      _showDialogAlert(context, texts);
     }
-    // context.read<AuthCubit>().checkIfUserIsLoggedIn();
   }
 
-  Future<void> _showMyDialog(BuildContext context) async {
+  Future<void> _showDialogAlert(
+      BuildContext context, Map<String, String> texts) async {
     return await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Error'),
-          content: const SingleChildScrollView(
+          title: Text(texts['loginErrorTitle']!),
+          content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Las credenciales no validas'),
-                Text('Por favor intenta de nuevo'),
+                Text(texts['loginErrorContent']!),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Aceptar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
+                child: Text(texts['loginErrorButton']!),
+                onPressed: () => Navigator.of(context).pop()),
           ],
         );
       },

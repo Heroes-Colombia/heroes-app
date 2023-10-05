@@ -12,9 +12,9 @@ import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await initializeDependencies();
   //Firebase dependencies
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await initializeDependencies();
 
   runApp(MyApp());
 }
