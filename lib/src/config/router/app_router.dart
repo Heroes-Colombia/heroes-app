@@ -6,6 +6,7 @@ import 'app_router.gr.dart';
 class AppRouter extends $AppRouter {
   @override
   List<AutoRoute> get routes => [
+        //Auth routes
         CustomRoute(
           page: AuthView.page,
           path: '/welcome',
@@ -17,6 +18,7 @@ class AppRouter extends $AppRouter {
             AutoRoute(page: RestorePassword.page, path: 'restorePassword'),
           ],
         ),
+        //Dashboard routes
         CustomRoute(
           page: DashBoardView.page,
           path: '/dashboard',
@@ -27,6 +29,12 @@ class AppRouter extends $AppRouter {
             AutoRoute(page: FavoritesView.page, path: 'favorites'),
             AutoRoute(page: ProfileView.page, path: 'settings'),
           ],
-        )
+        ),
+        //Individual hero routes
+        CustomRoute(
+          page: EditProfileView.page,
+          path: '/editProfile',
+          transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+        ),
       ];
 }

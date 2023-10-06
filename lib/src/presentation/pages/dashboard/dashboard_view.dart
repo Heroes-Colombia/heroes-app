@@ -10,9 +10,9 @@ class DashBoardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AutoTabsScaffold(
-      routes: const [
-        SearchView(),
-        FavoritesView(),
+      routes: [
+        const SearchView(),
+        const FavoritesView(),
         ProfileView(),
       ],
       bottomNavigationBuilder: (context, tabsRouter) {

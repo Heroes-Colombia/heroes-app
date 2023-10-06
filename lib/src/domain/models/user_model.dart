@@ -41,7 +41,7 @@ class User extends Equatable {
       firstName: json['first_name'] as String,
       secondName: json['second_name'] as String,
       lastName: json['last_name'] as String,
-      permission: json['permission'] as String,
+      permission: json['permission'] as String? ?? '',
       rank: json['rank'] as String,
     );
   }

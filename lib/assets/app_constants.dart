@@ -60,4 +60,35 @@ class AppConstants {
       'try-again': 'Intentar de nuevo',
     },
   };
+  final dashBoardTexts = {
+    'profileView': {
+      'title': 'Ajustes',
+      'account': 'Cuenta',
+      'edit-profile': 'Editar perfil',
+      'logout': 'Cerrar sesión',
+      'settings': 'Ajustes',
+      'dark-mode': 'Tema oscuro',
+    },
+    'editprofileView': {
+      'title': 'Editar perfil',
+      'error-title': 'Error',
+      'email-label': 'Correo electrónico',
+      'email-hint': 'Ingresa tu correo electrónico',
+      'email-validator': 'Por favor ingresa un correo electrónico válido',
+      'username-label': 'Username',
+      'username-hint': 'Ingresa tu username',
+      'firstname-label': 'Nombre',
+      'firstname-hint': 'Ingresa tu nombre',
+      'secondname-label': 'Segundo nombre',
+      'secondname-hint': 'Ingresa tu segundo nombre',
+      'lastname-label': 'Apellido',
+      'lastname-hint': 'Ingresa tu apellido',
+      'rank-label': 'Rango',
+      'rank-hint': 'Ingresa tu rango',
+      'savechanges-button': 'Guardar cambios',
+      'error-content': 'Hubo un error al guardar los cambios',
+      'success-content': 'Información actualizada',
+      'empty-string': 'Este campo no puede estar vacío',
+    }
+  };
 }

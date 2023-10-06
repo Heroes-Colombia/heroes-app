@@ -8,6 +8,7 @@ import 'package:heroes_app/src/config/app_themes.dart';
 import 'package:heroes_app/src/config/router/app_router.dart';
 import 'package:heroes_app/src/locator.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
 
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => AuthCubit()),
+        BlocProvider(create: (context) => ProfileCubit()),
       ],
       child: MaterialApp.router(
         title: 'Heroes',

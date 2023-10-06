@@ -42,7 +42,8 @@ class AuthService {
     return isUserSignedIn;
   }
 
-  Future<String> getUserInfo() async {
-    return '';
+  String getUserId() {
+    var userUid = FirebaseAuth.instance.currentUser!.uid;
+    return userUid;
   }
 }
