@@ -1,3 +1,4 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -44,7 +45,11 @@ class ProfileView extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Ionicons.moon_outline),
                   title: Text(texts['dark-mode']!),
-                  onTap: () {},
+                  trailing: Switch(
+                    value: AdaptiveTheme.of(context).mode ==
+                        AdaptiveThemeMode.dark,
+                    onChanged: (_) => changeThemeMode(context),
+                  ),
                 ),
               ]),
             ),
@@ -66,6 +71,15 @@ class ProfileView extends StatelessWidget {
           content: Text('Ocurrió un error al cerrar sesión'),
         ),
       );
+    }
+  }
+
+  void changeThemeMode(BuildContext context) {
+    final themeMode = AdaptiveTheme.of(context).mode;
+    if (themeMode == AdaptiveThemeMode.dark) {
+      AdaptiveTheme.of(context).setLight();
+    } else {
+      AdaptiveTheme.of(context).setDark();
     }
   }
 }

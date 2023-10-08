@@ -23,7 +23,7 @@ dependencies:
 
   get_it: ^7.6.0
   auto_route: ^7.8.3
-  shared_preferences: ^2.2.0
+  shared_preferences: ^2.2.1
   flutter_native_splash: ^2.3.1
   flutter_form_builder: ^9.1.1
   flutter_map: ^5.0.0
@@ -33,6 +33,7 @@ dependencies:
   firebase_auth: ^4.10.0
   cloud_firestore: ^4.9.2
   bloc: ^8.1.2
+  adaptive_theme: ^3.4.1
 
 dev_dependencies:
   flutter_test:

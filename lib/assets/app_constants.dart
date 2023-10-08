@@ -68,6 +68,8 @@ class AppConstants {
       'logout': 'Cerrar sesión',
       'settings': 'Ajustes',
       'dark-mode': 'Tema oscuro',
+      'light-mode': 'Tema claro',
+      'system-mode': 'Tema del sistema',
     },
     'editprofileView': {
       'title': 'Editar perfil',

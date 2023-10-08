@@ -1,3 +1,4 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:heroes_app/firebase_options.dart';
@@ -12,23 +13,37 @@ import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
 
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  //Splash screen
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   //Firebase dependencies
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  //DIO dependencies
   await initializeDependencies();
+  //Theme dependencies
+  final savedThemeMode = await AdaptiveTheme.getThemeMode();
 
-  runApp(MyApp());
+  runApp(MyApp(savedThemeMode: savedThemeMode));
 }
 
 class MyApp extends StatelessWidget {
+  final AdaptiveThemeMode? savedThemeMode;
   final _appRouter = AppRouter();
-  MyApp({super.key});
+  MyApp({super.key, this.savedThemeMode});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     FlutterNativeSplash.remove();
 
+    return AdaptiveTheme(
+      light: AppTheme.light,
+      dark: AppTheme.dark,
+      initial: savedThemeMode ?? AdaptiveThemeMode.system,
+      builder: (theme, darkTheme) => _buildApp(theme, darkTheme),
+    );
+  }
+
+  // This widget is the root of your application.
+  _buildApp(ThemeData theme, ThemeData darkTheme) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => AuthCubit()),
@@ -36,8 +51,8 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'Heroes',
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
+        theme: theme,
+        darkTheme: darkTheme,
         routerDelegate: _appRouter.delegate(),
         routeInformationParser: _appRouter.defaultRouteParser(),
       ),
