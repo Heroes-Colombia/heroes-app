@@ -8,6 +8,8 @@ import 'package:heroes_app/src/domain/repositories/shared_preferences_service.da
 
 final locator = GetIt.instance;
 
+//This function initialize all the dependencies with the locator
+//GetIt is used to get the dependencies in the app using the singleton pattern
 Future<void> initializeDependencies() async {
   //Network dependencies
   final dio = Dio();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+//This widget is used to show feedback button when user is waiting for a response in async operations
 class AsyncButtonWidget extends StatefulWidget {
   final String buttonText;
   final Future<void> Function() onPressed;

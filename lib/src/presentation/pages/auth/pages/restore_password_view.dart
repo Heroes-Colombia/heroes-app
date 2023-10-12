@@ -60,18 +60,22 @@ class RestorePassword extends StatelessWidget {
     );
   }
 
+  //This method is used to send the email to the user
   Future<void> sentRecoverPasswordEmail(
       BuildContext context, theme, texts) async {
     if (_formKey.currentState!.saveAndValidate()) {
+      //First we save the email
       final email = _formKey.currentState!.fields['email']!.value;
+      //Then we call the restorePassword method from the AuthCubit
       final emailWasSend =
           await context.read<AuthCubit>().restorePassword(email);
+
       if (!context.mounted) return;
+      //If the email was send we show a snackbar with a confirmation message or if not we show a snackbar with a message to try again
       if (emailWasSend) {
         emailSentSnackBar(context, texts);
       } else {
         badEmailSnackBar(context, texts, theme);
-        //mark email field as invalid and focus it
       }
     }
   }

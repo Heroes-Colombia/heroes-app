@@ -38,7 +38,7 @@ class ProfileView extends StatelessWidget {
                 ListTile(
                     leading: const Icon(Ionicons.log_out_outline),
                     title: Text(texts['logout']!),
-                    onTap: () => doLogOut(context)),
+                    onTap: () => doLogOut(context, texts)),
                 const SizedBox(height: 16),
                 Text(texts['settings']!, style: theme.textTheme.labelLarge),
                 const SizedBox(height: 8),
@@ -59,23 +59,30 @@ class ProfileView extends StatelessWidget {
     );
   }
 
-  void doLogOut(BuildContext context) async {
+  //This method is used to log out the user
+  void doLogOut(BuildContext context, texts) async {
+    //First we log out the user
     final userIsLoggedIn = await context.read<AuthCubit>().logOut();
     if (userIsLoggedIn) {
       if (!context.mounted) return;
+      //If the user is logged out we navigate to the auth view
       context.router.replaceAll([const AuthView()]);
     } else {
       if (!context.mounted) return;
+      //If the user is not logged out we show a snackbar with an error message
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ocurrió un error al cerrar sesión'),
+        SnackBar(
+          content: Text(texts['logout-error-message']!),
         ),
       );
     }
   }
 
+//This method is used to change the theme mode
   void changeThemeMode(BuildContext context) {
+    //First we get the current theme mode
     final themeMode = AdaptiveTheme.of(context).mode;
+    //Then we change the theme mode
     if (themeMode == AdaptiveThemeMode.dark) {
       AdaptiveTheme.of(context).setLight();
     } else {

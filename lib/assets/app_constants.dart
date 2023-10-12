@@ -70,6 +70,7 @@ class AppConstants {
       'dark-mode': 'Tema oscuro',
       'light-mode': 'Tema claro',
       'system-mode': 'Tema del sistema',
+      'logout-error-message': 'Ocurrió un error al cerrar sesión',
     },
     'editprofileView': {
       'title': 'Editar perfil',

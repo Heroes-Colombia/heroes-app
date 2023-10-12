@@ -46,7 +46,7 @@ class EditProfileView extends StatelessWidget {
     );
   }
 
-  // 'rank': rank,
+  //This method is used to show a success view when the user info is loaded
   successView(BuildContext context, User user, texts, ThemeData theme) {
     return CustomScrollView(
       slivers: [
@@ -150,6 +150,7 @@ class EditProfileView extends StatelessWidget {
     );
   }
 
+  //This method is used to show a loading view when the user info is loading
   loadingView(BuildContext context, ThemeData theme, texts) {
     return CustomScrollView(
       slivers: [
@@ -163,6 +164,7 @@ class EditProfileView extends StatelessWidget {
     );
   }
 
+  //This method is used to show an initial view when the user info started loading
   initialView(BuildContext context, ThemeData theme, texts) {
     return CustomScrollView(
       slivers: [
@@ -173,6 +175,7 @@ class EditProfileView extends StatelessWidget {
     );
   }
 
+  //This method is used to show an error view when the user info is not loaded
   errorView(BuildContext context, ThemeData theme, texts) {
     return CustomScrollView(
       slivers: [
@@ -186,16 +189,22 @@ class EditProfileView extends StatelessWidget {
     );
   }
 
+  //This method is used to change the theme mode
   Future<void> changeUserInfo(BuildContext context, texts) async {
+    //First we validate that the form is valid
     final formIsValid = updateUserForm.currentState!.saveAndValidate();
     if (formIsValid) {
+      //If the form is valid we get the data
       final data = updateUserForm.currentState!.value;
+      //Then we update the user info
       await context.read<ProfileCubit>().updateProfileInfo(data);
       if (!context.mounted) return;
+      //If the user info is updated we show a snackbar with a success message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(texts['error-content']!)),
+        SnackBar(content: Text(texts['success-content']!)),
       );
     } else {
+      //If the form is not valid we show a snackbar with an error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(texts['error-content']!)),
       );

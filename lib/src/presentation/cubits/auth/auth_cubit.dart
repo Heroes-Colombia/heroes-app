@@ -14,18 +14,22 @@ class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthStateInitial());
   final getIt = GetIt.instance;
 
+  //This method is used to log in the user
   Future<bool> logIn(Map<String, dynamic> userData) async {
     try {
+      //First we log in the user in firebase auth
       await getIt<AuthService>().signInWithEmailAndPassword(
         userData['email'],
         userData['password'],
       );
+      //Then we get the user info from firestore and return true or false in case of error
       return true;
     } catch (e) {
       return false;
     }
   }
 
+  //This method is used to sign up the user
   Future<bool> signUp(Map<String, dynamic> userData) async {
     try {
       //First we create the user in firebase auth
@@ -45,6 +49,7 @@ class AuthCubit extends Cubit<AuthState> {
         {'email': userData['email'], 'password': userData['password']},
       );
 
+      //And return true or false in case of error
       return isUserLoggedIn;
     } catch (e) {
       log('Error: $e');
@@ -52,25 +57,34 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  //This method is used to log out the user
   Future<bool> logOut() async {
     try {
+      //First we log out the user from firebase auth
       await getIt<AuthService>().signOut();
+      //Then we return true or false in case of error
       return true;
     } catch (e) {
       return false;
     }
   }
 
+  //This method is used to restore the password
   Future<bool> restorePassword(String email) async {
     try {
+      //First we send the password reset email
       await getIt<AuthService>().sendPasswordResetEmail(email);
+      //Then we return true or false in case of error
       return true;
     } catch (e) {
       return false;
     }
   }
 
+  //This method is used to create the user in firestore,
+  //it is called inside signUp method if the user is created in firebase auth,
   Future<void> createUserInFirestore(Map<String, dynamic> userData) async {
+    //We create the user in firestore
     await getIt<FirestoreService>().createDocument(
       locator<AppConstants>().usersCollection,
       userData,

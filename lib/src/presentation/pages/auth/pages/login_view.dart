@@ -81,14 +81,19 @@ class LoginView extends StatelessWidget {
     );
   }
 
+  //This method is used to login the user
   Future<void> _loginUser(
       BuildContext context, Map<String, String> texts) async {
+    //First we validate the form
     final formIsValid = _formKey.currentState!.saveAndValidate();
     if (formIsValid) {
+      //If the form is valid we call the logIn method from the auth cubit
       final userIsLoggedIn =
           await context.read<AuthCubit>().logIn(_formKey.currentState!.value);
       if (!context.mounted) return;
       if (userIsLoggedIn) {
+        //If the user is logged in we call the onResult function and navigate to the dashboard
+        //This is used to confirm the navigation to the dashboard view
         onResult.call(true);
         AutoRouter.of(context).replaceAll([const DashBoardView()]);
       }
@@ -96,6 +101,7 @@ class LoginView extends StatelessWidget {
     }
   }
 
+  //This method is used to show the alert dialog
   Future<void> _showDialogAlert(
       BuildContext context, Map<String, String> texts) async {
     return await showDialog(

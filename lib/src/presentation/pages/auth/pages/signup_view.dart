@@ -132,15 +132,18 @@ class SignUpView extends StatelessWidget {
     );
   }
 
+  //This method is used to register the user
   Future<void> doRegister(BuildContext context, texts) async {
+    //First we validate the form
     final formIsValid = _formKey.currentState!.saveAndValidate();
     if (!formIsValid) return;
 
-    //create a modifiable copy of the form data
+    //create a modifiable copy of the form data and send it to the cubit to register the user
     final userData = Map<String, dynamic>.from(_formKey.currentState!.value);
     final isUserCreatedAndLoggedInd =
         await context.read<AuthCubit>().signUp(userData);
 
+    //If the user is not created and logged in we show an error message
     if (!isUserCreatedAndLoggedInd) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context)
@@ -148,6 +151,8 @@ class SignUpView extends StatelessWidget {
       return;
     }
 
+    //If the user is created and logged in we navigate to the dashboard calling the onResult function,
+    //this is used to validate the navigation to the dashboard from the auth guard
     if (!context.mounted) return;
     onResult.call(true);
     AutoRouter.of(context).replaceAll([const DashBoardView()]);

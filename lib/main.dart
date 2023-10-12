@@ -26,14 +26,17 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
+  // First get the saved theme mode and the app router
   final AdaptiveThemeMode? savedThemeMode;
   final _appRouter = AppRouter();
   MyApp({super.key, this.savedThemeMode});
 
   @override
   Widget build(BuildContext context) {
+    // Remove the splash screen after the app is loaded
     FlutterNativeSplash.remove();
 
+    // Return the AdaptiveTheme widget withe the main app
     return AdaptiveTheme(
       light: AppTheme.light,
       dark: AppTheme.dark,
@@ -44,6 +47,8 @@ class MyApp extends StatelessWidget {
 
   // This widget is the root of your application.
   _buildApp(ThemeData theme, ThemeData darkTheme) {
+    // Return the MultiBlocProvider widget with the app router
+    // to handle the cubits and the routes
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => AuthCubit()),
@@ -51,6 +56,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'Heroes',
+        //We obtain the theme and darkTheme from the AdaptiveTheme builder
         theme: theme,
         darkTheme: darkTheme,
         routerDelegate: _appRouter.delegate(),

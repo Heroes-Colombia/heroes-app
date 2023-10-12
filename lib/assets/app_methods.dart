@@ -13,6 +13,7 @@ class AppMethods {
     return null;
   }
 
+  //Validate empty input field
   String? emptyStringValidator(String? value, String message) {
     if (value == null || value.isEmpty) {
       return message;
@@ -20,6 +21,7 @@ class AppMethods {
     return null;
   }
 
+  //Validate password input field
   String? passwordValidator(
       String? value, String emptyString, String invalidLength) {
     if (value == null || value.isEmpty) {

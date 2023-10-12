@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+//This class is a wrapper for Firestore
 class FirestoreService {
   FirestoreService();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  //This method is used to create a document inside a collection
   Future<String> createDocument(
       String collectionName, Map<String, dynamic> data) async {
     final docRef = await _firestore.collection(collectionName).add(data);
@@ -12,6 +13,9 @@ class FirestoreService {
     return docRef.id;
   }
 
+  //This method is used to read all documents inside a collection,
+  //where the id  of the property is equal to the id passed as parameter
+  //example 'usersCollectionName', '123', 'uid'
   Future<Map<String, dynamic>> readDocumentById(
       String collectionName, String id, String property) async {
     final docSnapshot = await _firestore
@@ -21,6 +25,9 @@ class FirestoreService {
     return docSnapshot.docs.first.data();
   }
 
+  //This method is used to edit a document inside a collection with the data passed as parameter,
+  //where the id  of the property is equal to the id passed as parameter
+  //example 'usersCollectionName', '123', 'uid', '{name: 'John'}'
   Future<Map<String, dynamic>> editDocumentById(String collectionName,
       String id, String property, Map<String, dynamic> data) async {
     final docSnapshot = await _firestore
