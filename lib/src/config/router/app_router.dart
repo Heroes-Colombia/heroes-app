@@ -6,23 +6,35 @@ import 'app_router.gr.dart';
 class AppRouter extends $AppRouter {
   @override
   List<AutoRoute> get routes => [
-        CustomRoute(page: AuthView.page, path: '/welcome', children: [
-          AutoRoute(page: FirstTimeView.page, path: 'first-time'),
-          AutoRoute(page: LoginView.page, path: 'login'),
-          AutoRoute(page: SignUpView.page, path: 'signup'),
-          AutoRoute(page: RestorePassword.page, path: 'restore-password'),
-        ]),
+        //Auth routes
         CustomRoute(
-            page: DashBoardView.page,
-            path: '/dashboard',
-            initial: true,
-            guards: [
-              AuthGuard()
-            ],
-            children: [
-              AutoRoute(page: SearchView.page, path: 'home'),
-              AutoRoute(page: ProfileView.page, path: 'profile'),
-              AutoRoute(page: ProfileView.page, path: 'settings'),
-            ])
+          page: AuthView.page,
+          path: '/welcome',
+          transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+          children: [
+            AutoRoute(page: FirstTimeView.page, path: 'firstTime'),
+            AutoRoute(page: LoginView.page, path: 'logIn'),
+            AutoRoute(page: SignUpView.page, path: 'signUp'),
+            AutoRoute(page: RestorePassword.page, path: 'restorePassword'),
+          ],
+        ),
+        //Dashboard routes
+        CustomRoute(
+          page: DashBoardView.page,
+          path: '/dashboard',
+          initial: true,
+          guards: [AuthGuard()],
+          children: [
+            AutoRoute(page: SearchView.page, path: 'search'),
+            AutoRoute(page: FavoritesView.page, path: 'favorites'),
+            AutoRoute(page: ProfileView.page, path: 'settings'),
+          ],
+        ),
+        //Individual hero routes
+        CustomRoute(
+          page: EditProfileView.page,
+          path: '/editProfile',
+          transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+        ),
       ];
 }
