@@ -1,4 +1,4 @@
-enum BusienessCategories {
+enum BusinessCategories {
   ropa,
   comida,
   belleza,
