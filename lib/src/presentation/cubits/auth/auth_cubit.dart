@@ -42,7 +42,7 @@ class AuthCubit extends Cubit<AuthState> {
       userData['uid'] = uid;
 
       //Then we create the user in firestore
-      createUserInFirestore(userData);
+      await createUserInFirestore(userData);
 
       //Finally we log in the user
       final isUserLoggedIn = await logIn(
@@ -53,6 +53,41 @@ class AuthCubit extends Cubit<AuthState> {
       return isUserLoggedIn;
     } catch (e) {
       log('Error: $e');
+      return false;
+    }
+  }
+
+  //This method is used to sign up the business
+  Future<bool> signUpBusiness(
+      Map<String, dynamic> userData, Map<String, dynamic> businessData) async {
+    try {
+      //First we create the user from the business info in firebase auth
+      final uid = await getIt<AuthService>().signUpWithEmailAndPassword(
+        userData['email'],
+        userData['password'],
+      );
+
+      //Then we add the uid to the user data
+      userData['uid'] = uid;
+
+      //Then we create the user in firestore
+      await createUserInFirestore(userData);
+
+      //Then we add the owner_uid to the business data
+      businessData['owner_uid'] = uid;
+
+      //Then we create the business in firestore
+      await createBusinessInFirestore(userData);
+
+      //Finally we log in the user
+      final isUserLoggedIn = await logIn(
+        {'email': userData['email'], 'password': userData['password']},
+      );
+
+      //And return true or false in case of error
+      return isUserLoggedIn;
+    } catch (e) {
+      log('Error: $e}');
       return false;
     }
   }
@@ -88,6 +123,16 @@ class AuthCubit extends Cubit<AuthState> {
     await getIt<FirestoreService>().createDocument(
       locator<AppConstants>().usersCollection,
       userData,
+    );
+  }
+
+  //This method is used to create a business in firestore,
+  Future<void> createBusinessInFirestore(
+      Map<String, dynamic> businessData) async {
+    //We create the business in firestore
+    await getIt<FirestoreService>().createDocument(
+      locator<AppConstants>().businessCollection,
+      businessData,
     );
   }
 }

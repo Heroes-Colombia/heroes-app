@@ -16,6 +16,7 @@ class AppRouter extends $AppRouter {
             AutoRoute(page: LoginView.page, path: 'logIn'),
             AutoRoute(page: SignUpView.page, path: 'signUp'),
             AutoRoute(page: RestorePassword.page, path: 'restorePassword'),
+            AutoRoute(page: SignUpBusinessView.page, path: 'signUpBusiness')
           ],
         ),
         //Dashboard routes

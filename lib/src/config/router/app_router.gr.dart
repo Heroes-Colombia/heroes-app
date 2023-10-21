@@ -8,8 +8,8 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i11;
-import 'package:flutter/material.dart' as _i12;
+import 'package:auto_route/auto_route.dart' as _i12;
+import 'package:flutter/material.dart' as _i13;
 import 'package:heroes_app/src/presentation/pages/auth/auth_view.dart' as _i1;
 import 'package:heroes_app/src/presentation/pages/auth/pages/first_time_view.dart'
     as _i5;
@@ -17,8 +17,10 @@ import 'package:heroes_app/src/presentation/pages/auth/pages/login_view.dart'
     as _i6;
 import 'package:heroes_app/src/presentation/pages/auth/pages/restore_password_view.dart'
     as _i8;
-import 'package:heroes_app/src/presentation/pages/auth/pages/signup_view.dart'
+import 'package:heroes_app/src/presentation/pages/auth/pages/signup_business.dart'
     as _i10;
+import 'package:heroes_app/src/presentation/pages/auth/pages/signup_view.dart'
+    as _i11;
 import 'package:heroes_app/src/presentation/pages/dashboard/dashboard_view.dart'
     as _i2;
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/favorites_view.dart'
@@ -30,19 +32,19 @@ import 'package:heroes_app/src/presentation/pages/dashboard/pages/profile/profil
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search_view.dart'
     as _i9;
 
-abstract class $AppRouter extends _i11.RootStackRouter {
+abstract class $AppRouter extends _i12.RootStackRouter {
   $AppRouter({super.navigatorKey});
 
   @override
-  final Map<String, _i11.PageFactory> pagesMap = {
+  final Map<String, _i12.PageFactory> pagesMap = {
     AuthView.name: (routeData) {
-      return _i11.AutoRoutePage<dynamic>(
+      return _i12.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const _i1.AuthView(),
       );
     },
     DashBoardView.name: (routeData) {
-      return _i11.AutoRoutePage<dynamic>(
+      return _i12.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const _i2.DashBoardView(),
       );
@@ -50,13 +52,13 @@ abstract class $AppRouter extends _i11.RootStackRouter {
     EditProfileView.name: (routeData) {
       final args = routeData.argsAs<EditProfileViewArgs>(
           orElse: () => const EditProfileViewArgs());
-      return _i11.AutoRoutePage<dynamic>(
+      return _i12.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: _i3.EditProfileView(key: args.key),
       );
     },
     FavoritesView.name: (routeData) {
-      return _i11.AutoRoutePage<dynamic>(
+      return _i12.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const _i4.FavoritesView(),
       );
@@ -64,14 +66,14 @@ abstract class $AppRouter extends _i11.RootStackRouter {
     FirstTimeView.name: (routeData) {
       final args = routeData.argsAs<FirstTimeViewArgs>(
           orElse: () => const FirstTimeViewArgs());
-      return _i11.AutoRoutePage<dynamic>(
+      return _i12.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: _i5.FirstTimeView(key: args.key),
       );
     },
     LoginView.name: (routeData) {
       final args = routeData.argsAs<LoginViewArgs>();
-      return _i11.AutoRoutePage<dynamic>(
+      return _i12.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: _i6.LoginView(
           key: args.key,
@@ -82,7 +84,7 @@ abstract class $AppRouter extends _i11.RootStackRouter {
     ProfileView.name: (routeData) {
       final args = routeData.argsAs<ProfileViewArgs>(
           orElse: () => const ProfileViewArgs());
-      return _i11.AutoRoutePage<dynamic>(
+      return _i12.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: _i7.ProfileView(key: args.key),
       );
@@ -90,22 +92,30 @@ abstract class $AppRouter extends _i11.RootStackRouter {
     RestorePassword.name: (routeData) {
       final args = routeData.argsAs<RestorePasswordArgs>(
           orElse: () => const RestorePasswordArgs());
-      return _i11.AutoRoutePage<dynamic>(
+      return _i12.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: _i8.RestorePassword(key: args.key),
       );
     },
     SearchView.name: (routeData) {
-      return _i11.AutoRoutePage<dynamic>(
+      return _i12.AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const _i9.SearchView(),
       );
     },
+    SignUpBusinessView.name: (routeData) {
+      final args = routeData.argsAs<SignUpBusinessViewArgs>(
+          orElse: () => const SignUpBusinessViewArgs());
+      return _i12.AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: _i10.SignUpBusinessView(key: args.key),
+      );
+    },
     SignUpView.name: (routeData) {
       final args = routeData.argsAs<SignUpViewArgs>();
-      return _i11.AutoRoutePage<dynamic>(
+      return _i12.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: _i10.SignUpView(
+        child: _i11.SignUpView(
           key: args.key,
           onResult: args.onResult,
         ),
@@ -116,8 +126,8 @@ abstract class $AppRouter extends _i11.RootStackRouter {
 
 /// generated route for
 /// [_i1.AuthView]
-class AuthView extends _i11.PageRouteInfo<void> {
-  const AuthView({List<_i11.PageRouteInfo>? children})
+class AuthView extends _i12.PageRouteInfo<void> {
+  const AuthView({List<_i12.PageRouteInfo>? children})
       : super(
           AuthView.name,
           initialChildren: children,
@@ -125,13 +135,13 @@ class AuthView extends _i11.PageRouteInfo<void> {
 
   static const String name = 'AuthView';
 
-  static const _i11.PageInfo<void> page = _i11.PageInfo<void>(name);
+  static const _i12.PageInfo<void> page = _i12.PageInfo<void>(name);
 }
 
 /// generated route for
 /// [_i2.DashBoardView]
-class DashBoardView extends _i11.PageRouteInfo<void> {
-  const DashBoardView({List<_i11.PageRouteInfo>? children})
+class DashBoardView extends _i12.PageRouteInfo<void> {
+  const DashBoardView({List<_i12.PageRouteInfo>? children})
       : super(
           DashBoardView.name,
           initialChildren: children,
@@ -139,15 +149,15 @@ class DashBoardView extends _i11.PageRouteInfo<void> {
 
   static const String name = 'DashBoardView';
 
-  static const _i11.PageInfo<void> page = _i11.PageInfo<void>(name);
+  static const _i12.PageInfo<void> page = _i12.PageInfo<void>(name);
 }
 
 /// generated route for
 /// [_i3.EditProfileView]
-class EditProfileView extends _i11.PageRouteInfo<EditProfileViewArgs> {
+class EditProfileView extends _i12.PageRouteInfo<EditProfileViewArgs> {
   EditProfileView({
-    _i12.Key? key,
-    List<_i11.PageRouteInfo>? children,
+    _i13.Key? key,
+    List<_i12.PageRouteInfo>? children,
   }) : super(
           EditProfileView.name,
           args: EditProfileViewArgs(key: key),
@@ -156,14 +166,14 @@ class EditProfileView extends _i11.PageRouteInfo<EditProfileViewArgs> {
 
   static const String name = 'EditProfileView';
 
-  static const _i11.PageInfo<EditProfileViewArgs> page =
-      _i11.PageInfo<EditProfileViewArgs>(name);
+  static const _i12.PageInfo<EditProfileViewArgs> page =
+      _i12.PageInfo<EditProfileViewArgs>(name);
 }
 
 class EditProfileViewArgs {
   const EditProfileViewArgs({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -173,8 +183,8 @@ class EditProfileViewArgs {
 
 /// generated route for
 /// [_i4.FavoritesView]
-class FavoritesView extends _i11.PageRouteInfo<void> {
-  const FavoritesView({List<_i11.PageRouteInfo>? children})
+class FavoritesView extends _i12.PageRouteInfo<void> {
+  const FavoritesView({List<_i12.PageRouteInfo>? children})
       : super(
           FavoritesView.name,
           initialChildren: children,
@@ -182,15 +192,15 @@ class FavoritesView extends _i11.PageRouteInfo<void> {
 
   static const String name = 'FavoritesView';
 
-  static const _i11.PageInfo<void> page = _i11.PageInfo<void>(name);
+  static const _i12.PageInfo<void> page = _i12.PageInfo<void>(name);
 }
 
 /// generated route for
 /// [_i5.FirstTimeView]
-class FirstTimeView extends _i11.PageRouteInfo<FirstTimeViewArgs> {
+class FirstTimeView extends _i12.PageRouteInfo<FirstTimeViewArgs> {
   FirstTimeView({
-    _i12.Key? key,
-    List<_i11.PageRouteInfo>? children,
+    _i13.Key? key,
+    List<_i12.PageRouteInfo>? children,
   }) : super(
           FirstTimeView.name,
           args: FirstTimeViewArgs(key: key),
@@ -199,14 +209,14 @@ class FirstTimeView extends _i11.PageRouteInfo<FirstTimeViewArgs> {
 
   static const String name = 'FirstTimeView';
 
-  static const _i11.PageInfo<FirstTimeViewArgs> page =
-      _i11.PageInfo<FirstTimeViewArgs>(name);
+  static const _i12.PageInfo<FirstTimeViewArgs> page =
+      _i12.PageInfo<FirstTimeViewArgs>(name);
 }
 
 class FirstTimeViewArgs {
   const FirstTimeViewArgs({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -216,11 +226,11 @@ class FirstTimeViewArgs {
 
 /// generated route for
 /// [_i6.LoginView]
-class LoginView extends _i11.PageRouteInfo<LoginViewArgs> {
+class LoginView extends _i12.PageRouteInfo<LoginViewArgs> {
   LoginView({
-    _i12.Key? key,
+    _i13.Key? key,
     required dynamic Function(bool?) onResult,
-    List<_i11.PageRouteInfo>? children,
+    List<_i12.PageRouteInfo>? children,
   }) : super(
           LoginView.name,
           args: LoginViewArgs(
@@ -232,8 +242,8 @@ class LoginView extends _i11.PageRouteInfo<LoginViewArgs> {
 
   static const String name = 'LoginView';
 
-  static const _i11.PageInfo<LoginViewArgs> page =
-      _i11.PageInfo<LoginViewArgs>(name);
+  static const _i12.PageInfo<LoginViewArgs> page =
+      _i12.PageInfo<LoginViewArgs>(name);
 }
 
 class LoginViewArgs {
@@ -242,7 +252,7 @@ class LoginViewArgs {
     required this.onResult,
   });
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   final dynamic Function(bool?) onResult;
 
@@ -254,10 +264,10 @@ class LoginViewArgs {
 
 /// generated route for
 /// [_i7.ProfileView]
-class ProfileView extends _i11.PageRouteInfo<ProfileViewArgs> {
+class ProfileView extends _i12.PageRouteInfo<ProfileViewArgs> {
   ProfileView({
-    _i12.Key? key,
-    List<_i11.PageRouteInfo>? children,
+    _i13.Key? key,
+    List<_i12.PageRouteInfo>? children,
   }) : super(
           ProfileView.name,
           args: ProfileViewArgs(key: key),
@@ -266,14 +276,14 @@ class ProfileView extends _i11.PageRouteInfo<ProfileViewArgs> {
 
   static const String name = 'ProfileView';
 
-  static const _i11.PageInfo<ProfileViewArgs> page =
-      _i11.PageInfo<ProfileViewArgs>(name);
+  static const _i12.PageInfo<ProfileViewArgs> page =
+      _i12.PageInfo<ProfileViewArgs>(name);
 }
 
 class ProfileViewArgs {
   const ProfileViewArgs({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -283,10 +293,10 @@ class ProfileViewArgs {
 
 /// generated route for
 /// [_i8.RestorePassword]
-class RestorePassword extends _i11.PageRouteInfo<RestorePasswordArgs> {
+class RestorePassword extends _i12.PageRouteInfo<RestorePasswordArgs> {
   RestorePassword({
-    _i12.Key? key,
-    List<_i11.PageRouteInfo>? children,
+    _i13.Key? key,
+    List<_i12.PageRouteInfo>? children,
   }) : super(
           RestorePassword.name,
           args: RestorePasswordArgs(key: key),
@@ -295,14 +305,14 @@ class RestorePassword extends _i11.PageRouteInfo<RestorePasswordArgs> {
 
   static const String name = 'RestorePassword';
 
-  static const _i11.PageInfo<RestorePasswordArgs> page =
-      _i11.PageInfo<RestorePasswordArgs>(name);
+  static const _i12.PageInfo<RestorePasswordArgs> page =
+      _i12.PageInfo<RestorePasswordArgs>(name);
 }
 
 class RestorePasswordArgs {
   const RestorePasswordArgs({this.key});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   @override
   String toString() {
@@ -312,8 +322,8 @@ class RestorePasswordArgs {
 
 /// generated route for
 /// [_i9.SearchView]
-class SearchView extends _i11.PageRouteInfo<void> {
-  const SearchView({List<_i11.PageRouteInfo>? children})
+class SearchView extends _i12.PageRouteInfo<void> {
+  const SearchView({List<_i12.PageRouteInfo>? children})
       : super(
           SearchView.name,
           initialChildren: children,
@@ -321,16 +331,45 @@ class SearchView extends _i11.PageRouteInfo<void> {
 
   static const String name = 'SearchView';
 
-  static const _i11.PageInfo<void> page = _i11.PageInfo<void>(name);
+  static const _i12.PageInfo<void> page = _i12.PageInfo<void>(name);
 }
 
 /// generated route for
-/// [_i10.SignUpView]
-class SignUpView extends _i11.PageRouteInfo<SignUpViewArgs> {
+/// [_i10.SignUpBusinessView]
+class SignUpBusinessView extends _i12.PageRouteInfo<SignUpBusinessViewArgs> {
+  SignUpBusinessView({
+    _i13.Key? key,
+    List<_i12.PageRouteInfo>? children,
+  }) : super(
+          SignUpBusinessView.name,
+          args: SignUpBusinessViewArgs(key: key),
+          initialChildren: children,
+        );
+
+  static const String name = 'SignUpBusinessView';
+
+  static const _i12.PageInfo<SignUpBusinessViewArgs> page =
+      _i12.PageInfo<SignUpBusinessViewArgs>(name);
+}
+
+class SignUpBusinessViewArgs {
+  const SignUpBusinessViewArgs({this.key});
+
+  final _i13.Key? key;
+
+  @override
+  String toString() {
+    return 'SignUpBusinessViewArgs{key: $key}';
+  }
+}
+
+/// generated route for
+/// [_i11.SignUpView]
+class SignUpView extends _i12.PageRouteInfo<SignUpViewArgs> {
   SignUpView({
-    _i12.Key? key,
+    _i13.Key? key,
     required dynamic Function(bool?) onResult,
-    List<_i11.PageRouteInfo>? children,
+    List<_i12.PageRouteInfo>? children,
   }) : super(
           SignUpView.name,
           args: SignUpViewArgs(
@@ -342,8 +381,8 @@ class SignUpView extends _i11.PageRouteInfo<SignUpViewArgs> {
 
   static const String name = 'SignUpView';
 
-  static const _i11.PageInfo<SignUpViewArgs> page =
-      _i11.PageInfo<SignUpViewArgs>(name);
+  static const _i12.PageInfo<SignUpViewArgs> page =
+      _i12.PageInfo<SignUpViewArgs>(name);
 }
 
 class SignUpViewArgs {
@@ -352,7 +391,7 @@ class SignUpViewArgs {
     required this.onResult,
   });
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   final dynamic Function(bool?) onResult;
 
