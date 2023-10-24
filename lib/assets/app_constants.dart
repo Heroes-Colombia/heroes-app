@@ -6,6 +6,13 @@ class AppConstants {
   final String advertisementCollection = 'advertisements';
 
   //Texts for UI
+  final entryPointTexts = {
+    "unverifiedUserView": {
+      "title": "Usuario no verificado",
+      "content":
+          'Lo sentimos pero tu usuario aún no ha sido verificado. Cuando tu perfil haya sido corroborado tendrás acceso a al aplicación.'
+    },
+  };
   final authTexts = {
     'welcomeView': {
       'welcome': '¡Bienvenido, Héroe!',

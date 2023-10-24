@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:equatable/equatable.dart';
 import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/domain/models/user_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 import 'package:heroes_app/src/locator.dart';
@@ -11,7 +13,7 @@ import 'package:heroes_app/src/locator.dart';
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit() : super(AuthStateInitial());
+  AuthCubit() : super(const AuthState());
   final getIt = GetIt.instance;
 
   //This method is used to log in the user
@@ -134,5 +136,36 @@ class AuthCubit extends Cubit<AuthState> {
       locator<AppConstants>().businessCollection,
       businessData,
     );
+  }
+
+  //This method is used for the appEntryPoint states
+  void getUserInformation() async {
+    emit(state.copyWith(authStatus: AuthStatus.loading));
+
+    //Check if the user is logged in
+    final userIsLoggedIn = getIt.get<AuthService>().checkUserSession();
+    if (!userIsLoggedIn) {
+      emit(const AuthState(authStatus: AuthStatus.userNotLoggedIn));
+      return;
+    }
+
+    //Check if the user status is active (Verified)
+    final userUid = getIt.get<AuthService>().getUserId();
+    final userJson = await getIt.get<FirestoreService>().readDocumentById(
+        getIt.get<AppConstants>().usersCollection, userUid, "uid");
+    final user = User.fromJson(userJson);
+    if (!user.verified) {
+      emit(const AuthState(authStatus: AuthStatus.userLoggedInNotVerified));
+      return;
+    }
+
+    //Check if the user is a business
+    if (user.permission == UserPermissions.business) {
+      emit(const AuthState(authStatus: AuthStatus.businessLoggedIn));
+      return;
+    }
+
+    //If the user is logged in and verified, we emit the userLoggedIn state
+    emit(const AuthState(authStatus: AuthStatus.userLoggedIn));
   }
 }

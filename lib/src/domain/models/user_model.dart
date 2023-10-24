@@ -10,7 +10,7 @@ class User extends Equatable {
   final UserPermissions permission;
   final String rank;
   final String email;
-  final UserStatus status;
+  final bool verified;
 
   const User({
     required this.uid,
@@ -21,7 +21,7 @@ class User extends Equatable {
     required this.permission,
     required this.rank,
     required this.email,
-    required this.status,
+    required this.verified,
   });
 
   @override
@@ -34,7 +34,7 @@ class User extends Equatable {
         lastName,
         permission,
         rank,
-        status,
+        verified,
       ];
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -48,8 +48,7 @@ class User extends Equatable {
       rank: json['rank'] as String,
       permission: UserPermissions.values.firstWhere((element) =>
           element.toString().split('.').last == json['permission']),
-      status: UserStatus.values.firstWhere(
-          (element) => element.toString().split('.').last == json['status']),
+      verified: json['verified'] as bool,
     );
   }
 
@@ -63,7 +62,7 @@ class User extends Equatable {
       'last_name': lastName,
       'rank': rank,
       'permission': permission.toString().split('.').last,
-      'status': status.toString().split('.').last,
+      'verified': verified,
     };
   }
 
@@ -106,7 +105,7 @@ class User extends Equatable {
     UserPermissions? permission,
     String? email,
     String? rank,
-    UserStatus? status,
+    bool? verified,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -116,7 +115,7 @@ class User extends Equatable {
       secondName: secondName ?? this.secondName,
       lastName: lastName ?? this.lastName,
       permission: permission ?? this.permission,
-      status: status ?? this.status,
+      verified: verified ?? this.verified,
       rank: rank ?? this.rank,
     );
   }

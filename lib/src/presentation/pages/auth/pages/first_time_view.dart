@@ -64,7 +64,7 @@ class FirstTimeView extends StatelessWidget {
                 const SizedBox(height: 12),
                 TextButton(
                   onPressed: () =>
-                      AutoRouter.of(context).push(SignUpBusinessView()),
+                      AutoRouter.of(context).push(const SignUpBusinessView()),
                   child: Text(authTexts['registerComercio']!),
                 ),
                 const SizedBox(height: 12),
