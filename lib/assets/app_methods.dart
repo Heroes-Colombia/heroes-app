@@ -1,3 +1,5 @@
+import 'package:image_picker/image_picker.dart';
+
 class AppMethods {
   //Validate email input field
   //Use this method in the validator property of the FormBuilderTextField widget
@@ -31,5 +33,13 @@ class AppMethods {
       return invalidLength;
     }
     return null;
+  }
+
+  //Get the picture from the camera
+  Future<XFile?> takePicture() async {
+    final ImagePicker picker = ImagePicker();
+    // Capture a photo.
+    final XFile? photo = await picker.pickImage(source: ImageSource.camera);
+    return photo;
   }
 }

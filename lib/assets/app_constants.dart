@@ -5,6 +5,9 @@ class AppConstants {
   final String businessCollection = 'businesses';
   final String advertisementCollection = 'advertisements';
 
+  //Firebase Storage
+  final String userIdentifications = "identifications";
+
   //Texts for UI
   final entryPointTexts = {
     "unverifiedUserView": {
@@ -43,6 +46,11 @@ class AppConstants {
       'email-validator': 'Por favor ingresa un correo electrónico válido',
       'username-label': 'Username',
       'username-hint': 'Ingresa tu username',
+      'identification-card-label': 'Número de cédula de ciudadanía',
+      'identification-card-hint': 'Ingresa tu número de cédula de ciudadanía',
+      'identification-card-img-label': 'Foto de la cédula de ciudadanía',
+      'identification-card-img-hint': 'Tomar foto a cédula de ciudadanía',
+      'identification-card-img-filled': 'Tomar otra foto',
       'firstname-label': 'Nombre',
       'firstname-hint': 'Ingresa tu nombre',
       'secondname-label': 'Segundo nombre',
@@ -56,6 +64,7 @@ class AppConstants {
       'password-validator': 'Por favor ingresa tu contraseña',
       'signupButton': 'Registrarse',
       'signupErrorTitle': 'Error al registrarse',
+      "genericValidator": "Este campo no puede estar vacío",
     },
     'signupBusinessView': {
       'title': 'Registrar comerciante',

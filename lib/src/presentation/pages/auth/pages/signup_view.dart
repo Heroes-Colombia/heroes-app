@@ -4,11 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
+import 'package:ionicons/ionicons.dart';
 
 final _formKey = GlobalKey<FormBuilderState>();
 
@@ -21,6 +23,7 @@ class SignUpView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final texts = locator.get<AppConstants>().authTexts['signupView']!;
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: CustomScrollView(
@@ -31,8 +34,7 @@ class SignUpView extends StatelessWidget {
             floating: true,
             snap: true,
           ),
-          SliverFillRemaining(
-            hasScrollBody: false,
+          SliverToBoxAdapter(
             child: FormBuilder(
               key: _formKey,
               child: Container(
@@ -49,7 +51,24 @@ class SignUpView extends StatelessWidget {
                         hintText: texts['username-hint']!,
                         border: const OutlineInputBorder(),
                       ),
+                      validator: (value) => validateInputs(context, value),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                     ),
+                    const SizedBox(height: 12),
+                    FormBuilderTextField(
+                      name: 'identification_card',
+                      key: const Key('identification_card'),
+                      decoration: InputDecoration(
+                        labelText: texts['identification-card-label']!,
+                        hintText: texts['identification-card-hint']!,
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (value) => validateInputs(context, value),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 12),
+                    pictureField(texts, theme),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -63,6 +82,8 @@ class SignUpView extends StatelessWidget {
                             hintText: texts['firstname-hint']!,
                             border: const OutlineInputBorder(),
                           ),
+                          validator: (value) => validateInputs(context, value),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                         )),
                         const SizedBox(width: 12),
                         Expanded(
@@ -74,6 +95,8 @@ class SignUpView extends StatelessWidget {
                             hintText: texts['secondname-hint']!,
                             border: const OutlineInputBorder(),
                           ),
+                          validator: (value) => validateInputs(context, value),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                         )),
                       ],
                     ),
@@ -90,6 +113,8 @@ class SignUpView extends StatelessWidget {
                             hintText: texts['lastname-hint']!,
                             border: const OutlineInputBorder(),
                           ),
+                          validator: (value) => validateInputs(context, value),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                         )),
                         const SizedBox(width: 12),
                         Expanded(
@@ -100,6 +125,8 @@ class SignUpView extends StatelessWidget {
                             hintText: texts['rank-hint']!,
                             border: const OutlineInputBorder(),
                           ),
+                          validator: (value) => validateInputs(context, value),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                         )),
                       ],
                     ),
@@ -130,6 +157,69 @@ class SignUpView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  FormBuilderField<Object> pictureField(
+      Map<String, String> texts, ThemeData theme) {
+    return FormBuilderField(
+      validator: (value) {
+        if (value == null) {
+          return texts['genericValidator']!;
+        }
+        return null;
+      },
+      name: "identification_card_img",
+      key: const Key('identification_card_img'),
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      builder: (field) {
+        return InkWell(
+          onTap: () async {
+            final picture = await locator.get<AppMethods>().takePicture();
+            if (picture == null) return;
+            field.didChange(picture);
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: theme.colorScheme.primary),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12.0,
+              vertical: 18.0,
+            ),
+            child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    field.isValid
+                        ? texts["identification-card-img-filled"]!
+                        : texts['identification-card-img-hint']!,
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontSize: theme.textTheme.bodyLarge!.fontSize,
+                    ),
+                  ),
+                  Icon(
+                    field.isValid
+                        ? Ionicons.camera_reverse_outline
+                        : Ionicons.camera_outline,
+                    color: theme.colorScheme.primary,
+                  )
+                ]),
+          ),
+        );
+      },
+    );
+  }
+
+  //This method is used to validate empty inputs
+  String? validateInputs(BuildContext context, String? value) {
+    final texts = locator.get<AppConstants>().authTexts['signupView']!;
+    final message = locator
+        .get<AppMethods>()
+        .emptyStringValidator(value, texts['genericValidator']!);
+    return message;
   }
 
   //This method is used to register the user

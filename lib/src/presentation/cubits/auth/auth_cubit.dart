@@ -7,6 +7,7 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/domain/models/user_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
+import 'package:heroes_app/src/domain/repositories/firestorage_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 import 'package:heroes_app/src/locator.dart';
 
@@ -44,7 +45,13 @@ class AuthCubit extends Cubit<AuthState> {
       userData['uid'] = uid;
 
       //Then we create the user in firestore
-      await createUserInFirestore(userData);
+      final userDataCreated = User.toInitialFirebaseJson(userData, null);
+      await createUserInFirestore(userDataCreated);
+
+      //Then we save in firebase storage the identification image
+      await getIt
+          .get<FireStorageService>()
+          .uploadUserIdentification(userData["identification_card_img"], uid);
 
       //Finally we log in the user
       final isUserLoggedIn = await logIn(
