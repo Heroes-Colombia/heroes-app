@@ -6,7 +6,8 @@ enum AuthStatus {
   userNotLoggedIn,
   userLoggedInNotVerified,
   userLoggedIn,
-  businessLoggedIn
+  businessLoggedIn,
+  error
 }
 
 final class AuthState extends Equatable {

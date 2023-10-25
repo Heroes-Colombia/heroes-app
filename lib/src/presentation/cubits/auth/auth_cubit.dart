@@ -41,11 +41,12 @@ class AuthCubit extends Cubit<AuthState> {
         userData['password'],
       );
 
-      //Then we add the uid to the user data
-      userData['uid'] = uid;
-
       //Then we create the user in firestore
       final userDataCreated = User.toInitialFirebaseJson(userData, null);
+
+      //Then we add the uid to the user data
+      userDataCreated['uid'] = uid;
+
       await createUserInFirestore(userDataCreated);
 
       //Then we save in firebase storage the identification image
@@ -147,32 +148,36 @@ class AuthCubit extends Cubit<AuthState> {
 
   //This method is used for the appEntryPoint states
   void getUserInformation() async {
-    emit(state.copyWith(authStatus: AuthStatus.loading));
+    try {
+      emit(state.copyWith(authStatus: AuthStatus.loading));
 
-    //Check if the user is logged in
-    final userIsLoggedIn = getIt.get<AuthService>().checkUserSession();
-    if (!userIsLoggedIn) {
-      emit(const AuthState(authStatus: AuthStatus.userNotLoggedIn));
-      return;
+      //Check if the user is logged in
+      final userIsLoggedIn = getIt.get<AuthService>().checkUserSession();
+      if (!userIsLoggedIn) {
+        emit(const AuthState(authStatus: AuthStatus.userNotLoggedIn));
+        return;
+      }
+
+      //Check if the user status is active (Verified)
+      final userUid = getIt.get<AuthService>().getUserId();
+      final userJson = await getIt.get<FirestoreService>().readDocumentById(
+          getIt.get<AppConstants>().usersCollection, userUid, "uid");
+      final user = User.fromJson(userJson);
+      if (!user.verified) {
+        emit(const AuthState(authStatus: AuthStatus.userLoggedInNotVerified));
+        return;
+      }
+
+      //Check if the user is a business
+      if (user.permission == UserPermissions.business) {
+        emit(const AuthState(authStatus: AuthStatus.businessLoggedIn));
+        return;
+      }
+
+      //If the user is logged in and verified, we emit the userLoggedIn state
+      emit(const AuthState(authStatus: AuthStatus.userLoggedIn));
+    } catch (e) {
+      emit(const AuthState(authStatus: AuthStatus.error));
     }
-
-    //Check if the user status is active (Verified)
-    final userUid = getIt.get<AuthService>().getUserId();
-    final userJson = await getIt.get<FirestoreService>().readDocumentById(
-        getIt.get<AppConstants>().usersCollection, userUid, "uid");
-    final user = User.fromJson(userJson);
-    if (!user.verified) {
-      emit(const AuthState(authStatus: AuthStatus.userLoggedInNotVerified));
-      return;
-    }
-
-    //Check if the user is a business
-    if (user.permission == UserPermissions.business) {
-      emit(const AuthState(authStatus: AuthStatus.businessLoggedIn));
-      return;
-    }
-
-    //If the user is logged in and verified, we emit the userLoggedIn state
-    emit(const AuthState(authStatus: AuthStatus.userLoggedIn));
   }
 }

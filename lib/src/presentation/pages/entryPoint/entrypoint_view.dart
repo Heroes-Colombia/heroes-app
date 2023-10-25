@@ -36,7 +36,9 @@ class _EntryPointViewState extends State<EntryPointView> {
             case AuthStatus.userNotLoggedIn:
               return userNotLoggedInView(context);
             case AuthStatus.businessLoggedIn:
-              return Container();
+              return userIsBusiness();
+            case AuthStatus.error:
+              return logInError();
             default:
               return Container();
           }
@@ -94,6 +96,17 @@ class _EntryPointViewState extends State<EntryPointView> {
     return const CustomScrollView(
       slivers: [
         SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
+      ],
+    );
+  }
+
+  Widget logInError() {
+    return const CustomScrollView(
+      slivers: [
+        SliverFillRemaining(
+            child: Center(
+          child: Text("Error"),
+        ))
       ],
     );
   }
