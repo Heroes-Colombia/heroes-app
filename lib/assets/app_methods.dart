@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AppMethods {
@@ -41,5 +42,28 @@ class AppMethods {
     // Capture a photo.
     final XFile? photo = await picker.pickImage(source: ImageSource.camera);
     return photo;
+  }
+
+  //Show dialog alert
+  Future<void> showDialogAlert(BuildContext context, String title, String body,
+      String button, Function callback) async {
+    return await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(body),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(child: Text(button), onPressed: () => callback()),
+          ],
+        );
+      },
+    );
   }
 }

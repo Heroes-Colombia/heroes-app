@@ -93,6 +93,7 @@ class User extends Equatable {
       "status": UserStatus.pending.toString().split('.').last,
       "favourite_businesses": [],
       "password": json['password'],
+      "identification_card": json['identification_card'] ?? "",
     };
   }
 

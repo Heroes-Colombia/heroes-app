@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
+import 'package:heroes_app/src/domain/models/user_model.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
@@ -229,22 +230,34 @@ class SignUpView extends StatelessWidget {
     if (!formIsValid) return;
 
     //create a modifiable copy of the form data and send it to the cubit to register the user
-    final userData = Map<String, dynamic>.from(_formKey.currentState!.value);
+    final formData = Map<String, dynamic>.from(_formKey.currentState!.value);
+    final userData = User.toInitialFirebaseJson(formData, null);
+
+    //Then we extract the image from the form data
+    final identificationImage = formData['identification_card_img'];
+
     final isUserCreatedAndLoggedInd =
-        await context.read<AuthCubit>().signUp(userData);
+        await context.read<AuthCubit>().signUp(userData, identificationImage);
 
     //If the user is not created and logged in we show an error message
     if (!isUserCreatedAndLoggedInd) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(texts['signupErrorTitle']!),
+        ),
+      );
       return;
     }
 
-    //If the user is created and logged in we navigate to the dashboard calling the onResult function,
-    //this is used to validate the navigation to the dashboard from the auth guard
+    //If the user is created and logged in we show a success message and navigate to the login page
     if (!context.mounted) return;
-    onResult.call(true);
-    AutoRouter.of(context).replaceAll([const DashBoardView()]);
+    locator.get<AppMethods>().showDialogAlert(
+        context,
+        texts["registerSuccess-title"]!,
+        texts["registerSuccess-body"]!,
+        texts["registerSuccess-button"]!, () {
+      AutoRouter.of(context).replaceAll([LoginView(onResult: (callback) {})]);
+    });
   }
 }

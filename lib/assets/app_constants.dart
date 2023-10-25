@@ -65,11 +65,20 @@ class AppConstants {
       'signupButton': 'Registrarse',
       'signupErrorTitle': 'Error al registrarse',
       "genericValidator": "Este campo no puede estar vacío",
+      "registerSuccess-title": "¡Registro exitoso!",
+      "registerSuccess-body":
+          "Tu cuenta ha sido creada exitosamente. Por favor espera a que tu cuenta sea verificada para poder ingresar a la aplicación.",
+      "registerSuccess-button": "Aceptar",
     },
     'signupBusinessView': {
       'title': 'Registrar comerciante',
       'username-label': 'Username',
       'username-hint': 'Ingresa tu username',
+      'identification-card-label': 'Número de cédula de ciudadanía',
+      'identification-card-hint': 'Ingresa tu número de cédula de ciudadanía',
+      'identification-card-img-label': 'Foto de la cédula de ciudadanía',
+      'identification-card-img-hint': 'Tomar foto a cédula de ciudadanía',
+      'identification-card-img-filled': 'Tomar otra foto',
       'email-label': 'Correo electrónico',
       'email-hint': 'Ingresa tu correo electrónico',
       'email-validator': 'Por favor ingresa un correo electrónico válido',
@@ -99,6 +108,10 @@ class AppConstants {
       "registerComercio": "¿Registrar un nuevo comercio?",
       "personalInfo": "Información del dueño",
       "genericValidator": "Este campo no puede estar vacío",
+      "registerSuccess-title": "¡Registro exitoso!",
+      "registerSuccess-body":
+          "Tu cuenta ha sido creada exitosamente. Por favor espera a que tu cuenta sea verificada para poder ingresar a la aplicación.",
+      "registerSuccess-button": "Aceptar",
     },
     'restorePasswordView': {
       'title': '¿Olvidaste tu contraseña?',

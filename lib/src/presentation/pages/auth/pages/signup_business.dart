@@ -13,6 +13,7 @@ import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
+import 'package:ionicons/ionicons.dart';
 
 final _formKeySignUpBusiness = GlobalKey<FormBuilderState>();
 
@@ -103,6 +104,21 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
                 border: const OutlineInputBorder(),
               ),
             ),
+            const SizedBox(height: 12),
+            FormBuilderTextField(
+              name: 'identification_card',
+              key: const Key('identification_card'),
+              decoration: InputDecoration(
+                labelText: texts['identification-card-label']!,
+                hintText: texts['identification-card-hint']!,
+                border: const OutlineInputBorder(),
+              ),
+              validator: (value) => validateEmptyString(value, texts),
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 12),
+            pictureField(texts, Theme.of(context)),
             const SizedBox(height: 12),
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -284,6 +300,60 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
     );
   }
 
+  FormBuilderField<Object> pictureField(
+      Map<String, String> texts, ThemeData theme) {
+    return FormBuilderField(
+      validator: (value) {
+        if (value == null) {
+          return texts['genericValidator']!;
+        }
+        return null;
+      },
+      name: "identification_card_img",
+      key: const Key('identification_card_img'),
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      builder: (field) {
+        return InkWell(
+          onTap: () async {
+            final picture = await locator.get<AppMethods>().takePicture();
+            if (picture == null) return;
+            field.didChange(picture);
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: theme.colorScheme.primary),
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12.0,
+              vertical: 18.0,
+            ),
+            child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    field.isValid
+                        ? texts["identification-card-img-filled"]!
+                        : texts['identification-card-img-hint']!,
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontSize: theme.textTheme.bodyLarge!.fontSize,
+                    ),
+                  ),
+                  Icon(
+                    field.isValid
+                        ? Ionicons.camera_reverse_outline
+                        : Ionicons.camera_outline,
+                    color: theme.colorScheme.primary,
+                  )
+                ]),
+          ),
+        );
+      },
+    );
+  }
+
   SliverToBoxAdapter emptySpace() {
     return SliverToBoxAdapter(child: Container());
   }
@@ -313,10 +383,13 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
           User.toInitialFirebaseJson(formData, UserPermissions.business);
       final businessData = Business.toInitialFirebaseJson(formData);
 
+      //Then we extract the image from the form data
+      final userIdentification = formData['identification_card_img'];
+
       //Then we create the user in firestore and the business in firestore
       final isBusinessCreated = await context
           .read<AuthCubit>()
-          .signUpBusiness(userData, businessData);
+          .signUpBusiness(userData, businessData, userIdentification);
 
       //If the user and business is not created and logged in we show an error message
       if (!isBusinessCreated) {
@@ -335,9 +408,12 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
       final userData =
           User.toInitialFirebaseJson(formData, UserPermissions.business);
 
+      //Then we extract the image from the form data
+      final userIdentification = formData['identification_card_img'];
+
       if (!context.mounted) return;
       final isUserCreatedAndLoggedInd =
-          await context.read<AuthCubit>().signUp(userData);
+          await context.read<AuthCubit>().signUp(userData, userIdentification);
 
       //If the user is not created and logged in we show an error message
       if (!isUserCreatedAndLoggedInd) {
@@ -348,11 +424,14 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
       }
     }
 
-    /*
-     If the user is created and logged in we navigate to the dashboard calling the onResult function,
-     this is used to validate the navigation to the dashboard from the auth guard
-    */
+    //If the user is created and logged in we show a success message and navigate to the login page
     if (!context.mounted) return;
-    AutoRouter.of(context).replaceAll([const DashBoardView()]);
+    locator.get<AppMethods>().showDialogAlert(
+        context,
+        texts["registerSuccess-title"]!,
+        texts["registerSuccess-body"]!,
+        texts["registerSuccess-button"]!, () {
+      AutoRouter.of(context).replaceAll([LoginView(onResult: (callback) {})]);
+    });
   }
 }
