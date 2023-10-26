@@ -117,7 +117,7 @@ class AuthCubit extends Cubit<AuthState> {
       //And return true or false in case of error
       return true;
     } catch (e) {
-      log('Error: $e, Function: signUpBusiness, File: auth_cubit.dart}');
+      log('Error: $e, Function: signUpBusiness, File: auth_cubit.dart');
       return false;
     }
   }
@@ -148,8 +148,10 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  //This method is used to create the user in firestore,
-  //it is called inside signUp method if the user is created in firebase auth,
+  /*
+   This method is used to create the user in firestore,
+   it is called inside signUp method if the user is created in firebase auth,
+  */
   Future<void> createUserInFirestore(Map<String, dynamic> userData) async {
     //We create the user in firestore
     await getIt<FirestoreService>().createDocument(
