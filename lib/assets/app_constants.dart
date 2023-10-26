@@ -21,7 +21,7 @@ class AppConstants {
       'welcome': '¡Bienvenido, Héroe!',
       'login': 'Iniciar sesión',
       'register': 'Registrarse',
-      'registerComercio': 'Registrarse como comerciante',
+      'registerAsBusiness': 'Registrarse como comerciante',
     },
     'loginView': {
       'title': 'Iniciar sesión',
@@ -105,7 +105,7 @@ class AppConstants {
       'password-validator': 'Por favor ingresa tu contraseña',
       'signupButton': 'Registrarse',
       'signupErrorTitle': 'Error al registrarse',
-      "registerComercio": "¿Registrar un nuevo comercio?",
+      "registerAsBusiness": "¿Registrar un nuevo comercio?",
       "personalInfo": "Información del dueño",
       "genericValidator": "Este campo no puede estar vacío",
       "registerSuccess-title": "¡Registro exitoso!",

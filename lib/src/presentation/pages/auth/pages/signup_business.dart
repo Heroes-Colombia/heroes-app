@@ -74,7 +74,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(texts['registerComercio']!),
+            Text(texts['registerAsBusiness']!),
             Switch(
                 value: _isCreatingANewBusiness,
                 onChanged: (value) =>
