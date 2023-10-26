@@ -54,7 +54,7 @@ class AuthCubit extends Cubit<AuthState> {
       AutoRouter.of(context).replaceAll([const DashBoardView()]);
       return true;
     } catch (e) {
-      log('Error: $e');
+      log('Error: $e, Function: logIn, File: auth_cubit.dart');
       return false;
     }
   }
@@ -82,7 +82,7 @@ class AuthCubit extends Cubit<AuthState> {
       //And return true or false in case of error
       return true;
     } catch (e) {
-      log('Error: $e');
+      log('Error: $e, Function: signUp, File: auth_cubit.dart');
       return false;
     }
   }
@@ -117,7 +117,7 @@ class AuthCubit extends Cubit<AuthState> {
       //And return true or false in case of error
       return true;
     } catch (e) {
-      log('Error: $e}');
+      log('Error: $e, Function: signUpBusiness, File: auth_cubit.dart}');
       return false;
     }
   }
@@ -130,6 +130,7 @@ class AuthCubit extends Cubit<AuthState> {
       //Then we return true or false in case of error
       return true;
     } catch (e) {
+      log('Error: $e, Function: logOut, File: auth_cubit.dart');
       return false;
     }
   }
@@ -142,6 +143,7 @@ class AuthCubit extends Cubit<AuthState> {
       //Then we return true or false in case of error
       return true;
     } catch (e) {
+      log('Error: $e, Function: restorePassword, File: auth_cubit.dart');
       return false;
     }
   }
@@ -197,6 +199,7 @@ class AuthCubit extends Cubit<AuthState> {
       //If the user is logged in and verified, we emit the userLoggedIn state
       emit(const AuthState(authStatus: AuthStatus.userLoggedIn));
     } catch (e) {
+      log('Error: $e, Function: getUserInformation, File: auth_cubit.dart');
       emit(const AuthState(authStatus: AuthStatus.error));
     }
   }

@@ -42,7 +42,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       final user = User.fromJson(userRawInfo);
       emit(ProfileLoaded(user: user));
     } catch (e) {
-      log(e.toString());
+      log("Error: $e, Function: getProfileInfo, File: profile_cubit.dart");
       emit(ProfileError());
     }
   }
@@ -61,7 +61,7 @@ class ProfileCubit extends Cubit<ProfileState> {
       //Finally call getProfileInfo() to get the updated info
       getProfileInfo();
     } catch (e) {
-      log(e.toString());
+      log("Error: $e, Function: updateProfileInfo, File: profile_cubit.dart");
       emit(ProfileError());
     }
   }
