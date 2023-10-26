@@ -13,7 +13,7 @@ class AppConstants {
     "unverifiedUserView": {
       "title": "Usuario no verificado",
       "content":
-          'Lo sentimos pero tu usuario aún no ha sido verificado. Cuando tu perfil haya sido corroborado tendrás acceso a al aplicación.'
+          'Lo sentimos pero tu usuario aún no ha sido verificado. Cuando tu perfil haya sido corroborado tendrás acceso a la aplicación.'
     },
   };
   final authTexts = {
