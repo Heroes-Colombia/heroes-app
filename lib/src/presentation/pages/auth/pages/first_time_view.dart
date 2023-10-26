@@ -44,16 +44,30 @@ class FirstTimeView extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                FilledButton(
-                  onPressed: () =>
-                      AutoRouter.of(context).push(LoginView(onResult: (p0) {})),
-                  child: Text(authTexts['login']!),
-                ),
+                Row(children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => AutoRouter.of(context)
+                          .push(SignUpView(onResult: (p0) {})),
+                      child: Text(authTexts['register']!),
+                    ),
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () => AutoRouter.of(context)
+                          .push(LoginView(onResult: (p0) {})),
+                      child: Text(authTexts['login']!),
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 12),
                 TextButton(
-                  onPressed: () => AutoRouter.of(context)
-                      .push(SignUpView(onResult: (p0) {})),
-                  child: Text(authTexts['register']!),
+                  onPressed: () =>
+                      AutoRouter.of(context).push(const SignUpBusinessView()),
+                  child: Text(authTexts['registerAsBusiness']!),
                 ),
+                const SizedBox(height: 12),
               ],
             ),
           ),

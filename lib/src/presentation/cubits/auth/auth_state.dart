@@ -1,15 +1,20 @@
 part of 'auth_cubit.dart';
 
-abstract class AuthState extends Equatable {
-  final String error;
+final class AuthState extends Equatable {
+  const AuthState({
+    this.authStatus = AuthStatus.initial,
+  });
 
-  const AuthState({this.error = ''});
+  final AuthStatus authStatus;
+
+  AuthState copyWith({
+    AuthStatus? authStatus,
+  }) {
+    return AuthState(
+      authStatus: authStatus ?? this.authStatus,
+    );
+  }
+
   @override
-  List<Object> get props => [error];
-}
-
-class AuthStateInitial extends AuthState {}
-
-class AuthStateError extends AuthState {
-  const AuthStateError({super.error});
+  List<Object?> get props => [authStatus];
 }

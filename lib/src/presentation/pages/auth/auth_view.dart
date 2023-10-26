@@ -13,6 +13,7 @@ class AuthView extends StatelessWidget {
         FirstTimeView(),
         LoginView(onResult: (willRedirectToDashboard) {}),
         SignUpView(onResult: (willRedirectToDashboard) {}),
+        const SignUpBusinessView(),
         RestorePassword()
       ],
       builder: (context, child) {

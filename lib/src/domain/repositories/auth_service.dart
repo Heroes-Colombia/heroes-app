@@ -38,10 +38,12 @@ class AuthService {
     await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
   }
 
-  //This method is used to check if the user is signed in
-  //  -> If the user is signed in, return true.
-  //  -> Otherwise, return false.
-  //And the caller can use this method to decide which screen to show
+  /*
+  This method is used to check if the user is signed in
+   -> If the user is signed in, return true.
+   -> Otherwise, return false.
+  And the caller can use this method to decide which screen to show
+  */
   bool checkUserSession() {
     var isUserSignedIn = false;
     var user = FirebaseAuth.instance.currentUser;

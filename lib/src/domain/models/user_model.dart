@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:heroes_app/assets/app_enums.dart';
 
 class User extends Equatable {
   final String uid;
@@ -6,9 +7,10 @@ class User extends Equatable {
   final String firstName;
   final String secondName;
   final String lastName;
-  final String permission;
+  final UserPermissions permission;
   final String rank;
   final String email;
+  final bool verified;
 
   const User({
     required this.uid,
@@ -19,6 +21,7 @@ class User extends Equatable {
     required this.permission,
     required this.rank,
     required this.email,
+    required this.verified,
   });
 
   @override
@@ -31,6 +34,7 @@ class User extends Equatable {
         lastName,
         permission,
         rank,
+        verified,
       ];
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -41,8 +45,10 @@ class User extends Equatable {
       firstName: json['first_name'] as String,
       secondName: json['second_name'] as String,
       lastName: json['last_name'] as String,
-      permission: json['permission'] as String? ?? '',
       rank: json['rank'] as String,
+      permission: UserPermissions.values.firstWhere((element) =>
+          element.toString().split('.').last == json['permission']),
+      verified: json['verified'] as bool,
     );
   }
 
@@ -54,8 +60,9 @@ class User extends Equatable {
       'first_name': firstName,
       'second_name': secondName,
       'last_name': lastName,
-      'permission': permission,
       'rank': rank,
+      'permission': permission.toString().split('.').last,
+      'verified': verified,
     };
   }
 
@@ -70,15 +77,36 @@ class User extends Equatable {
     };
   }
 
+  static Map<String, dynamic> toInitialFirebaseJson(
+      Map<String, dynamic> json, UserPermissions? permission) {
+    return {
+      'email': json['email'],
+      'username': json['username'],
+      'first_name': json['first_name'],
+      'second_name': json['second_name'],
+      'last_name': json['last_name'],
+      'verified': false,
+      'rank': json['rank'],
+      "permission": permission != null
+          ? permission.toString().split(".").last
+          : UserPermissions.user.toString().split(".").last,
+      "status": UserStatus.pending.toString().split('.').last,
+      "favourite_businesses": [],
+      "password": json['password'],
+      "identification_card": json['identification_card'] ?? "",
+    };
+  }
+
   User copyWith({
     String? uid,
     String? username,
     String? firstName,
     String? secondName,
     String? lastName,
-    String? permission,
+    UserPermissions? permission,
     String? email,
     String? rank,
+    bool? verified,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -88,6 +116,7 @@ class User extends Equatable {
       secondName: secondName ?? this.secondName,
       lastName: lastName ?? this.lastName,
       permission: permission ?? this.permission,
+      verified: verified ?? this.verified,
       rank: rank ?? this.rank,
     );
   }

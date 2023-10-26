@@ -1,36 +1,67 @@
 import 'dart:developer';
 
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:equatable/equatable.dart';
 import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/config/router/app_router.gr.dart';
+import 'package:heroes_app/src/domain/models/user_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
+import 'package:heroes_app/src/domain/repositories/firestorage_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 import 'package:heroes_app/src/locator.dart';
+import 'package:image_picker/image_picker.dart';
 
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit() : super(AuthStateInitial());
+  AuthCubit() : super(const AuthState());
   final getIt = GetIt.instance;
 
   //This method is used to log in the user
-  Future<bool> logIn(Map<String, dynamic> userData) async {
+  Future<bool> logIn(
+      Map<String, dynamic> userData, BuildContext context) async {
     try {
       //First we log in the user in firebase auth
       await getIt<AuthService>().signInWithEmailAndPassword(
         userData['email'],
         userData['password'],
       );
-      //Then we get the user info from firestore and return true or false in case of error
+
+      //Check if the user status is active (Verified)
+      final userUid = getIt.get<AuthService>().getUserId();
+      final userJson = await getIt.get<FirestoreService>().readDocumentById(
+          getIt.get<AppConstants>().usersCollection, userUid, "uid");
+      final user = User.fromJson(userJson);
+      if (!user.verified) {
+        if (!context.mounted) return false;
+        AutoRouter.of(context).replaceAll([UnverifiedUserView()]);
+        return true;
+      }
+
+      //Check if the user is a business
+      if (user.permission == UserPermissions.business) {
+        //TODO: Implement the business routes
+        log('Business routes not implemented yet');
+        return true;
+      }
+
+      //If the user is logged in and verified, we emit the userLoggedIn state
+      if (!context.mounted) return false;
+      AutoRouter.of(context).replaceAll([const DashBoardView()]);
       return true;
     } catch (e) {
+      log('Error: $e, Function: logIn, File: auth_cubit.dart');
       return false;
     }
   }
 
   //This method is used to sign up the user
-  Future<bool> signUp(Map<String, dynamic> userData) async {
+  Future<bool> signUp(
+      Map<String, dynamic> userData, XFile identification) async {
     try {
       //First we create the user in firebase auth
       final uid = await getIt<AuthService>().signUpWithEmailAndPassword(
@@ -41,18 +72,52 @@ class AuthCubit extends Cubit<AuthState> {
       //Then we add the uid to the user data
       userData['uid'] = uid;
 
-      //Then we create the user in firestore
-      createUserInFirestore(userData);
+      await createUserInFirestore(userData);
 
-      //Finally we log in the user
-      final isUserLoggedIn = await logIn(
-        {'email': userData['email'], 'password': userData['password']},
-      );
+      //Then we save in firebase storage the identification image
+      await getIt
+          .get<FireStorageService>()
+          .uploadUserIdentification(identification, uid);
 
       //And return true or false in case of error
-      return isUserLoggedIn;
+      return true;
     } catch (e) {
-      log('Error: $e');
+      log('Error: $e, Function: signUp, File: auth_cubit.dart');
+      return false;
+    }
+  }
+
+  //This method is used to sign up the business
+  Future<bool> signUpBusiness(Map<String, dynamic> userData,
+      Map<String, dynamic> businessData, XFile identification) async {
+    try {
+      //First we create the user from the business info in firebase auth
+      final uid = await getIt<AuthService>().signUpWithEmailAndPassword(
+        userData['email'],
+        userData['password'],
+      );
+
+      //Then we add the uid to the user data
+      userData['uid'] = uid;
+
+      //Then we create the user in firestore
+      await createUserInFirestore(userData);
+
+      //Then we save in firebase storage the identification image
+      await getIt
+          .get<FireStorageService>()
+          .uploadUserIdentification(identification, uid);
+
+      //Then we add the owner_uid to the business data
+      businessData['owner_uid'] = uid;
+
+      //Then we create the business in firestore
+      await createBusinessInFirestore(userData);
+
+      //And return true or false in case of error
+      return true;
+    } catch (e) {
+      log('Error: $e, Function: signUpBusiness, File: auth_cubit.dart');
       return false;
     }
   }
@@ -65,6 +130,7 @@ class AuthCubit extends Cubit<AuthState> {
       //Then we return true or false in case of error
       return true;
     } catch (e) {
+      log('Error: $e, Function: logOut, File: auth_cubit.dart');
       return false;
     }
   }
@@ -77,17 +143,66 @@ class AuthCubit extends Cubit<AuthState> {
       //Then we return true or false in case of error
       return true;
     } catch (e) {
+      log('Error: $e, Function: restorePassword, File: auth_cubit.dart');
       return false;
     }
   }
 
-  //This method is used to create the user in firestore,
-  //it is called inside signUp method if the user is created in firebase auth,
+  /*
+   This method is used to create the user in firestore,
+   it is called inside signUp method if the user is created in firebase auth,
+  */
   Future<void> createUserInFirestore(Map<String, dynamic> userData) async {
     //We create the user in firestore
     await getIt<FirestoreService>().createDocument(
       locator<AppConstants>().usersCollection,
       userData,
     );
+  }
+
+  //This method is used to create a business in firestore,
+  Future<void> createBusinessInFirestore(
+      Map<String, dynamic> businessData) async {
+    //We create the business in firestore
+    await getIt<FirestoreService>().createDocument(
+      locator<AppConstants>().businessCollection,
+      businessData,
+    );
+  }
+
+  //This method is used for the appEntryPoint states
+  void getUserInformation() async {
+    try {
+      emit(state.copyWith(authStatus: AuthStatus.loading));
+
+      //Check if the user is logged in
+      final userIsLoggedIn = getIt.get<AuthService>().checkUserSession();
+      if (!userIsLoggedIn) {
+        emit(const AuthState(authStatus: AuthStatus.userNotLoggedIn));
+        return;
+      }
+
+      //Check if the user status is active (Verified)
+      final userUid = getIt.get<AuthService>().getUserId();
+      final userJson = await getIt.get<FirestoreService>().readDocumentById(
+          getIt.get<AppConstants>().usersCollection, userUid, "uid");
+      final user = User.fromJson(userJson);
+      if (!user.verified) {
+        emit(const AuthState(authStatus: AuthStatus.userLoggedInNotVerified));
+        return;
+      }
+
+      //Check if the user is a business
+      if (user.permission == UserPermissions.business) {
+        emit(const AuthState(authStatus: AuthStatus.businessLoggedIn));
+        return;
+      }
+
+      //If the user is logged in and verified, we emit the userLoggedIn state
+      emit(const AuthState(authStatus: AuthStatus.userLoggedIn));
+    } catch (e) {
+      log('Error: $e, Function: getUserInformation, File: auth_cubit.dart');
+      emit(const AuthState(authStatus: AuthStatus.error));
+    }
   }
 }

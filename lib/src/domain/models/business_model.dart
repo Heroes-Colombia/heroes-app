@@ -1,8 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/domain/models/reviews_model.dart';
 
 class Business extends Equatable {
-  final String status;
+  final BusinessStatus status;
   final String phoneNumber;
   final String ownerName;
   final String name;
@@ -42,7 +43,8 @@ class Business extends Equatable {
 
   factory Business.fromJson(Map<String, dynamic> json) {
     return Business(
-      status: json['status'] as String,
+      status: BusinessStatus.values.firstWhere(
+          (element) => element.toString().split('.').last == json['status']),
       phoneNumber: json['phone_number'] as String,
       ownerName: json['owner_name'] as String,
       name: json['name'] as String,
@@ -57,7 +59,7 @@ class Business extends Equatable {
 
   Map<String, dynamic> toJson() {
     return {
-      'status': status,
+      'status': status.toString().split('.').last,
       'phone_number': phoneNumber,
       'owner_name': ownerName,
       'name': name,
@@ -70,8 +72,23 @@ class Business extends Equatable {
     };
   }
 
+  static Map<String, dynamic> toInitialFirebaseJson(Map<String, dynamic> json) {
+    return {
+      'status': BusinessStatus.pending.toString().split('.').last,
+      'phone_number': json['phone_number'],
+      'owner_name': json['owner_name'],
+      'name': json['name'],
+      'location': json['location'],
+      'identification': json['identification'],
+      'email': json['email'],
+      'categories': [],
+      'address': json['address'],
+      'reviews': [],
+    };
+  }
+
   Business copyWith({
-    String? status,
+    BusinessStatus? status,
     String? phoneNumber,
     String? ownerName,
     String? name,

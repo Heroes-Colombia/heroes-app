@@ -9,7 +9,6 @@ class FirestoreService {
   Future<String> createDocument(
       String collectionName, Map<String, dynamic> data) async {
     final docRef = await _firestore.collection(collectionName).add(data);
-
     return docRef.id;
   }
 
