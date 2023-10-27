@@ -61,7 +61,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   //This method is used to sign up the user
   Future<bool> signUp(
-      Map<String, dynamic> userData, XFile identification) async {
+      Map<String, dynamic> userData, XFile? identification) async {
     try {
       //First we create the user in firebase auth
       final uid = await getIt<AuthService>().signUpWithEmailAndPassword(
@@ -74,10 +74,12 @@ class AuthCubit extends Cubit<AuthState> {
 
       await createUserInFirestore(userData);
 
-      //Then we save in firebase storage the identification image
-      await getIt
-          .get<FireStorageService>()
-          .uploadUserIdentification(identification, uid);
+      //Then we save in firebase storage the identification image if the user is not a business
+      if (identification != null) {
+        await getIt
+            .get<FireStorageService>()
+            .uploadUserIdentification(identification, uid);
+      }
 
       //And return true or false in case of error
       return true;
@@ -89,7 +91,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   //This method is used to sign up the business
   Future<bool> signUpBusiness(Map<String, dynamic> userData,
-      Map<String, dynamic> businessData, XFile identification) async {
+      Map<String, dynamic> businessData, XFile? identification) async {
     try {
       //First we create the user from the business info in firebase auth
       final uid = await getIt<AuthService>().signUpWithEmailAndPassword(
@@ -103,16 +105,18 @@ class AuthCubit extends Cubit<AuthState> {
       //Then we create the user in firestore
       await createUserInFirestore(userData);
 
-      //Then we save in firebase storage the identification image
-      await getIt
-          .get<FireStorageService>()
-          .uploadUserIdentification(identification, uid);
+      //Then we save in firebase storage the RUT image
+      if (identification != null) {
+        await getIt
+            .get<FireStorageService>()
+            .uploadBusinessRut(identification, uid);
+      }
 
       //Then we add the owner_uid to the business data
       businessData['owner_uid'] = uid;
 
       //Then we create the business in firestore
-      await createBusinessInFirestore(userData);
+      await createBusinessInFirestore(businessData);
 
       //And return true or false in case of error
       return true;

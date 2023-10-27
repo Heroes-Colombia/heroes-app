@@ -35,6 +35,7 @@ class _PasswordInputState extends State<PasswordInput> {
       obscureText: _obscureText,
       name: widget.name,
       key: Key(widget.keyName),
+      keyboardType: TextInputType.visiblePassword,
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hintText,

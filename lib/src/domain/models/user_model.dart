@@ -3,10 +3,11 @@ import 'package:heroes_app/assets/app_enums.dart';
 
 class User extends Equatable {
   final String uid;
-  final String username;
+  final String license;
   final String firstName;
   final String secondName;
-  final String lastName;
+  final String firstLastName;
+  final String secondLastName;
   final UserPermissions permission;
   final String rank;
   final String email;
@@ -14,10 +15,11 @@ class User extends Equatable {
 
   const User({
     required this.uid,
-    required this.username,
+    required this.license,
     required this.firstName,
     required this.secondName,
-    required this.lastName,
+    required this.firstLastName,
+    required this.secondLastName,
     required this.permission,
     required this.rank,
     required this.email,
@@ -28,10 +30,11 @@ class User extends Equatable {
   List<Object?> get props => [
         uid,
         email,
-        username,
+        license,
         firstName,
         secondName,
-        lastName,
+        firstLastName,
+        secondLastName,
         permission,
         rank,
         verified,
@@ -41,10 +44,11 @@ class User extends Equatable {
     return User(
       uid: json['uid'] as String,
       email: json['email'] as String,
-      username: json['username'] as String,
+      license: json['license'] as String,
       firstName: json['first_name'] as String,
       secondName: json['second_name'] as String,
-      lastName: json['last_name'] as String,
+      firstLastName: json['first_last_name'] as String,
+      secondLastName: json['second_last_name'] as String,
       rank: json['rank'] as String,
       permission: UserPermissions.values.firstWhere((element) =>
           element.toString().split('.').last == json['permission']),
@@ -56,10 +60,11 @@ class User extends Equatable {
     return {
       'uid': uid,
       'email': email,
-      'username': username,
+      'license': license,
       'first_name': firstName,
       'second_name': secondName,
-      'last_name': lastName,
+      'first_last_name': firstLastName,
+      'second_last_name': secondLastName,
       'rank': rank,
       'permission': permission.toString().split('.').last,
       'verified': verified,
@@ -69,10 +74,11 @@ class User extends Equatable {
   Map<String, dynamic> toJsonRequest() {
     return {
       'email': email,
-      'username': username,
+      'license': license,
       'first_name': firstName,
       'second_name': secondName,
-      'last_name': lastName,
+      'first_last_name': firstLastName,
+      'second_last_name': secondLastName,
       'rank': rank,
     };
   }
@@ -81,10 +87,11 @@ class User extends Equatable {
       Map<String, dynamic> json, UserPermissions? permission) {
     return {
       'email': json['email'],
-      'username': json['username'],
+      'license': json['license'] ?? "",
       'first_name': json['first_name'],
       'second_name': json['second_name'],
-      'last_name': json['last_name'],
+      'first_last_name': json['first_last_name'],
+      'second_last_name': json['second_last_name'],
       'verified': false,
       'rank': json['rank'],
       "permission": permission != null
@@ -99,10 +106,11 @@ class User extends Equatable {
 
   User copyWith({
     String? uid,
-    String? username,
+    String? license,
     String? firstName,
     String? secondName,
-    String? lastName,
+    String? firstLastName,
+    String? secondLastName,
     UserPermissions? permission,
     String? email,
     String? rank,
@@ -111,10 +119,11 @@ class User extends Equatable {
     return User(
       uid: uid ?? this.uid,
       email: email ?? this.email,
-      username: username ?? this.username,
+      license: license ?? this.license,
       firstName: firstName ?? this.firstName,
       secondName: secondName ?? this.secondName,
-      lastName: lastName ?? this.lastName,
+      firstLastName: firstLastName ?? this.firstLastName,
+      secondLastName: secondLastName ?? this.secondLastName,
       permission: permission ?? this.permission,
       verified: verified ?? this.verified,
       rank: rank ?? this.rank,

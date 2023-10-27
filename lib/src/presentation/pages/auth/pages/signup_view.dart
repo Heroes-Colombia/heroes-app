@@ -45,11 +45,11 @@ class SignUpView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     FormBuilderTextField(
-                      name: 'username',
-                      key: const Key('username'),
+                      name: 'license',
+                      key: const Key('license'),
                       decoration: InputDecoration(
-                        labelText: texts['username-label']!,
-                        hintText: texts['username-hint']!,
+                        labelText: texts['license-label']!,
+                        hintText: texts['license-hint']!,
                         border: const OutlineInputBorder(),
                       ),
                       validator: (value) => validateInputs(context, value),
@@ -107,11 +107,11 @@ class SignUpView extends StatelessWidget {
                       children: [
                         Expanded(
                             child: FormBuilderTextField(
-                          name: 'last_name',
+                          name: 'first_last_name',
                           key: const Key('_register_last_name'),
                           decoration: InputDecoration(
-                            labelText: texts['lastname-label']!,
-                            hintText: texts['lastname-hint']!,
+                            labelText: texts['first-lastname-label']!,
+                            hintText: texts['first-lastname-hint']!,
                             border: const OutlineInputBorder(),
                           ),
                           validator: (value) => validateInputs(context, value),
@@ -120,16 +120,27 @@ class SignUpView extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                             child: FormBuilderTextField(
-                          name: 'rank',
+                          name: 'second_last_name',
                           decoration: InputDecoration(
-                            labelText: texts['rank-label']!,
-                            hintText: texts['rank-hint']!,
+                            labelText: texts['second-lastname-label']!,
+                            hintText: texts['second-lastname-hint']!,
                             border: const OutlineInputBorder(),
                           ),
                           validator: (value) => validateInputs(context, value),
                           autovalidateMode: AutovalidateMode.onUserInteraction,
                         )),
                       ],
+                    ),
+                    const SizedBox(height: 12),
+                    FormBuilderTextField(
+                      name: 'rank',
+                      decoration: InputDecoration(
+                        labelText: texts['rank-label']!,
+                        hintText: texts['rank-hint']!,
+                        border: const OutlineInputBorder(),
+                      ),
+                      validator: (value) => validateInputs(context, value),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                     ),
                     const SizedBox(height: 12),
                     EmailInputWidget(

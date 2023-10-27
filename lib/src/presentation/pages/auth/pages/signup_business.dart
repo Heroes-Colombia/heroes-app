@@ -94,18 +94,6 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             FormBuilderTextField(
-              name: 'username',
-              key: const Key('_register_business_username'),
-              validator: (value) => validateEmptyString(value, texts),
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              decoration: InputDecoration(
-                labelText: texts['username-label']!,
-                hintText: texts['username-hint']!,
-                border: const OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            FormBuilderTextField(
               name: 'identification_card',
               key: const Key('identification_card'),
               decoration: InputDecoration(
@@ -117,8 +105,6 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
               autovalidateMode: AutovalidateMode.onUserInteraction,
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 12),
-            pictureField(texts, Theme.of(context)),
             const SizedBox(height: 12),
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -156,29 +142,40 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
               children: [
                 Expanded(
                     child: FormBuilderTextField(
-                  name: 'last_name',
+                  name: 'first_last_name',
                   key: const Key('_register_business_last_name'),
                   validator: (value) => validateEmptyString(value, texts),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: InputDecoration(
-                    labelText: texts['lastname-label']!,
-                    hintText: texts['lastname-hint']!,
+                    labelText: texts['first-lastname-label']!,
+                    hintText: texts['first-lastname-hint']!,
                     border: const OutlineInputBorder(),
                   ),
                 )),
                 const SizedBox(width: 12),
                 Expanded(
                     child: FormBuilderTextField(
-                  name: 'rank',
+                  name: 'second_last_name',
                   validator: (value) => validateEmptyString(value, texts),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: InputDecoration(
-                    labelText: texts['rank-label']!,
-                    hintText: texts['rank-hint']!,
+                    labelText: texts['second-lastname-label']!,
+                    hintText: texts['second-lastname-hint']!,
                     border: const OutlineInputBorder(),
                   ),
                 )),
               ],
+            ),
+            const SizedBox(height: 12),
+            FormBuilderTextField(
+              name: 'rank',
+              validator: (value) => validateEmptyString(value, texts),
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              decoration: InputDecoration(
+                labelText: texts['rank-label']!,
+                hintText: texts['rank-hint']!,
+                border: const OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 12),
             EmailInputWidget(
@@ -222,8 +219,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
             FormBuilderTextField(
               name: 'address',
               key: const Key('_register_business_address'),
-              validator: (value) => validateEmptyString(value, texts),
-              autovalidateMode: AutovalidateMode.onUserInteraction,
+              keyboardType: TextInputType.streetAddress,
               decoration: InputDecoration(
                 labelText: texts['address-label']!,
                 hintText: texts['address-hint']!,
@@ -234,14 +230,14 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
             FormBuilderTextField(
               name: 'identification',
               key: const Key('_register_business_identification'),
-              validator: (value) => validateEmptyString(value, texts),
-              autovalidateMode: AutovalidateMode.onUserInteraction,
               decoration: InputDecoration(
                 labelText: texts['identification-label']!,
                 hintText: texts['identification-hint']!,
                 border: const OutlineInputBorder(),
               ),
             ),
+            const SizedBox(height: 12),
+            pictureField(texts, Theme.of(context)),
             const SizedBox(height: 12),
             EmailInputWidget(
                 keyName: 'business_email',
@@ -257,8 +253,6 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
                     child: FormBuilderTextField(
                   name: 'owner_name',
                   key: const Key('_register_business_owner_name'),
-                  validator: (value) => validateEmptyString(value, texts),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: InputDecoration(
                     labelText: texts['ownername-label']!,
                     hintText: texts['ownername-hint']!,
@@ -270,8 +264,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
                     child: FormBuilderTextField(
                   name: 'phone_number',
                   key: const Key('_register_business_second_name'),
-                  validator: (value) => validateEmptyString(value, texts),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  keyboardType: TextInputType.phone,
                   decoration: InputDecoration(
                     labelText: texts['phone-label']!,
                     hintText: texts['phone-hint']!,
@@ -303,15 +296,8 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
   FormBuilderField<Object> pictureField(
       Map<String, String> texts, ThemeData theme) {
     return FormBuilderField(
-      validator: (value) {
-        if (value == null) {
-          return texts['genericValidator']!;
-        }
-        return null;
-      },
-      name: "identification_card_img",
-      key: const Key('identification_card_img'),
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      name: "RUT_img",
+      key: const Key('RUT_img'),
       builder: (field) {
         return InkWell(
           onTap: () async {
@@ -333,7 +319,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    field.isValid
+                    field.value != null
                         ? texts["identification-card-img-filled"]!
                         : texts['identification-card-img-hint']!,
                     style: TextStyle(
@@ -342,7 +328,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
                     ),
                   ),
                   Icon(
-                    field.isValid
+                    field.value != null
                         ? Ionicons.camera_reverse_outline
                         : Ionicons.camera_outline,
                     color: theme.colorScheme.primary,
@@ -384,12 +370,12 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
       final businessData = Business.toInitialFirebaseJson(formData);
 
       //Then we extract the image from the form data
-      final userIdentification = formData['identification_card_img'];
+      final businessRutImg = formData['RUT_img'];
 
       //Then we create the user in firestore and the business in firestore
       final isBusinessCreated = await context
           .read<AuthCubit>()
-          .signUpBusiness(userData, businessData, userIdentification);
+          .signUpBusiness(userData, businessData, businessRutImg);
 
       //If the user and business is not created and logged in we show an error message
       if (!isBusinessCreated) {
@@ -408,12 +394,9 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
       final userData =
           User.toInitialFirebaseJson(formData, UserPermissions.business);
 
-      //Then we extract the image from the form data
-      final userIdentification = formData['identification_card_img'];
-
       if (!context.mounted) return;
       final isUserCreatedAndLoggedInd =
-          await context.read<AuthCubit>().signUp(userData, userIdentification);
+          await context.read<AuthCubit>().signUp(userData, null);
 
       //If the user is not created and logged in we show an error message
       if (!isUserCreatedAndLoggedInd) {
