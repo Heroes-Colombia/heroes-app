@@ -33,15 +33,27 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       //We get the featured businesses from firestore
       final featuredBusinessRaw = await locator
           .get<FirestoreService>()
-          .readDocumentsByCondition(businessCollection, "featured", true, 5);
+          .readActiveDocumentsByCondition(
+              businessCollection, "featured", true, 5);
 
       //We convert the raw data to a list of business
       final featuredBusiness =
           featuredBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
 
+      //We get the normal businesses from firestore
+      final normalBusinessRaw = await locator
+          .get<FirestoreService>()
+          .readActiveDocumentsByCondition(
+              businessCollection, "featured", false, 5);
+
+      //we convert the raw data to a list of business
+      final normalBusiness =
+          normalBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
+
       emit(state.copyWith(
           businessHomeViewState: BusinessViewCubitStatus.success,
-          featuredBusinesses: featuredBusiness));
+          featuredBusinesses: featuredBusiness,
+          normalBusinesses: normalBusiness));
     } catch (e) {
       log('Error: $e, Function: getRequiredData, File: business_home_view_cubit.dart');
       emit(

@@ -49,7 +49,7 @@ class SearchView extends StatelessWidget {
         doubleTitle(theme, texts["featuredBusiness"], texts["seeAll"], () {}),
         horizontalList(state.featuredBusinesses),
         doubleTitle(theme, texts["business"], texts["seeAll"], () {}),
-        verticalList(state.featuredBusinesses),
+        verticalList(state.normalBusinesses),
         const SliverToBoxAdapter(child: SizedBox(height: 16))
       ],
     );

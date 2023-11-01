@@ -47,7 +47,7 @@ class FirestoreService {
    where the condition of the property is equal to the propertyValue 
    passed as parameter
   */
-  Future<List<Map<String, dynamic>>> readDocumentsByCondition(
+  Future<List<Map<String, dynamic>>> readActiveDocumentsByCondition(
     String collectionName,
     String property,
     Object propertyValue,
@@ -56,6 +56,7 @@ class FirestoreService {
     final docSnapshot = await _firestore
         .collection(collectionName)
         .limit(limit)
+        .where("status", isEqualTo: "active")
         .where(property, isEqualTo: propertyValue)
         .get();
     final data = docSnapshot.docs.map((e) {
