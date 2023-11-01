@@ -29,7 +29,7 @@ import 'package:heroes_app/src/presentation/pages/dashboard/pages/profile/edit_p
     as _i3;
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/profile/profile_view.dart'
     as _i8;
-import 'package:heroes_app/src/presentation/pages/dashboard/pages/search_view.dart'
+import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/search_view.dart'
     as _i10;
 import 'package:heroes_app/src/presentation/pages/entryPoint/entrypoint_view.dart'
     as _i4;
@@ -108,9 +108,11 @@ abstract class $AppRouter extends _i14.RootStackRouter {
       );
     },
     SearchView.name: (routeData) {
+      final args = routeData.argsAs<SearchViewArgs>(
+          orElse: () => const SearchViewArgs());
       return _i14.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i10.SearchView(),
+        child: _i10.SearchView(key: args.key),
       );
     },
     SignUpBusinessView.name: (routeData) {
@@ -352,16 +354,31 @@ class RestorePasswordArgs {
 
 /// generated route for
 /// [_i10.SearchView]
-class SearchView extends _i14.PageRouteInfo<void> {
-  const SearchView({List<_i14.PageRouteInfo>? children})
-      : super(
+class SearchView extends _i14.PageRouteInfo<SearchViewArgs> {
+  SearchView({
+    _i15.Key? key,
+    List<_i14.PageRouteInfo>? children,
+  }) : super(
           SearchView.name,
+          args: SearchViewArgs(key: key),
           initialChildren: children,
         );
 
   static const String name = 'SearchView';
 
-  static const _i14.PageInfo<void> page = _i14.PageInfo<void>(name);
+  static const _i14.PageInfo<SearchViewArgs> page =
+      _i14.PageInfo<SearchViewArgs>(name);
+}
+
+class SearchViewArgs {
+  const SearchViewArgs({this.key});
+
+  final _i15.Key? key;
+
+  @override
+  String toString() {
+    return 'SearchViewArgs{key: $key}';
+  }
 }
 
 /// generated route for

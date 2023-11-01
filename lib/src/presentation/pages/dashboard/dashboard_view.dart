@@ -11,7 +11,7 @@ class DashBoardView extends StatelessWidget {
   Widget build(BuildContext context) {
     return AutoTabsScaffold(
       routes: [
-        const SearchView(),
+        SearchView(),
         const FavoritesView(),
         ProfileView(),
       ],

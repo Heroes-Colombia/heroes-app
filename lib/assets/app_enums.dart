@@ -31,3 +31,10 @@ enum AuthStatus {
   userLoggedInNotVerified,
   userNotLoggedIn,
 }
+
+enum BusinessViewCubitStatus {
+  error,
+  initial,
+  loading,
+  success,
+}

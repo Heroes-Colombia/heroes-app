@@ -129,6 +129,14 @@ class AppConstants {
     },
   };
   final dashBoardTexts = {
+    "searchView": {
+      "title": "Comercios aliados",
+      "search-title": "¿Qué comercio buscas?",
+      "nearPromotions": "Promociones cercanas",
+      "featuredBusiness": "Comercios destacados",
+      "business": "Comercios",
+      "seeAll": "Ver todos",
+    },
     'profileView': {
       'title': 'Ajustes',
       'account': 'Cuenta',
