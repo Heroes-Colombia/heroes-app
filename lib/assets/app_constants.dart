@@ -74,8 +74,6 @@ class AppConstants {
     },
     'signupBusinessView': {
       'title': 'Registrar comerciante',
-      'username-label': 'Username',
-      'username-hint': 'Ingresa tu username',
       'identification-card-label': 'Número de cédula de ciudadanía',
       'identification-card-hint': 'Ingresa tu número de cédula de ciudadanía',
       'identification-card-img-label': 'Foto del RUT del comercio',
