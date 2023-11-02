@@ -66,4 +66,7 @@ class AppMethods {
       },
     );
   }
+
+  //This method is used to uppercase the first letter of a string
+  String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
 }
