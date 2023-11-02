@@ -35,6 +35,7 @@ class FireStorageService {
     await ref.putFile(file, metadata);
   }
 
+  //This method is used to upload the business RUT identification
   Future<void> uploadBusinessRut(XFile imageFile, String uid) async {
     //Get the route to save the image
     final identificationsRoute =
