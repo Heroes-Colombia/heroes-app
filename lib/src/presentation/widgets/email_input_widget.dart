@@ -25,6 +25,7 @@ class EmailInputWidget extends StatelessWidget {
     return FormBuilderTextField(
       name: name,
       key: Key(keyName),
+      keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,

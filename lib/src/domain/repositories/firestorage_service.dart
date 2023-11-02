@@ -12,11 +12,40 @@ class FireStorageService {
     //Get the route to save the image
     final identificationsRoute =
         locator.get<AppConstants>().userIdentifications;
+    final userRoute = locator.get<AppConstants>().usersCollection;
 
     //Get the reference to the image
     Reference ref = FirebaseStorage.instance
         .ref()
         .child(identificationsRoute)
+        .child(userRoute)
+        .child(uid)
+        .child("/identification.jpg");
+
+    //Set the metadata
+    final metadata = SettableMetadata(
+      contentType: 'image/jpeg',
+      customMetadata: {'picked-file-path': imageFile.path},
+    );
+
+    // Convert XFile to File
+    File file = File(imageFile.path);
+
+    //Upload the image
+    await ref.putFile(file, metadata);
+  }
+
+  Future<void> uploadBusinessRut(XFile imageFile, String uid) async {
+    //Get the route to save the image
+    final identificationsRoute =
+        locator.get<AppConstants>().userIdentifications;
+    final businessRutRoute = locator.get<AppConstants>().businessCollection;
+
+    //Get the reference to the image
+    Reference ref = FirebaseStorage.instance
+        .ref()
+        .child(identificationsRoute)
+        .child(businessRutRoute)
         .child(uid)
         .child("/identification.jpg");
 

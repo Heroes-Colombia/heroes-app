@@ -61,18 +61,6 @@ class EditProfileView extends StatelessWidget {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    FormBuilderTextField(
-                      name: 'username',
-                      initialValue: user.username,
-                      validator: (value) => locator
-                          .get<AppMethods>()
-                          .emptyStringValidator(value!, texts['empty-string']!),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      decoration: InputDecoration(
-                          hintText: texts['username-hint']!,
-                          labelText: texts['username-label']!,
-                          border: const OutlineInputBorder()),
-                    ),
                     const SizedBox(height: 12),
                     Row(children: [
                       Expanded(
@@ -111,15 +99,29 @@ class EditProfileView extends StatelessWidget {
                     ]),
                     const SizedBox(height: 12),
                     FormBuilderTextField(
-                      name: 'last_name',
-                      initialValue: user.lastName,
+                      name: 'first_last_name',
+                      initialValue: user.firstLastName,
                       validator: (value) => locator
                           .get<AppMethods>()
                           .emptyStringValidator(value!, texts['empty-string']!),
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       decoration: InputDecoration(
-                        hintText: texts['lastname-hint']!,
-                        labelText: texts['lastname-label']!,
+                        hintText: texts['first-lastname-hint']!,
+                        labelText: texts['first-lastname-label']!,
+                        border: const OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    FormBuilderTextField(
+                      name: 'second_last_name',
+                      initialValue: user.secondLastName,
+                      validator: (value) => locator
+                          .get<AppMethods>()
+                          .emptyStringValidator(value!, texts['empty-string']!),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      decoration: InputDecoration(
+                        hintText: texts['second-lastname-hint']!,
+                        labelText: texts['second-lastname-label']!,
                         border: const OutlineInputBorder(),
                       ),
                     ),

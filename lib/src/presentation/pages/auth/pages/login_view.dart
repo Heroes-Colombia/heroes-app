@@ -4,10 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
-import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
 
 final _formKey = GlobalKey<FormBuilderState>();
@@ -40,19 +40,11 @@ class LoginView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    FormBuilderTextField(
-                      name: 'email',
-                      key: const Key('_login_email'),
-                      decoration: InputDecoration(
-                        labelText: authTexts['email-label']!,
-                        hintText: authTexts['email-hint']!,
-                        border: const OutlineInputBorder(),
-                      ),
-                      validator: (value) => locator
-                          .get<AppMethods>()
-                          .validateEmail(value, authTexts),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                    ),
+                    EmailInputWidget(
+                        keyName: "email",
+                        name: "email",
+                        label: authTexts['email-label']!,
+                        hintText: authTexts['email-hint']!),
                     const SizedBox(height: 12),
                     PasswordInput(
                         keyName: '_login_password',
