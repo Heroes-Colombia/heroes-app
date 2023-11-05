@@ -43,6 +43,16 @@ class FirestoreService {
   }
 
   /*
+  This method is used to get a document by the document id
+  */
+  Future<Map<String, dynamic>?> readDocumentByDocId(
+      String collectionName, String docId) async {
+    final docSnapshot =
+        await _firestore.collection(collectionName).doc(docId).get();
+    return docSnapshot.data();
+  }
+
+  /*
    This method is used to read all documents inside a collection,
    where the condition of the property is equal to the propertyValue 
    passed as parameter

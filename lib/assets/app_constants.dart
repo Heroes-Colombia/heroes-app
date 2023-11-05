@@ -137,6 +137,15 @@ class AppConstants {
       "business": "Comercios",
       "seeAll": "Ver todos",
     },
+    "businessDetailsView": {
+      "loading-title": "Cargando",
+      "loading-content": "Cargando información del comercio",
+      "promotions-title": "Promociones",
+      "navigation-title": "Navegar al comercio",
+      "error-title": "Error",
+      "error-content": "Ocurrió un error al cargar la información del comercio",
+      "error-button": "Reintentar",
+    },
     'profileView': {
       'title': 'Ajustes',
       'account': 'Cuenta',

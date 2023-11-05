@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
 import 'package:heroes_app/src/presentation/cubits/business%20home%20view/business_home_view_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/horizontal_card_widget.dart';
@@ -173,9 +174,13 @@ class SearchView extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           itemBuilder: (context, index) {
             return HorizontalCard(
-              image: featuredBusinesses[0].featuredImage,
-              title: featuredBusinesses[0].name,
-              id: featuredBusinesses[0].id,
+              image: featuredBusinesses[index].featuredImage,
+              title: featuredBusinesses[index].name,
+              id: featuredBusinesses[index].id,
+              callback: () {
+                AutoRouter.of(context).push(BusinessDetailsView(
+                    businessId: featuredBusinesses[index].id));
+              },
             );
           },
           separatorBuilder: (context, index) {
@@ -191,9 +196,10 @@ class SearchView extends StatelessWidget {
     return SliverList.separated(
       itemBuilder: (context, index) {
         return VerticalCard(
-          image: businesses[0].featuredImage,
-          title: businesses[0].name,
-          id: businesses[0].id,
+          image: businesses[index].featuredImage,
+          title: businesses[index].name,
+          id: businesses[index].id,
+          callback: () {},
         );
       },
       itemCount: businesses.length,
