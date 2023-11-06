@@ -1,15 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:heroes_app/assets/app_enums.dart';
 
-class Advertisement extends Equatable {
+class Promotion extends Equatable {
   final String businessId;
   final String description;
   final DateTime expiredAt;
   final String instructions;
   final int percentage;
-  final String status;
+  final PromotionStatus status;
   final String title;
+  final String featuredImage;
 
-  const Advertisement({
+  const Promotion({
     required this.businessId,
     required this.description,
     required this.expiredAt,
@@ -17,6 +20,7 @@ class Advertisement extends Equatable {
     required this.percentage,
     required this.status,
     required this.title,
+    required this.featuredImage,
   });
 
   @override
@@ -28,17 +32,23 @@ class Advertisement extends Equatable {
         percentage,
         status,
         title,
+        featuredImage,
       ];
 
-  factory Advertisement.fromJson(Map<String, dynamic> json) {
-    return Advertisement(
+  factory Promotion.fromJson(Map<String, dynamic> json) {
+    return Promotion(
       businessId: json['business_id'] as String,
       description: json['description'] as String,
-      expiredAt: DateTime.parse(json['expired_at'] as String),
+      expiredAt: DateTime.fromMillisecondsSinceEpoch(
+        (json['expired_at'] as Timestamp).millisecondsSinceEpoch,
+      ),
       instructions: json['instructions'] as String,
       percentage: json['percentage'] as int,
-      status: json['status'] as String,
+      status: PromotionStatus.values.firstWhere(
+        (e) => e.toString() == 'PromotionStatus.${json['status']}',
+      ),
       title: json['title'] as String,
+      featuredImage: json['featured_image'] as String,
     );
   }
 
@@ -49,12 +59,13 @@ class Advertisement extends Equatable {
       'expired_at': expiredAt.toIso8601String(),
       'instructions': instructions,
       'percentage': percentage,
-      'status': status,
+      'status': status.toString().split('.').last,
       'title': title,
+      'featured_image': featuredImage,
     };
   }
 
-  Advertisement copyWith({
+  Promotion copyWith({
     String? businessId,
     String? description,
     DateTime? expiredAt,
@@ -62,15 +73,20 @@ class Advertisement extends Equatable {
     int? percentage,
     String? status,
     String? title,
+    String? featuredImage,
   }) {
-    return Advertisement(
+    return Promotion(
       businessId: businessId ?? this.businessId,
       description: description ?? this.description,
       expiredAt: expiredAt ?? this.expiredAt,
       instructions: instructions ?? this.instructions,
       percentage: percentage ?? this.percentage,
-      status: status ?? this.status,
+      status: status != null
+          ? PromotionStatus.values
+              .firstWhere((e) => e.toString() == 'PromotionStatus.$status')
+          : this.status,
       title: title ?? this.title,
+      featuredImage: featuredImage ?? this.featuredImage,
     );
   }
 }

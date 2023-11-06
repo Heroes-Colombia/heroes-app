@@ -22,6 +22,12 @@ enum BusinessStatus {
   pending,
 }
 
+enum PromotionStatus {
+  active,
+  inactive,
+  pending,
+}
+
 enum AuthStatus {
   businessLoggedIn,
   error,

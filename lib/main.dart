@@ -9,6 +9,7 @@ import 'package:heroes_app/src/config/app_themes.dart';
 import 'package:heroes_app/src/config/router/app_router.dart';
 import 'package:heroes_app/src/locator.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/business%20details/business_details_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/business%20home%20view/business_home_view_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
 
@@ -52,9 +53,18 @@ class MyApp extends StatelessWidget {
     // to handle the cubits and the routes
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthCubit()),
-        BlocProvider(create: (context) => ProfileCubit()),
-        BlocProvider(create: (context) => BusinessHomeViewCubit()..getInitial())
+        BlocProvider(
+          create: (context) => AuthCubit(),
+        ),
+        BlocProvider(
+          create: (context) => ProfileCubit(),
+        ),
+        BlocProvider(
+          create: (context) => BusinessHomeViewCubit()..getInitial(),
+        ),
+        BlocProvider(
+          create: (context) => BusinessDetailsCubit()..getInitial(),
+        )
       ],
       child: MaterialApp.router(
         title: 'Heroes',

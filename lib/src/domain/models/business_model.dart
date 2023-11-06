@@ -10,9 +10,10 @@ class Business extends Equatable {
   final List<String> location;
   final String identification;
   final String email;
-  final List<String> categories;
+  final List<dynamic> categories;
   final String address;
   final List<UserReviews> reviews;
+  final String featuredImage;
 
   const Business({
     required this.status,
@@ -25,6 +26,7 @@ class Business extends Equatable {
     required this.categories,
     required this.address,
     required this.reviews,
+    required this.featuredImage,
   });
 
   @override
@@ -39,6 +41,7 @@ class Business extends Equatable {
         categories,
         address,
         reviews,
+        featuredImage,
       ];
 
   factory Business.fromJson(Map<String, dynamic> json) {
@@ -48,12 +51,18 @@ class Business extends Equatable {
       phoneNumber: json['phone_number'] as String,
       ownerName: json['owner_name'] as String,
       name: json['name'] as String,
-      location: json['location'] as List<String>,
+      location:
+          json["location"] != null ? json['location'] as List<String> : [],
       identification: json['identification'] as String,
       email: json['email'] as String,
-      categories: json['categories'] as List<String>,
+      categories: json["categories"] != null ? json['categories'] : [],
       address: json['address'] as String,
-      reviews: json['reviews'].map((e) => UserReviews.fromJson(e)).toList(),
+      reviews: json["revies"] != null
+          ? json['reviews'].map((e) => UserReviews.fromJson(e)).toList()
+          : [],
+      featuredImage: json["featured_image"] != null
+          ? json['featured_image'] as String
+          : "",
     );
   }
 
@@ -98,6 +107,7 @@ class Business extends Equatable {
     List<String>? categories,
     String? address,
     List<UserReviews>? reviews,
+    String? featuredImage,
   }) {
     return Business(
       status: status ?? this.status,
@@ -110,6 +120,7 @@ class Business extends Equatable {
       categories: categories ?? this.categories,
       address: address ?? this.address,
       reviews: reviews ?? this.reviews,
+      featuredImage: featuredImage ?? this.featuredImage,
     );
   }
 }

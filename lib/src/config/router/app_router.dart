@@ -50,6 +50,15 @@ class AppRouter extends $AppRouter {
           page: UnverifiedUserView.page,
           path: '/unverifiedUser',
           transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
-        )
+        ),
+        CustomRoute(
+          page: BusinessDetailsView.page,
+          path: '/businessDetails',
+          transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+        ),
+        CustomRoute(
+            page: PromotionDetailsView.page,
+            path: '/promotionDetails',
+            transitionsBuilder: TransitionsBuilders.slideLeftWithFade),
       ];
 }

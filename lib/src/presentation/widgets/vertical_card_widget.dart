@@ -7,12 +7,14 @@ class VerticalCard extends StatelessWidget {
     required this.title,
     required this.id,
     this.description,
+    required this.callback,
   });
 
   final String id;
   final String image;
   final String title;
   final String? description;
+  final Function callback;
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +22,8 @@ class VerticalCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12),
       child: InkWell(
+        onTap: () => callback(),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
@@ -49,9 +53,10 @@ class VerticalCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           style: TextStyle(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontSize: theme.textTheme.labelSmall!.fontSize,
-                            fontWeight: theme.textTheme.labelSmall!.fontWeight,
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withOpacity(0.8),
+                            fontSize: theme.textTheme.labelMedium!.fontSize,
+                            fontWeight: theme.textTheme.bodySmall!.fontWeight,
                           ),
                         )
                       : const SizedBox(),
@@ -60,13 +65,19 @@ class VerticalCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             ClipRRect(
-                borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(12),
-                    bottomRight: Radius.circular(12)),
-                child: Image.network(
-                  image.isEmpty ? "assets/images/file-not-found.png" : image,
-                  fit: BoxFit.cover,
-                )),
+              borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(12),
+                  bottomRight: Radius.circular(12)),
+              child: image.isNotEmpty
+                  ? Image.network(
+                      image,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.asset(
+                      "assets/images/file-not-found.png",
+                      fit: BoxFit.cover,
+                    ),
+            ),
           ]),
         ),
       ),

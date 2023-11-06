@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
 import 'package:heroes_app/src/presentation/cubits/business%20home%20view/business_home_view_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/horizontal_card_widget.dart';
@@ -35,6 +36,7 @@ class SearchView extends StatelessWidget {
     );
   }
 
+  //View state methods
   CustomScrollView successView(context, texts, BusinessHomeViewState state) {
     var theme = Theme.of(context);
     return CustomScrollView(
@@ -55,6 +57,39 @@ class SearchView extends StatelessWidget {
     );
   }
 
+  CustomScrollView loadingView(texts) {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar.large(
+          pinned: true,
+          title: Text(texts["title"]),
+        ),
+        const SliverFillRemaining(
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        )
+      ],
+    );
+  }
+
+  CustomScrollView errorView(texts) {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar.large(
+          pinned: true,
+          title: Text(texts["title"]),
+        ),
+        const SliverFillRemaining(
+          child: Center(
+            child: Text("Error"),
+          ),
+        )
+      ],
+    );
+  }
+
+  //Widget methods
   SliverToBoxAdapter searchButton(ThemeData theme, texts) {
     return SliverToBoxAdapter(
       child: Container(
@@ -117,7 +152,14 @@ class SearchView extends StatelessWidget {
         ),
         margin: const EdgeInsets.symmetric(horizontal: 12),
         height: 200,
-        child: const Center(),
+        //TODO: Add map preview
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Image.network(
+            "https://shorturl.at/glvx5",
+            fit: BoxFit.cover,
+          ),
+        ),
       ),
     );
   }
@@ -173,9 +215,13 @@ class SearchView extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           itemBuilder: (context, index) {
             return HorizontalCard(
-              image: featuredBusinesses[0].featuredImage,
-              title: featuredBusinesses[0].name,
-              id: featuredBusinesses[0].id,
+              image: featuredBusinesses[index].featuredImage,
+              title: featuredBusinesses[index].name,
+              id: featuredBusinesses[index].id,
+              callback: () {
+                AutoRouter.of(context).push(BusinessDetailsView(
+                    businessId: featuredBusinesses[index].id));
+              },
             );
           },
           separatorBuilder: (context, index) {
@@ -191,47 +237,20 @@ class SearchView extends StatelessWidget {
     return SliverList.separated(
       itemBuilder: (context, index) {
         return VerticalCard(
-          image: businesses[0].featuredImage,
-          title: businesses[0].name,
-          id: businesses[0].id,
+          image: businesses[index].featuredImage,
+          title: businesses[index].name,
+          id: businesses[index].id,
+          callback: () {
+            AutoRouter.of(context).push(
+              BusinessDetailsView(businessId: businesses[index].id),
+            );
+          },
         );
       },
       itemCount: businesses.length,
       separatorBuilder: (context, index) {
         return const SizedBox(height: 16);
       },
-    );
-  }
-
-  CustomScrollView loadingView(texts) {
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar.large(
-          pinned: true,
-          title: Text(texts["title"]),
-        ),
-        const SliverFillRemaining(
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        )
-      ],
-    );
-  }
-
-  CustomScrollView errorView(texts) {
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar.large(
-          pinned: true,
-          title: Text(texts["title"]),
-        ),
-        const SliverFillRemaining(
-          child: Center(
-            child: Text("Error"),
-          ),
-        )
-      ],
     );
   }
 }
