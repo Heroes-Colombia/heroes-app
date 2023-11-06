@@ -33,7 +33,7 @@ class HorizontalCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              image.isEmpty
+              image.isNotEmpty
                   ? Image.network(
                       image,
                       fit: BoxFit.cover,

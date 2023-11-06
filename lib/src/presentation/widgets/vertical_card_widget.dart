@@ -53,9 +53,10 @@ class VerticalCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           style: TextStyle(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontSize: theme.textTheme.labelSmall!.fontSize,
-                            fontWeight: theme.textTheme.labelSmall!.fontWeight,
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withOpacity(0.8),
+                            fontSize: theme.textTheme.labelMedium!.fontSize,
+                            fontWeight: theme.textTheme.bodySmall!.fontWeight,
                           ),
                         )
                       : const SizedBox(),

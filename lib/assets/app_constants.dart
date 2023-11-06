@@ -145,6 +145,13 @@ class AppConstants {
       "error-title": "Error",
       "error-content": "Ocurrió un error al cargar la información del comercio",
       "error-button": "Reintentar",
+      "empty-promotions-title": "¡Lo sentimos!",
+      "empty-promotions": "Este comercio no tiene promociones activas",
+    },
+    "promotionDetailsView": {
+      "description-title": "Descripción",
+      "instructions-title": "Instrucciones",
+      "expiration-title": "Fecha de expiración",
     },
     'profileView': {
       'title': 'Ajustes',

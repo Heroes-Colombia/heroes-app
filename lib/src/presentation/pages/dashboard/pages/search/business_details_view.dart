@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/presentation/cubits/business%20details/business_details_cubit.dart';
@@ -103,7 +104,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
         SliverAppBar.large(title: Text(business.name)),
         mainCard(business, theme, texts),
         separator(texts, theme),
-        promotionsList(promotions)
+        promotionsList(promotions, texts)
       ],
     );
   }
@@ -120,23 +121,22 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
             if (business.featuredImage.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(business.featuredImage,
-                    height: 220, width: double.infinity, fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: theme.colorScheme.primary,
-                    ),
-                  );
-                }),
+                child: Image.network(
+                  business.featuredImage,
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
               )
             else
-              Image.asset(
-                'assets/images/file-not-found.png',
-                height: 220,
-                width: double.infinity,
-                fit: BoxFit.cover,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  'assets/images/file-not-found.png',
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
               ),
             const SizedBox(height: 16),
             FilledButton(
@@ -168,18 +168,31 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     );
   }
 
-  SliverList promotionsList(List<Promotion> promotions) {
-    return SliverList.builder(
-      itemBuilder: (context, index) {
-        return VerticalCard(
-            image: promotions[index].featuredImage,
-            title: promotions[index].title,
-            id: promotions[index].businessId,
-            description: promotions[index].description,
-            callback: () {});
-      },
-      itemCount: promotions.length,
-    );
+  Widget promotionsList(List<Promotion> promotions, texts) {
+    return promotions.isNotEmpty
+        ? SliverList.builder(
+            itemBuilder: (context, index) {
+              return VerticalCard(
+                  image: promotions[index].featuredImage,
+                  title: promotions[index].title,
+                  id: promotions[index].businessId,
+                  description: promotions[index].description,
+                  callback: () {
+                    AutoRouter.of(context).push(
+                        PromotionDetailsView(promotion: promotions[index]));
+                  });
+            },
+            itemCount: promotions.length,
+          )
+        : SliverToBoxAdapter(
+            child: VerticalCard(
+              image: "",
+              title: texts["empty-promotions-title"]!,
+              description: texts["empty-promotions"]!,
+              id: "",
+              callback: () {},
+            ),
+          );
   }
 
   //Methods

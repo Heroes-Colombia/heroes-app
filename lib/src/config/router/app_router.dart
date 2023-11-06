@@ -56,5 +56,9 @@ class AppRouter extends $AppRouter {
           path: '/businessDetails',
           transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
         ),
+        CustomRoute(
+            page: PromotionDetailsView.page,
+            path: '/promotionDetails',
+            transitionsBuilder: TransitionsBuilders.slideLeftWithFade),
       ];
 }

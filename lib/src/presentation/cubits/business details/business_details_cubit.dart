@@ -19,7 +19,7 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
     emit(state.copyWith(status: BusinessViewCubitStatus.loading));
   }
 
-  //This method is used to get the business details by ID
+  //This method is used to get the business details by ID and the promotions
   void getBusinessDetails(String businessId) async {
     try {
       final firestoreService = locator.get<FirestoreService>();
@@ -68,8 +68,7 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       //Then return the promotions
       return promotions;
     } catch (e) {
-      log('Error: $e, Function: getBusinessPromotions, File: business_details_cubit.dart',
-          stackTrace: StackTrace.current);
+      log('Error: $e, Function: getBusinessPromotions, File: business_details_cubit.dart');
       return [];
     }
   }
