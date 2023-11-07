@@ -76,4 +76,28 @@ class FirestoreService {
     }).toList();
     return data;
   }
+
+  /*
+   This method is used to read all documents inside a collection,
+   where the search query is contained in the property passed as parameter
+  */
+  Future<List<Map<String, dynamic>>> readActiveDocumentsBySearchQuery(
+    String collectionName,
+    String property,
+    String searchQuery,
+  ) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where("status", isEqualTo: "active")
+        .orderBy("name")
+        .startAt([searchQuery]).endAt(['$searchQuery\uf8ff']).get();
+
+    final data = docSnapshot.docs.map((e) {
+      final data = e.data();
+      data["id"] = e.id;
+      return data;
+    }).toList();
+
+    return data;
+  }
 }

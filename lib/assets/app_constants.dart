@@ -299,6 +299,8 @@ class AppConstants {
       "featuredBusiness": "Comercios destacados",
       "business": "Comercios",
       "seeAll": "Ver todos",
+      "search-business": "Buscar comercio",
+      "no-results": "No se encontraron resultados",
     },
     "businessDetailsView": {
       "loading-title": "Cargando",
