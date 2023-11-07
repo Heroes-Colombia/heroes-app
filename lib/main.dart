@@ -9,9 +9,9 @@ import 'package:heroes_app/src/config/app_themes.dart';
 import 'package:heroes_app/src/config/router/app_router.dart';
 import 'package:heroes_app/src/locator.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
-import 'package:heroes_app/src/presentation/cubits/business%20details/business_details_cubit.dart';
-import 'package:heroes_app/src/presentation/cubits/business%20home%20view/business_home_view_cubit.dart';
-import 'package:heroes_app/src/presentation/cubits/business%20search%20results/business_search_resutls_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/business/business%20details/business_details_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/business/business%20home%20view/business_home_view_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/business/business%20search%20results/business_search_resutls_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
 
 Future<void> main() async {

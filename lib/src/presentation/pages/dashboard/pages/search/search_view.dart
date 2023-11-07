@@ -6,7 +6,7 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
-import 'package:heroes_app/src/presentation/cubits/business%20home%20view/business_home_view_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/business/business%20home%20view/business_home_view_cubit.dart';
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/delegates/search_business_delegate.dart';
 import 'package:heroes_app/src/presentation/widgets/horizontal_card_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
