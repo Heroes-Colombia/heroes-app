@@ -18,7 +18,7 @@ class AppRouter extends $AppRouter {
         CustomRoute(
           page: AuthView.page,
           path: '/welcome',
-          transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+          transitionsBuilder: TransitionsBuilders.slideLeft,
           children: [
             AutoRoute(page: FirstTimeView.page, path: 'firstTime'),
             AutoRoute(page: LoginView.page, path: 'logIn'),
@@ -34,7 +34,22 @@ class AppRouter extends $AppRouter {
           path: '/dashboard',
           guards: [AuthGuard()],
           children: [
-            AutoRoute(page: SearchView.page, path: 'search'),
+            CustomRoute(
+              transitionsBuilder: TransitionsBuilders.noTransition,
+              page: HomeSearchView.page,
+              path: 'search',
+              children: [
+                CustomRoute(
+                    page: SearchView.page,
+                    path: '',
+                    transitionsBuilder: TransitionsBuilders.noTransition),
+                CustomRoute(
+                  page: AllBusinessView.page,
+                  path: 'allBusinessView',
+                  transitionsBuilder: TransitionsBuilders.slideLeft,
+                )
+              ],
+            ),
             AutoRoute(page: FavoritesView.page, path: 'favorites'),
             AutoRoute(page: ProfileView.page, path: 'settings'),
           ],
@@ -44,21 +59,21 @@ class AppRouter extends $AppRouter {
         CustomRoute(
           page: EditProfileView.page,
           path: '/editProfile',
-          transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+          transitionsBuilder: TransitionsBuilders.slideLeft,
         ),
         CustomRoute(
           page: UnverifiedUserView.page,
           path: '/unverifiedUser',
-          transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+          transitionsBuilder: TransitionsBuilders.slideLeft,
         ),
         CustomRoute(
           page: BusinessDetailsView.page,
           path: '/businessDetails',
-          transitionsBuilder: TransitionsBuilders.slideLeftWithFade,
+          transitionsBuilder: TransitionsBuilders.slideLeft,
         ),
         CustomRoute(
             page: PromotionDetailsView.page,
             path: '/promotionDetails',
-            transitionsBuilder: TransitionsBuilders.slideLeftWithFade),
+            transitionsBuilder: TransitionsBuilders.slideLeft),
       ];
 }

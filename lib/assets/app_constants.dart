@@ -302,6 +302,13 @@ class AppConstants {
       "search-business": "Buscar comercio",
       "no-results": "No se encontraron resultados",
     },
+    "allBusinessView": {
+      "title": "Comercios",
+      "loading-title": "Cargando",
+      "error-title": "Error",
+      "error-content": "Ocurrió un error al cargar los comercios",
+      "error-button": "Reintentar"
+    },
     "businessDetailsView": {
       "loading-title": "Cargando",
       "loading-content": "Cargando información del comercio",

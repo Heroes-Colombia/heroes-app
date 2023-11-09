@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 
 class VerticalCard extends StatelessWidget {
-  const VerticalCard({
-    super.key,
-    required this.image,
-    required this.title,
-    required this.id,
-    this.description,
-    required this.callback,
-  });
+  const VerticalCard(
+      {super.key,
+      required this.image,
+      required this.title,
+      required this.id,
+      this.description,
+      required this.callback,
+      required this.heroName});
 
   final String id;
   final String image;
   final String title;
   final String? description;
   final Function callback;
+  final String heroName;
 
   @override
   Widget build(BuildContext context) {
@@ -68,15 +69,18 @@ class VerticalCard extends StatelessWidget {
               borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(12),
                   bottomRight: Radius.circular(12)),
-              child: image.isNotEmpty
-                  ? Image.network(
-                      image,
-                      fit: BoxFit.cover,
-                    )
-                  : Image.asset(
-                      "assets/images/file-not-found.png",
-                      fit: BoxFit.cover,
-                    ),
+              child: Hero(
+                tag: heroName,
+                child: image.isNotEmpty
+                    ? Image.network(
+                        image,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.asset(
+                        "assets/images/file-not-found.png",
+                        fit: BoxFit.cover,
+                      ),
+              ),
             ),
           ]),
         ),

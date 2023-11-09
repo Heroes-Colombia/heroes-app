@@ -7,18 +7,22 @@ class HorizontalCard extends StatelessWidget {
     required this.title,
     required this.id,
     required this.callback,
+    required this.heroName,
+    this.isOnGrid = false,
   });
 
   final String image;
   final String title;
   final String id;
   final Function callback;
+  final String heroName;
+  final bool isOnGrid;
 
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
     return Container(
-      width: 180,
+      width: !isOnGrid ? 180 : double.infinity,
       height: 174,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -33,19 +37,22 @@ class HorizontalCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              image.isNotEmpty
-                  ? Image.network(
-                      image,
-                      fit: BoxFit.cover,
-                      width: 180,
-                      height: 130,
-                    )
-                  : Image.asset(
-                      "assets/images/file-not-found.png",
-                      fit: BoxFit.cover,
-                      width: 180,
-                      height: 130,
-                    ),
+              Hero(
+                tag: heroName,
+                child: image.isNotEmpty
+                    ? Image.network(
+                        image,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 130,
+                      )
+                    : Image.asset(
+                        "assets/images/file-not-found.png",
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 130,
+                      ),
+              ),
               Expanded(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,

@@ -49,9 +49,13 @@ class SearchView extends StatelessWidget {
         searchButton(theme, texts, context),
         singleTitle(theme, texts),
         mapPreview(theme),
-        doubleTitle(theme, texts["featuredBusiness"], texts["seeAll"], () {}),
+        doubleTitle(theme, texts["featuredBusiness"], texts["seeAll"], () {
+          AutoRouter.of(context).push(const AllBusinessView());
+        }),
         horizontalList(state.featuredBusinesses),
-        doubleTitle(theme, texts["business"], texts["seeAll"], () {}),
+        doubleTitle(theme, texts["business"], texts["seeAll"], () {
+          AutoRouter.of(context).push(const AllBusinessView());
+        }),
         verticalList(state.normalBusinesses),
         const SliverToBoxAdapter(child: SizedBox(height: 16))
       ],
@@ -229,6 +233,7 @@ class SearchView extends StatelessWidget {
               image: featuredBusinesses[index].featuredImage,
               title: featuredBusinesses[index].name,
               id: featuredBusinesses[index].id,
+              heroName: featuredBusinesses[index].id,
               callback: () {
                 AutoRouter.of(context).push(BusinessDetailsView(
                     businessId: featuredBusinesses[index].id));
@@ -251,6 +256,7 @@ class SearchView extends StatelessWidget {
           image: businesses[index].featuredImage,
           title: businesses[index].name,
           id: businesses[index].id,
+          heroName: businesses[index].id,
           callback: () {
             AutoRouter.of(context).push(
               BusinessDetailsView(businessId: businesses[index].id),

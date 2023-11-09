@@ -121,21 +121,27 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
             if (business.featuredImage.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  business.featuredImage,
-                  height: 220,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                child: Hero(
+                  tag: widget.businessId,
+                  child: Image.network(
+                    business.featuredImage,
+                    height: 220,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               )
             else
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'assets/images/file-not-found.png',
-                  height: 220,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                child: Hero(
+                  tag: widget.businessId,
+                  child: Image.asset(
+                    'assets/images/file-not-found.png',
+                    height: 220,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             const SizedBox(height: 16),
@@ -177,6 +183,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                   title: promotions[index].title,
                   id: promotions[index].businessId,
                   description: promotions[index].description,
+                  heroName: promotions[index].title,
                   callback: () {
                     AutoRouter.of(context).push(
                         PromotionDetailsView(promotion: promotions[index]));
@@ -189,6 +196,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
               image: "",
               title: texts["empty-promotions-title"]!,
               description: texts["empty-promotions"]!,
+              heroName: "",
               id: "",
               callback: () {},
             ),
@@ -196,7 +204,6 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
   }
 
   //Methods
-
   void getBusinessDetails() {
     context.read<BusinessDetailsCubit>().getBusinessDetails(widget.businessId);
   }

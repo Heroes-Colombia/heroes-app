@@ -79,6 +79,26 @@ class FirestoreService {
 
   /*
    This method is used to read all documents inside a collection,
+   where the condition status is equal to active
+  */
+  Future<List<Map<String, dynamic>>> readAllActiveDocuments(
+    String collectionName,
+  ) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where("status", isEqualTo: "active")
+        .get();
+
+    final data = docSnapshot.docs.map((e) {
+      final data = e.data();
+      data["id"] = e.id;
+      return data;
+    }).toList();
+    return data;
+  }
+
+  /*
+   This method is used to read all documents inside a collection,
    where the search query is contained in the property passed as parameter
   */
   Future<List<Map<String, dynamic>>> readActiveDocumentsBySearchQuery(
