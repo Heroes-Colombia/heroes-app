@@ -35,18 +35,17 @@ class AppRouter extends $AppRouter {
           guards: [AuthGuard()],
           children: [
             CustomRoute(
-              transitionsBuilder: TransitionsBuilders.noTransition,
               page: HomeSearchView.page,
               path: 'search',
               children: [
                 CustomRoute(
-                    page: SearchView.page,
-                    path: '',
-                    transitionsBuilder: TransitionsBuilders.noTransition),
+                  page: SearchView.page,
+                  path: '',
+                ),
                 CustomRoute(
                   page: AllBusinessView.page,
                   path: 'allBusinessView',
-                  transitionsBuilder: TransitionsBuilders.slideLeft,
+                  transitionsBuilder: TransitionsBuilders.fadeIn,
                 )
               ],
             ),

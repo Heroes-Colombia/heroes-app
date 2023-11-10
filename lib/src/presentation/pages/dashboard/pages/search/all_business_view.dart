@@ -20,22 +20,25 @@ class AllBusinessView extends StatelessWidget {
     var theme = Theme.of(context);
     var texts = locator<AppConstants>().dashBoardTexts["allBusinessView"]!;
 
-    return BlocBuilder<AllBusinessCubit, AllBusinessState>(
-      builder: (context, state) {
-        switch (state.status) {
-          case BusinessViewCubitStatus.initial:
-            return loadingView(theme, texts);
-          case BusinessViewCubitStatus.loading:
-            getAllBusinesses(context);
-            return loadingView(theme, texts);
-          case BusinessViewCubitStatus.success:
-            return succesView(theme, texts, state.businesses, context);
-          case BusinessViewCubitStatus.error:
-            return errorView(theme, texts, context);
-          default:
-            return errorView(theme, texts, context);
-        }
-      },
+    return Scaffold(
+      backgroundColor: theme.colorScheme.background,
+      body: BlocBuilder<AllBusinessCubit, AllBusinessState>(
+        builder: (context, state) {
+          switch (state.status) {
+            case BusinessViewCubitStatus.initial:
+              return loadingView(theme, texts);
+            case BusinessViewCubitStatus.loading:
+              getAllBusinesses(context);
+              return loadingView(theme, texts);
+            case BusinessViewCubitStatus.success:
+              return succesView(theme, texts, state.businesses, context);
+            case BusinessViewCubitStatus.error:
+              return errorView(theme, texts, context);
+            default:
+              return errorView(theme, texts, context);
+          }
+        },
+      ),
     );
   }
 
@@ -84,49 +87,46 @@ class AllBusinessView extends StatelessWidget {
       slivers: [
         SliverAppBar.large(
           leading: IconButton(
-            icon: const Icon(Ionicons.close_outline),
+            icon: const Icon(Ionicons.close),
             onPressed: () => AutoRouter.of(context).pop(),
           ),
           title: Text(texts["title"]),
         ),
-        SliverFillRemaining(
-          child: businessGrid(businesses, theme),
+        SliverPadding(
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          sliver: businessGrid(businesses, theme),
         )
       ],
     );
   }
 
   //Widget methods
-  Widget businessGrid(List<ListableBusiness> businesses, theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 1,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          mainAxisExtent: 174,
-        ),
-        itemCount: businesses.length,
-        padding: const EdgeInsets.only(bottom: 12),
-        itemBuilder: (context, index) {
-          return HorizontalCard(
-            isOnGrid: true,
-            image: businesses[index].featuredImage,
-            title: businesses[index].name,
-            id: businesses[index].id,
-            callback: () {
-              AutoRouter.of(context).push(
-                BusinessDetailsView(
-                  businessId: businesses[index].id,
-                ),
-              );
-            },
-            heroName: businesses[index].id,
-          );
-        },
+  SliverGrid businessGrid(List<ListableBusiness> businesses, theme) {
+    return SliverGrid.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        mainAxisExtent: 174,
       ),
+      itemCount: businesses.length,
+      itemBuilder: (context, index) {
+        return HorizontalCard(
+          isOnGrid: true,
+          image: businesses[index].featuredImage,
+          title: businesses[index].name,
+          id: businesses[index].id,
+          callback: () {
+            AutoRouter.of(context).push(
+              BusinessDetailsView(
+                businessId: businesses[index].id,
+              ),
+            );
+          },
+          heroName: businesses[index].id,
+        );
+      },
     );
   }
 
