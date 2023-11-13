@@ -309,6 +309,13 @@ class AppConstants {
       "error-content": "Ocurrió un error al cargar los comercios",
       "error-button": "Reintentar"
     },
+    "favouriteView": {
+      "title": "Favoritos",
+      "loading-title": "Cargando",
+      "error-title": "Error",
+      "error-content": "Ocurrió un error al cargar los comercios favoritos",
+      "error-button": "Reintentar"
+    },
     "businessDetailsView": {
       "loading-title": "Cargando",
       "loading-content": "Cargando información del comercio",

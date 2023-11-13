@@ -100,7 +100,7 @@ class AllBusinessView extends StatelessWidget {
     );
   }
 
-  //Widget methods
+  //Widgets
   SliverGrid businessGrid(List<ListableBusiness> businesses, theme) {
     return SliverGrid.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

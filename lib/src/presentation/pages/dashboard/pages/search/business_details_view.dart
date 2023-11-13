@@ -43,7 +43,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
             getBusinessDetails();
             return loadingView(theme, texts);
           case BusinessViewCubitStatus.success:
-            return succesView(theme, texts, state.business!, state.promotions);
+            return succesView(theme, texts, state);
           case BusinessViewCubitStatus.error:
             return errorView(theme, texts);
           default:
@@ -98,20 +98,34 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
   }
 
   CustomScrollView succesView(
-      ThemeData theme, texts, Business business, List<Promotion> promotions) {
+    ThemeData theme,
+    texts,
+    BusinessDetailsState state,
+  ) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(business.name)),
-        mainCard(business, theme, texts),
+        SliverAppBar.large(title: Text(state.business!.name)),
+        mainCard(
+          state.business!,
+          theme,
+          texts,
+          state.isFavourite,
+          state.favouriteIsLoading,
+        ),
         separator(texts, theme),
-        promotionsList(promotions, texts)
+        promotionsList(state.promotions, texts)
       ],
     );
   }
 
-  //Widget methods
-
-  SliverToBoxAdapter mainCard(Business business, ThemeData theme, texts) {
+  //Widgets
+  SliverToBoxAdapter mainCard(
+    Business business,
+    ThemeData theme,
+    texts,
+    bool isFavourite,
+    bool favouriteIsLoading,
+  ) {
     return SliverToBoxAdapter(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -145,9 +159,51 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                 ),
               ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () {},
-              child: Text(texts["navigation-title"]),
+            //TODO: Improve the favourite feedback
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FilledButton(
+                  onPressed: () {},
+                  child: Text(texts["navigation-title"]),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 40,
+                  child: favouriteIsLoading
+                      ? IconButton.filledTonal(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                              theme.colorScheme.background,
+                            ),
+                          ),
+                          onPressed: null,
+                          icon: const Icon(
+                            Ionicons.cloud_upload_outline,
+                            color: null,
+                          ),
+                        )
+                      : IconButton.filledTonal(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                              theme.colorScheme.background,
+                            ),
+                          ),
+                          onPressed: () {
+                            setBusinessAsFavourite();
+                          },
+                          icon: Icon(
+                            isFavourite && !favouriteIsLoading
+                                ? Ionicons.heart
+                                : Ionicons.heart_outline,
+                            color: isFavourite && !favouriteIsLoading
+                                ? theme.colorScheme.primary
+                                : null,
+                          ),
+                        ),
+                )
+              ],
             ),
             const SizedBox(height: 16),
           ],
@@ -205,6 +261,20 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
 
   //Methods
   void getBusinessDetails() {
+    checkIfBusinessIsMarkedAsFavourite();
     context.read<BusinessDetailsCubit>().getBusinessDetails(widget.businessId);
+  }
+
+  void setBusinessAsFavourite() {
+    context
+        .read<BusinessDetailsCubit>()
+        .setBusinessAsFavourite(widget.businessId);
+  }
+
+  // This method is used to check if the business is marked as favourite
+  void checkIfBusinessIsMarkedAsFavourite() {
+    context
+        .read<BusinessDetailsCubit>()
+        .businessIsMarkedAsFavorite(widget.businessId);
   }
 }

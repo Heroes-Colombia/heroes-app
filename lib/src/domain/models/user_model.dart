@@ -12,6 +12,7 @@ class User extends Equatable {
   final String rank;
   final String email;
   final bool verified;
+  final List<String> favouriteBusinesses;
 
   const User({
     required this.uid,
@@ -24,6 +25,7 @@ class User extends Equatable {
     required this.rank,
     required this.email,
     required this.verified,
+    required this.favouriteBusinesses,
   });
 
   @override
@@ -38,6 +40,7 @@ class User extends Equatable {
         permission,
         rank,
         verified,
+        favouriteBusinesses
       ];
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -53,6 +56,9 @@ class User extends Equatable {
       permission: UserPermissions.values.firstWhere((element) =>
           element.toString().split('.').last == json['permission']),
       verified: json['verified'] as bool,
+      favouriteBusinesses: json['favourite_businesses'] != null
+          ? List<String>.from(json['favourite_businesses'])
+          : [],
     );
   }
 
@@ -115,6 +121,7 @@ class User extends Equatable {
     String? email,
     String? rank,
     bool? verified,
+    List<String>? favouriteBusinesses,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -127,6 +134,7 @@ class User extends Equatable {
       permission: permission ?? this.permission,
       verified: verified ?? this.verified,
       rank: rank ?? this.rank,
+      favouriteBusinesses: favouriteBusinesses ?? this.favouriteBusinesses,
     );
   }
 }
