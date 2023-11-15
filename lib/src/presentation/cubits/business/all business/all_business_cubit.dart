@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:get_it/get_it.dart';
@@ -32,6 +34,7 @@ class AllBusinessCubit extends Cubit<AllBusinessState> {
       ));
     } catch (e) {
       emit(state.copyWith(status: BusinessViewCubitStatus.error));
+      log('Error: $e, Function: getBusinesses, File: all_business_cubit.dart');
     }
   }
 }

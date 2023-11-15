@@ -233,7 +233,6 @@ class SearchView extends StatelessWidget {
               image: featuredBusinesses[index].featuredImage,
               title: featuredBusinesses[index].name,
               id: featuredBusinesses[index].id,
-              heroName: featuredBusinesses[index].id,
               callback: () {
                 AutoRouter.of(context).push(BusinessDetailsView(
                     businessId: featuredBusinesses[index].id));
@@ -256,7 +255,6 @@ class SearchView extends StatelessWidget {
           image: businesses[index].featuredImage,
           title: businesses[index].name,
           id: businesses[index].id,
-          heroName: businesses[index].id,
           callback: () {
             AutoRouter.of(context).push(
               BusinessDetailsView(businessId: businesses[index].id),

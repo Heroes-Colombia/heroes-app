@@ -21,18 +21,23 @@ class FavoritesView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: BlocBuilder<FavouriteBusinessesCubit, FavouriteBusinessesState>(
-        builder: (context, state) {
-          switch (state.status) {
-            case BusinessViewCubitStatus.loading:
-              getFavouriteBusinesses(context);
-              return loadingView(texts);
-            case BusinessViewCubitStatus.success:
-              return succesView(texts, theme, state.businesses);
-            default:
-              return errorView(texts, theme, context);
-          }
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await getFavouriteBusinesses(context);
         },
+        child: BlocBuilder<FavouriteBusinessesCubit, FavouriteBusinessesState>(
+          builder: (context, state) {
+            switch (state.status) {
+              case BusinessViewCubitStatus.loading:
+                getFavouriteBusinesses(context);
+                return loadingView(texts);
+              case BusinessViewCubitStatus.success:
+                return succesView(texts, theme, state.businesses);
+              default:
+                return errorView(texts, theme, context);
+            }
+          },
+        ),
       ),
     );
   }
@@ -86,45 +91,57 @@ class FavoritesView extends StatelessWidget {
         SliverAppBar.large(title: Text(texts["title"]!)),
         SliverPadding(
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-          sliver: businessGrid(businesses, theme),
+          sliver: businessGrid(businesses, theme, texts),
         )
       ],
     );
   }
 
   //Widgets
-  //TODO: Fix bug on hero animation in business details
-  SliverGrid businessGrid(List<ListableBusiness> businesses, theme) {
-    return SliverGrid.builder(
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        mainAxisExtent: 174,
-      ),
-      itemCount: businesses.length,
-      itemBuilder: (context, index) {
-        return HorizontalCard(
-          isOnGrid: true,
-          image: businesses[index].featuredImage,
-          title: businesses[index].name,
-          id: businesses[index].id,
-          callback: () {
-            AutoRouter.of(context).push(
-              BusinessDetailsView(
-                businessId: businesses[index].id,
+  Widget businessGrid(
+      List<ListableBusiness> businesses, ThemeData theme, texts) {
+    return businesses.isNotEmpty
+        ? SliverGrid.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 1,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              mainAxisExtent: 174,
+            ),
+            itemCount: businesses.length,
+            itemBuilder: (context, index) {
+              return HorizontalCard(
+                isOnGrid: true,
+                image: businesses[index].featuredImage,
+                title: businesses[index].name,
+                id: businesses[index].id,
+                callback: () {
+                  AutoRouter.of(context).push(
+                    BusinessDetailsView(
+                      businessId: businesses[index].id,
+                    ),
+                  );
+                },
+              );
+            },
+          )
+        : SliverFillRemaining(
+            child: Center(
+              child: Text(
+                texts["empty-content"]!,
+                style: TextStyle(
+                  color: theme.colorScheme.onBackground,
+                  fontSize: theme.textTheme.labelLarge!.fontSize,
+                  fontWeight: theme.textTheme.labelLarge!.fontWeight,
+                ),
               ),
-            );
-          },
-          heroName: businesses[index].id,
-        );
-      },
-    );
+            ),
+          );
   }
 
   //Methods
-  void getFavouriteBusinesses(BuildContext context) {
-    context.read<FavouriteBusinessesCubit>().getFavouriteBusinesses();
+  Future<void> getFavouriteBusinesses(BuildContext context) async {
+    await context.read<FavouriteBusinessesCubit>().getFavouriteBusinesses();
   }
 }

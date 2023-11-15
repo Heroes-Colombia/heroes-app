@@ -124,7 +124,6 @@ class AllBusinessView extends StatelessWidget {
               ),
             );
           },
-          heroName: businesses[index].id,
         );
       },
     );

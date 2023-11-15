@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:get_it/get_it.dart';
@@ -17,12 +19,20 @@ class FavouriteBusinessesCubit extends Cubit<FavouriteBusinessesState> {
     emit(state.copyWith(status: BusinessViewCubitStatus.loading));
   }
 
-  void getFavouriteBusinesses() async {
+  Future<void> getFavouriteBusinesses() async {
     try {
       final collectionName = locator.get<AppConstants>().businessCollection;
       final user = await locator.get<AuthService>().getUser();
 
       final favouriteBusinesses = user!.favouriteBusinesses;
+
+      if (favouriteBusinesses.isEmpty) {
+        emit(state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          businesses: [],
+        ));
+        return;
+      }
 
       final rawBusinesses = await locator<FirestoreService>()
           .readActiveDocumentsByDocumentIDs(
@@ -37,6 +47,7 @@ class FavouriteBusinessesCubit extends Cubit<FavouriteBusinessesState> {
       ));
     } catch (e) {
       emit(state.copyWith(status: BusinessViewCubitStatus.error));
+      log('Error: $e, Function: getFavouriteBusinesses, File: favourite_business_cubit.dart');
     }
   }
 }
