@@ -6,7 +6,8 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
-import 'package:heroes_app/src/presentation/cubits/business%20home%20view/business_home_view_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/business/business_home_view/business_home_view_cubit.dart';
+import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/delegates/search_business_delegate.dart';
 import 'package:heroes_app/src/presentation/widgets/horizontal_card_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 
@@ -45,12 +46,16 @@ class SearchView extends StatelessWidget {
           title: Text(texts["title"]),
           pinned: true,
         ),
-        searchButton(theme, texts),
+        searchButton(theme, texts, context),
         singleTitle(theme, texts),
         mapPreview(theme),
-        doubleTitle(theme, texts["featuredBusiness"], texts["seeAll"], () {}),
+        doubleTitle(theme, texts["featuredBusiness"], texts["seeAll"], () {
+          AutoRouter.of(context).push(const AllBusinessView());
+        }),
         horizontalList(state.featuredBusinesses),
-        doubleTitle(theme, texts["business"], texts["seeAll"], () {}),
+        doubleTitle(theme, texts["business"], texts["seeAll"], () {
+          AutoRouter.of(context).push(const AllBusinessView());
+        }),
         verticalList(state.normalBusinesses),
         const SliverToBoxAdapter(child: SizedBox(height: 16))
       ],
@@ -90,13 +95,23 @@ class SearchView extends StatelessWidget {
   }
 
   //Widget methods
-  SliverToBoxAdapter searchButton(ThemeData theme, texts) {
+  SliverToBoxAdapter searchButton(
+    ThemeData theme,
+    texts,
+    BuildContext context,
+  ) {
     return SliverToBoxAdapter(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12),
         child: InkWell(
           borderRadius: const BorderRadius.all(Radius.circular(20)),
-          onTap: () {},
+          onTap: () {
+            //open search delegate
+            showSearch(
+              context: context,
+              delegate: SearchBusinessDelegate(),
+            );
+          },
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
@@ -218,6 +233,7 @@ class SearchView extends StatelessWidget {
               image: featuredBusinesses[index].featuredImage,
               title: featuredBusinesses[index].name,
               id: featuredBusinesses[index].id,
+              heroName: featuredBusinesses[index].id,
               callback: () {
                 AutoRouter.of(context).push(BusinessDetailsView(
                     businessId: featuredBusinesses[index].id));
@@ -240,6 +256,7 @@ class SearchView extends StatelessWidget {
           image: businesses[index].featuredImage,
           title: businesses[index].name,
           id: businesses[index].id,
+          heroName: businesses[index].id,
           callback: () {
             AutoRouter.of(context).push(
               BusinessDetailsView(businessId: businesses[index].id),
