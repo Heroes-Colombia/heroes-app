@@ -120,4 +120,27 @@ class FirestoreService {
 
     return data;
   }
+
+  /*
+   This method is used to read all documents inside a collection,
+   where the passed ids are contained in the document ids
+  */
+  Future<List<Map<String, dynamic>>> readActiveDocumentsByDocumentIDs(
+    String collectionName,
+    List<String> ids,
+  ) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where("status", isEqualTo: "active")
+        .where(FieldPath.documentId, whereIn: ids)
+        .get();
+
+    final data = docSnapshot.docs.map((e) {
+      final data = e.data();
+      data["id"] = e.id;
+      return data;
+    }).toList();
+
+    return data;
+  }
 }

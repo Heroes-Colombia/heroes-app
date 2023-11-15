@@ -100,7 +100,7 @@ class AllBusinessView extends StatelessWidget {
     );
   }
 
-  //Widget methods
+  //Widgets
   SliverGrid businessGrid(List<ListableBusiness> businesses, theme) {
     return SliverGrid.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -124,7 +124,6 @@ class AllBusinessView extends StatelessWidget {
               ),
             );
           },
-          heroName: businesses[index].id,
         );
       },
     );

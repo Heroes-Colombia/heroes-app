@@ -13,6 +13,7 @@ import 'package:heroes_app/src/presentation/cubits/business/all_business/all_bus
 import 'package:heroes_app/src/presentation/cubits/business/business_details/business_details_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/business/business_home_view/business_home_view_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/business/business_search_results/business_search_resutls_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/favourite_businesses/favourite_businesses_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
 
 Future<void> main() async {
@@ -72,7 +73,10 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => AllBusinessCubit()..getInitial(),
-        )
+        ),
+        BlocProvider(
+          create: (context) => FavouriteBusinessesCubit()..getInitial(),
+        ),
       ],
       child: MaterialApp.router(
         title: 'Heroes',

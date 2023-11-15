@@ -43,7 +43,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
             getBusinessDetails();
             return loadingView(theme, texts);
           case BusinessViewCubitStatus.success:
-            return succesView(theme, texts, state.business!, state.promotions);
+            return succesView(theme, texts, state);
           case BusinessViewCubitStatus.error:
             return errorView(theme, texts);
           default:
@@ -98,20 +98,34 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
   }
 
   CustomScrollView succesView(
-      ThemeData theme, texts, Business business, List<Promotion> promotions) {
+    ThemeData theme,
+    texts,
+    BusinessDetailsState state,
+  ) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(business.name)),
-        mainCard(business, theme, texts),
+        SliverAppBar.large(title: Text(state.business!.name)),
+        mainCard(
+          state.business!,
+          theme,
+          texts,
+          state.isFavourite,
+          state.favouriteIsLoading,
+        ),
         separator(texts, theme),
-        promotionsList(promotions, texts)
+        promotionsList(state.promotions, texts)
       ],
     );
   }
 
-  //Widget methods
-
-  SliverToBoxAdapter mainCard(Business business, ThemeData theme, texts) {
+  //Widgets
+  SliverToBoxAdapter mainCard(
+    Business business,
+    ThemeData theme,
+    texts,
+    bool isFavourite,
+    bool favouriteIsLoading,
+  ) {
     return SliverToBoxAdapter(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -121,33 +135,57 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
             if (business.featuredImage.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Hero(
-                  tag: widget.businessId,
-                  child: Image.network(
-                    business.featuredImage,
-                    height: 220,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                child: Image.network(
+                  business.featuredImage,
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
                 ),
               )
             else
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Hero(
-                  tag: widget.businessId,
-                  child: Image.asset(
-                    'assets/images/file-not-found.png',
-                    height: 220,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                child: Image.asset(
+                  'assets/images/file-not-found.png',
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
                 ),
               ),
             const SizedBox(height: 16),
-            FilledButton(
-              onPressed: () {},
-              child: Text(texts["navigation-title"]),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FilledButton(
+                  onPressed: () {},
+                  child: Text(texts["navigation-title"]),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 40,
+                  child: favouriteIsLoading
+                      ? loadingHeart(theme)
+                      : IconButton.filledTonal(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                              theme.colorScheme.background,
+                            ),
+                          ),
+                          onPressed: () {
+                            setBusinessAsFavourite();
+                          },
+                          icon: Icon(
+                            isFavourite && !favouriteIsLoading
+                                ? Ionicons.heart
+                                : Ionicons.heart_outline,
+                            color: isFavourite && !favouriteIsLoading
+                                ? theme.colorScheme.primary
+                                : null,
+                          ),
+                        ),
+                )
+              ],
             ),
             const SizedBox(height: 16),
           ],
@@ -183,7 +221,6 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                   title: promotions[index].title,
                   id: promotions[index].businessId,
                   description: promotions[index].description,
-                  heroName: promotions[index].title,
                   callback: () {
                     AutoRouter.of(context).push(
                         PromotionDetailsView(promotion: promotions[index]));
@@ -196,15 +233,55 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
               image: "",
               title: texts["empty-promotions-title"]!,
               description: texts["empty-promotions"]!,
-              heroName: "",
               id: "",
               callback: () {},
             ),
           );
   }
 
+  Widget loadingHeart(ThemeData theme) {
+    return SizedBox(
+      width: 40,
+      child: Stack(children: [
+        IconButton.filledTonal(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(
+              theme.colorScheme.background,
+            ),
+          ),
+          onPressed: null,
+          icon: const Icon(
+            Ionicons.heart_outline,
+            color: null,
+          ),
+        ),
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.center,
+            child: CircularProgressIndicator(
+              color: theme.colorScheme.primary,
+            ),
+          ),
+        )
+      ]),
+    );
+  }
+
   //Methods
   void getBusinessDetails() {
+    checkIfBusinessIsMarkedAsFavourite();
     context.read<BusinessDetailsCubit>().getBusinessDetails(widget.businessId);
+  }
+
+  void setBusinessAsFavourite() {
+    context
+        .read<BusinessDetailsCubit>()
+        .setBusinessAsFavourite(widget.businessId);
+  }
+
+  void checkIfBusinessIsMarkedAsFavourite() {
+    context
+        .read<BusinessDetailsCubit>()
+        .businessIsMarkedAsFavorite(widget.businessId);
   }
 }
