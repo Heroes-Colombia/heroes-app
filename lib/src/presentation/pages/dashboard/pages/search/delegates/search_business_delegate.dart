@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
-import 'package:heroes_app/src/presentation/cubits/business/business%20search%20results/business_search_resutls_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/business/business_search_results/business_search_resutls_cubit.dart';
 import 'package:ionicons/ionicons.dart';
 
 class SearchBusinessDelegate extends SearchDelegate {

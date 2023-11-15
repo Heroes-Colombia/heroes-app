@@ -7,7 +7,7 @@ import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
-import 'package:heroes_app/src/presentation/cubits/business/business%20details/business_details_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/business/business_details/business_details_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 import 'package:ionicons/ionicons.dart';
 
