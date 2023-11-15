@@ -153,7 +153,6 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                 ),
               ),
             const SizedBox(height: 16),
-            //TODO: Improve the favourite feedback
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
@@ -166,18 +165,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                 SizedBox(
                   width: 40,
                   child: favouriteIsLoading
-                      ? IconButton.filledTonal(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all(
-                              theme.colorScheme.background,
-                            ),
-                          ),
-                          onPressed: null,
-                          icon: const Icon(
-                            Ionicons.cloud_upload_outline,
-                            color: null,
-                          ),
-                        )
+                      ? loadingHeart(theme)
                       : IconButton.filledTonal(
                           style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all(
@@ -251,6 +239,34 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
           );
   }
 
+  Widget loadingHeart(ThemeData theme) {
+    return SizedBox(
+      width: 40,
+      child: Stack(children: [
+        IconButton.filledTonal(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(
+              theme.colorScheme.background,
+            ),
+          ),
+          onPressed: null,
+          icon: const Icon(
+            Ionicons.heart_outline,
+            color: null,
+          ),
+        ),
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.center,
+            child: CircularProgressIndicator(
+              color: theme.colorScheme.primary,
+            ),
+          ),
+        )
+      ]),
+    );
+  }
+
   //Methods
   void getBusinessDetails() {
     checkIfBusinessIsMarkedAsFavourite();
@@ -263,7 +279,6 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
         .setBusinessAsFavourite(widget.businessId);
   }
 
-  // This method is used to check if the business is marked as favourite
   void checkIfBusinessIsMarkedAsFavourite() {
     context
         .read<BusinessDetailsCubit>()
