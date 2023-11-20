@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:heroes_app/assets/app_enums.dart';
-import 'package:heroes_app/src/domain/models/reviews_model.dart';
+import 'package:heroes_app/src/domain/models/review_model.dart';
 
 class Business extends Equatable {
   final BusinessStatus status;
@@ -12,7 +12,7 @@ class Business extends Equatable {
   final String email;
   final List<dynamic> categories;
   final String address;
-  final List<UserReviews> reviews;
+  final List<UserReview> reviews;
   final String featuredImage;
 
   const Business({
@@ -58,7 +58,7 @@ class Business extends Equatable {
       categories: json["categories"] != null ? json['categories'] : [],
       address: json['address'] as String,
       reviews: json["revies"] != null
-          ? json['reviews'].map((e) => UserReviews.fromJson(e)).toList()
+          ? json['reviews'].map((e) => UserReview.fromJson(e)).toList()
           : [],
       featuredImage: json["featured_image"] != null
           ? json['featured_image'] as String
@@ -106,7 +106,7 @@ class Business extends Equatable {
     String? email,
     List<String>? categories,
     String? address,
-    List<UserReviews>? reviews,
+    List<UserReview>? reviews,
     String? featuredImage,
   }) {
     return Business(

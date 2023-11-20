@@ -144,9 +144,10 @@ class SearchView extends StatelessWidget {
 
   SliverToBoxAdapter singleTitle(ThemeData theme, texts) {
     return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
-        child: Text(
+        child: Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: ListTile(
+        title: Text(
           texts["nearPromotions"],
           style: TextStyle(
             color: theme.colorScheme.onSurfaceVariant,
@@ -155,7 +156,7 @@ class SearchView extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 
   SliverToBoxAdapter mapPreview(ThemeData theme) {
@@ -186,36 +187,21 @@ class SearchView extends StatelessWidget {
     Function callback,
   ) {
     return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
-        child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: theme.textTheme.labelLarge!.fontSize,
-                  fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                ),
-              ),
-              InkWell(
-                focusColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                onTap: () => callback(),
-                child: Text(
-                  buttonText,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: theme.textTheme.labelLarge!.fontSize,
-                    fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                  ),
-                ),
-              )
-            ]),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+          onTap: () => callback(),
+          title: Text(
+            title,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: theme.textTheme.labelLarge!.fontSize,
+              fontWeight: theme.textTheme.labelLarge!.fontWeight,
+            ),
+          ),
+          trailing: Text(buttonText),
+        ),
       ),
     );
   }

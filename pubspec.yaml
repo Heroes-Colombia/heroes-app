@@ -36,6 +36,8 @@ dependencies:
   adaptive_theme: ^3.4.1
   image_picker: ^1.0.4
   firebase_storage: ^11.4.0
+  intl: ^0.18.1
+  form_builder_extra_fields: ^10.1.0
 
 dev_dependencies:
   flutter_test:
