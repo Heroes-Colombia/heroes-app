@@ -631,7 +631,10 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
 
     //We show a snackbar
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(texts["review-success-title"]!)),
+      SnackBar(
+        content: Text(texts["review-success-title"]!),
+        duration: const Duration(seconds: 4),
+      ),
     );
 
     //We close the modal

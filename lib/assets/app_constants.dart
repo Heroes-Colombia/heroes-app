@@ -340,7 +340,8 @@ class AppConstants {
       "create-review": "Agregar reseña",
       "comment-hint": "Ingresa tu comentario",
       "comment-validator": "Por favor ingresa tu comentario",
-      "review-success-title": "¡Reseña creada! Gracias por tu opinión",
+      "review-success-title":
+          "¡Reseña creada! Espera a que sea aprobada para que sea visible",
     },
     "promotionDetailsView": {
       "description-title": "Descripción",
