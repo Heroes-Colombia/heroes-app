@@ -15,6 +15,7 @@ import 'package:heroes_app/src/presentation/cubits/business/business_home_view/b
 import 'package:heroes_app/src/presentation/cubits/business/business_search_results/business_search_resutls_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/favourite_businesses/favourite_businesses_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +25,8 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //DIO dependencies
   await initializeDependencies();
+  //Formating locale
+  await initializeDateFormatting('es', null);
   //Theme dependencies
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
 

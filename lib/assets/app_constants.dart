@@ -321,12 +321,27 @@ class AppConstants {
       "loading-title": "Cargando",
       "loading-content": "Cargando información del comercio",
       "promotions-title": "Promociones",
+      "comments-title": "Comentarios",
+      "comments-button": "Ver todos",
+      "add-comment-title":
+          "Te gustaría compartir tu experiencia con este negocio?",
+      "add-comment-button": "Agregar review",
+      "empty-comment-title":
+          "Este comercio aún no cuenta con comentarios activas, ¿Has visitado este comercio, te gustaría compartir tu experiencia con este negocio?",
       "navigation-title": "Navegar al comercio",
       "error-title": "Error",
       "error-content": "Ocurrió un error al cargar la información del comercio",
       "error-button": "Reintentar",
       "empty-promotions-title": "¡Lo sentimos!",
       "empty-promotions": "Este comercio no tiene promociones activas",
+      "raiting": "Calificación",
+      "comment": "Comentario",
+      "add-review": "Crear una reseña",
+      "create-review": "Agregar reseña",
+      "comment-hint": "Ingresa tu comentario",
+      "comment-validator": "Por favor ingresa tu comentario",
+      "review-success-title":
+          "¡Reseña creada! Espera a que sea aprobada para que sea visible",
     },
     "promotionDetailsView": {
       "description-title": "Descripción",

@@ -7,6 +7,7 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
+import 'package:heroes_app/src/domain/models/review_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 
@@ -37,6 +38,9 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       //We fetch the promotions from the database
       final promotions = await getBusinessPromotions(businessId);
 
+      //We fetch the reviews from the database
+      final reviews = await getBusinessReviews(businessId);
+
       //We update the state with the new business details
       emit(state.copyWith(
         businessId: businessId,
@@ -45,6 +49,7 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
         status: BusinessViewCubitStatus.success,
         isFavourite: state.isFavourite,
         favouriteIsLoading: state.favouriteIsLoading,
+        reviews: reviews,
       ));
     } catch (e) {
       log('Error: $e, Function: getBusinessDetails, File: business_details_cubit.dart',
@@ -86,6 +91,73 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       emit(state.copyWith(isFavourite: true));
     } else {
       emit(state.copyWith(isFavourite: false));
+    }
+  }
+
+//This method is used to get the first 5 business reviews
+  Future<List<UserReview>> getBusinessReviews(String businessId) async {
+    try {
+      final firestoreService = locator.get<FirestoreService>();
+      final reviewsCollection = locator.get<AppConstants>().reviewsCollection;
+
+      //We fetch the reviews from the database
+      final rawReviews = await firestoreService.readActiveDocumentsByCondition(
+          reviewsCollection, 'business_id', businessId, 5);
+
+      final reviews = rawReviews.map((e) => UserReview.fromJson(e)).toList();
+
+      //Then return the reviews
+      return reviews;
+    } catch (e) {
+      log('Error: $e, Function: getBusinessReviews, File: business_details_cubit.dart');
+      return [];
+    }
+  }
+
+  //This method is used to get all business reviews
+  Future<void> getAllBusinessReviews(String businessId) async {
+    emit(state.copyWith(allUserReviews: []));
+    try {
+      final firestoreService = locator.get<FirestoreService>();
+      final reviewsCollection = locator.get<AppConstants>().reviewsCollection;
+
+      //We fetch the reviews from the database
+      final rawReviews = await firestoreService.readActiveDocumentsByCondition(
+          reviewsCollection, 'business_id', businessId, 999);
+
+      final reviews = rawReviews.map((e) => UserReview.fromJson(e)).toList();
+
+      //Then return the reviews
+      emit(state.copyWith(allUserReviews: reviews));
+    } catch (e) {
+      log('Error: $e, Function: getAllBusinessReviews, File: business_details_cubit.dart');
+    }
+  }
+
+  //This method is used to set a review to a business
+  Future<void> setReviewToBusiness(UserReview review) async {
+    //We update the state
+    emit(state.copyWith(isReviewLoading: true));
+
+    try {
+      final firestoreService = locator.get<FirestoreService>();
+      final reviewsCollection = locator.get<AppConstants>().reviewsCollection;
+
+      //We add the review to the database
+      await firestoreService.createDocument(
+        reviewsCollection,
+        review.toJson(),
+      );
+
+      //We update the state
+      emit(state.copyWith(
+        reviews: [review, ...state.reviews],
+        allUserReviews: state.allUserReviews.isNotEmpty
+            ? [review, ...state.allUserReviews]
+            : state.allUserReviews,
+      ));
+    } catch (e) {
+      log('Error: $e, Function: setReviewToBusiness, File: business_details_cubit.dart');
     }
   }
 
@@ -133,5 +205,10 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       emit(state.copyWith(isFavourite: !state.isFavourite));
       log('Error: $e, Function: setBusinessAsFavourite, File: business_details_cubit.dart');
     }
+  }
+
+  //This method is used to reset the favourite state to false
+  void resetReviewState() {
+    emit(state.copyWith(isReviewLoading: false));
   }
 }

@@ -1,17 +1,19 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
-class UserReviews extends Equatable {
+class UserReview extends Equatable {
   final String userId;
   final String comment;
-  final int rate;
+  final double rate;
   final String businessId;
+  final DateTime createdAt;
 
-  const UserReviews({
-    required this.userId,
-    required this.comment,
-    required this.rate,
-    required this.businessId,
-  });
+  const UserReview(
+      {required this.userId,
+      required this.comment,
+      required this.rate,
+      required this.businessId,
+      required this.createdAt});
 
   @override
   List<Object?> get props => [
@@ -19,14 +21,18 @@ class UserReviews extends Equatable {
         comment,
         rate,
         businessId,
+        createdAt,
       ];
 
-  factory UserReviews.fromJson(Map<String, dynamic> json) {
-    return UserReviews(
+  factory UserReview.fromJson(Map<String, dynamic> json) {
+    var createdAt = json['created_at'] as Timestamp;
+
+    return UserReview(
       userId: json['user_id'] as String,
       comment: json['comment'] as String,
-      rate: json['rate'] as int,
+      rate: json['rate'] as double,
       businessId: json['business_id'] as String,
+      createdAt: createdAt.toDate(),
     );
   }
 
@@ -36,20 +42,24 @@ class UserReviews extends Equatable {
       'comment': comment,
       'rate': rate,
       'business_id': businessId,
+      'created_at': createdAt,
+      'status': 'inactive',
     };
   }
 
-  UserReviews copyWith({
+  UserReview copyWith({
     String? userId,
     String? comment,
-    int? rate,
+    double? rate,
     String? businessId,
+    DateTime? createdAt,
   }) {
-    return UserReviews(
+    return UserReview(
       userId: userId ?? this.userId,
       comment: comment ?? this.comment,
       rate: rate ?? this.rate,
       businessId: businessId ?? this.businessId,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 }

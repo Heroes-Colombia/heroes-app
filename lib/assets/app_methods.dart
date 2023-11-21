@@ -24,6 +24,29 @@ class AppMethods {
     return null;
   }
 
+  //Validate empty input field and with a max length
+  String? emptyStringValidatorWithMaxLength(
+    String? value,
+    String message,
+    int maxLength,
+  ) {
+    if (value == null || value.isEmpty) {
+      return message;
+    }
+    if (value.length > maxLength) {
+      return message;
+    }
+    return null;
+  }
+
+  //Validate empty input field with double as value
+  String? nullDoubleValidator(double? value, String message) {
+    if (value == null) {
+      return message;
+    }
+    return null;
+  }
+
   //Validate password input field
   String? passwordValidator(
       String? value, String emptyString, String invalidLength) {
