@@ -205,4 +205,9 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       log('Error: $e, Function: setBusinessAsFavourite, File: business_details_cubit.dart');
     }
   }
+
+  //This method is used to reset the favourite state to false
+  void resetReviewState() {
+    emit(state.copyWith(isReviewLoading: false));
+  }
 }

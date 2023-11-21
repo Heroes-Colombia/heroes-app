@@ -641,24 +641,26 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     Navigator.pop(context);
   }
 
-  void showBottomModal(Widget body, BoxConstraints constraints) {
+  void showBottomModal(Widget body, BoxConstraints constraints) async {
     var theme = Theme.of(context);
 
-    showModalBottomSheet(
-        context: context,
-        enableDrag: true,
-        showDragHandle: true,
-        isScrollControlled: true,
-        isDismissible:
-            context.read<BusinessDetailsCubit>().state.isReviewLoading
-                ? false
-                : true,
-        useSafeArea: true,
-        constraints: constraints,
-        backgroundColor: theme.colorScheme.background,
-        builder: (context) => Padding(
-              padding: MediaQuery.of(context).viewInsets,
-              child: body,
-            ));
+    await showModalBottomSheet(
+      context: context,
+      enableDrag: true,
+      showDragHandle: true,
+      isScrollControlled: true,
+      useSafeArea: true,
+      constraints: constraints,
+      backgroundColor: theme.colorScheme.background,
+      builder: (context) => Padding(
+        padding: MediaQuery.of(context).viewInsets,
+        child: body,
+      ),
+    );
+
+    if (!context.mounted) return;
+
+    //We reset the state of the cubit in case the user closes the modal
+    context.read<BusinessDetailsCubit>().resetReviewState();
   }
 }
