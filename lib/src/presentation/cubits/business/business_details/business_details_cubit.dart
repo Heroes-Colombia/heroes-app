@@ -116,6 +116,7 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
 
   //This method is used to get all business reviews
   Future<void> getAllBusinessReviews(String businessId) async {
+    emit(state.copyWith(allUserReviews: []));
     try {
       final firestoreService = locator.get<FirestoreService>();
       final reviewsCollection = locator.get<AppConstants>().reviewsCollection;
