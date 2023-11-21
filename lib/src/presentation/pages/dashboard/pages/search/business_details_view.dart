@@ -492,13 +492,9 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
 
   //This method is used to see all the comments of a business
   void seeAllComments(ThemeData theme, texts) {
-    //We check if the comments are already loaded
-    if (context.read<BusinessDetailsCubit>().state.allUserReviews.isEmpty) {
-      //If they are not, we load them
-      context
-          .read<BusinessDetailsCubit>()
-          .getAllBusinessReviews(widget.businessId);
-    }
+    context
+        .read<BusinessDetailsCubit>()
+        .getAllBusinessReviews(widget.businessId);
 
     //We create the body of the modal
     Widget body = allCommentsBottomModalBody();
