@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/src/domain/models/business_user_model.dart';
 import 'package:heroes_app/src/domain/models/user_model.dart' as user_model;
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 
@@ -78,6 +79,31 @@ class AuthService {
 
       //Finally create a user object from the raw info and emit the new state
       final user = user_model.User.fromJson(userRawInfo);
+
+      //Set the user in the class property to avoid calling the method again
+      return user;
+    } catch (e) {
+      log("Error: $e, Function: getUser, File: profile_cubit.dart");
+      return null;
+    }
+  }
+
+  //This method is used to get the business_user object of the current user
+  Future<BusinessUser?> getBusinessUser() async {
+    try {
+      //First collect the user info collection from Firestore
+      final userCollection = locator.get<AppConstants>().usersCollection;
+
+      //Then get the user id from the auth service
+      final userId = locator.get<AuthService>().getUserId();
+
+      //Then get the user info from the firestore collection
+      final userRawInfo = await locator
+          .get<FirestoreService>()
+          .readDocumentById(userCollection, userId, 'uid');
+
+      //Finally create a user object from the raw info and emit the new state
+      final user = BusinessUser.fromJson(userRawInfo);
 
       //Set the user in the class property to avoid calling the method again
       return user;
