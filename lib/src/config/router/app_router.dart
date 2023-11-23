@@ -54,18 +54,6 @@ class AppRouter extends $AppRouter {
           ],
         ),
 
-        //Business dashboard routes
-        CustomRoute(
-            page: BusinessDashBoardView.page,
-            path: '/businessDashboard',
-            guards: [
-              AuthGuard()
-            ],
-            children: [
-              AutoRoute(page: OwnedBusinessesView.page, path: 'home'),
-              AutoRoute(page: ProfileView.page, path: 'settings'),
-            ]),
-
         //Individual hero routes
         CustomRoute(
           page: EditProfileView.page,

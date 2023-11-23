@@ -381,14 +381,4 @@ class AppConstants {
       'empty-string': 'Este campo no puede estar vacío',
     }
   };
-  final businessDashboardTexts = {
-    "ownedBusinessesView": {
-      "title": "Mis comercios",
-      "loading-title": "Cargando",
-      "error-title": "Error",
-      "error-content": "Ocurrió un error al cargar los comercios",
-      "error-button": "Reintentar",
-      "empty-content": "No tienes comercios asignados",
-    },
-  };
 }

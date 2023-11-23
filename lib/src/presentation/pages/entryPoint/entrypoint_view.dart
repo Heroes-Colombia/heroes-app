@@ -92,8 +92,7 @@ class _EntryPointViewState extends State<EntryPointView> {
   }
 
   Widget userIsBusiness() {
-    //Redirect to the business dashboard view
-    AutoRouter.of(context).replaceAll([const BusinessDashBoardView()]);
+    //TODO: Implement business logged in view
 
     return const CustomScrollView(
       slivers: [
