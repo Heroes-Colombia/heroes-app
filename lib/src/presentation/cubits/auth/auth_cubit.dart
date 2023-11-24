@@ -44,8 +44,8 @@ class AuthCubit extends Cubit<AuthState> {
 
       //Check if the user is a business
       if (user.permission == UserPermissions.business) {
-        //TODO: Implement the business routes
-        log('Business routes not implemented yet');
+        if (!context.mounted) return false;
+        AutoRouter.of(context).replaceAll([const BusinessDashBoardView()]);
         return true;
       }
 
