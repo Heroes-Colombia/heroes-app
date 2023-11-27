@@ -24,6 +24,14 @@ class AppMethods {
     return null;
   }
 
+  //Validate empty input
+  dynamic emptyInputValidator(dynamic value, String message) {
+    if (value == null) {
+      return message;
+    }
+    return null;
+  }
+
   //Validate empty input field and with a max length
   String? emptyStringValidatorWithMaxLength(
     String? value,
@@ -64,6 +72,14 @@ class AppMethods {
     final ImagePicker picker = ImagePicker();
     // Capture a photo.
     final XFile? photo = await picker.pickImage(source: ImageSource.camera);
+    return photo;
+  }
+
+  //Get the picture from the device gallery
+  Future<XFile?> selectPicture() async {
+    final ImagePicker picker = ImagePicker();
+    // Capture a photo.
+    final XFile? photo = await picker.pickImage(source: ImageSource.gallery);
     return photo;
   }
 

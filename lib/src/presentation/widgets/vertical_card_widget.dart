@@ -64,19 +64,40 @@ class VerticalCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                  topRight: Radius.circular(12),
-                  bottomRight: Radius.circular(12)),
-              child: image.isNotEmpty
-                  ? Image.network(
-                      image,
-                      fit: BoxFit.cover,
-                    )
-                  : Image.asset(
-                      "assets/images/file-not-found.png",
-                      fit: BoxFit.cover,
-                    ),
+            SizedBox(
+              height: 80,
+              width: 100,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(12),
+                    bottomRight: Radius.circular(12)),
+                child: image.isNotEmpty
+                    ? Image.network(
+                        image,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            "assets/images/file-not-found.png",
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        "assets/images/file-not-found.png",
+                        fit: BoxFit.cover,
+                      ),
+              ),
             ),
           ]),
         ),

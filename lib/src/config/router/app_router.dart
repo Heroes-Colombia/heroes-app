@@ -83,6 +83,11 @@ class AppRouter extends $AppRouter {
           transitionsBuilder: TransitionsBuilders.slideLeft,
         ),
         CustomRoute(
+          page: OwnedBusinessDetailsView.page,
+          path: '/ownedBusinessDetails',
+          transitionsBuilder: TransitionsBuilders.slideLeft,
+        ),
+        CustomRoute(
             page: PromotionDetailsView.page,
             path: '/promotionDetails',
             transitionsBuilder: TransitionsBuilders.slideLeft),

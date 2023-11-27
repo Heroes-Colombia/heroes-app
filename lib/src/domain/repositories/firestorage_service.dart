@@ -62,4 +62,39 @@ class FireStorageService {
     //Upload the image
     await ref.putFile(file, metadata);
   }
+
+  //This method is used to upload the promotion featured image
+  Future<String> uploadPromotionFeaturedImage(
+      XFile imageFile, String businessId) async {
+    //Get the route to save the image
+    final promotionsImages = locator.get<AppConstants>().promotionImages;
+    final featureImageRoute = locator.get<AppConstants>().featureImage;
+
+    //Create a regex to get the extension of the image
+    var imageExtensionRegex = RegExp(r'(\w{3,4}$)');
+    var imageExtension = imageExtensionRegex.stringMatch(imageFile.path);
+
+    //Get the reference to the image
+    Reference ref = FirebaseStorage.instance
+        .ref()
+        .child(promotionsImages)
+        .child(businessId)
+        .child(featureImageRoute)
+        .child("/featured_image.$imageExtension");
+
+    //Set the metadata
+    final metadata = SettableMetadata(
+      contentType: 'image/$imageExtension',
+      customMetadata: {'picked-file-path': imageFile.path},
+    );
+
+    // Convert XFile to File
+    File file = File(imageFile.path);
+
+    //Upload the image
+    var result = await ref.putFile(file, metadata);
+    var urlPath = await result.ref.getDownloadURL();
+
+    return urlPath;
+  }
 }

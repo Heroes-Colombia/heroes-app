@@ -56,7 +56,7 @@ class Promotion extends Equatable {
     return {
       'business_id': businessId,
       'description': description,
-      'expired_at': expiredAt.toIso8601String(),
+      'expired_at': Timestamp.fromDate(expiredAt),
       'instructions': instructions,
       'percentage': percentage,
       'status': status.toString().split('.').last,

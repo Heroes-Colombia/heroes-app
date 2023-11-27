@@ -26,20 +26,23 @@ class PromotionDetailsView extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.only(
                   left: 16, right: 16, bottom: 24, top: 12),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+              child: SizedBox(
+                height: 300,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  child: promotion.featuredImage.isNotEmpty
+                      ? Image.network(
+                          promotion.featuredImage,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.asset(
+                          'assets/images/placeholder.png',
+                          fit: BoxFit.cover,
+                        ),
                 ),
-                child: promotion.featuredImage.isNotEmpty
-                    ? Image.network(
-                        promotion.featuredImage,
-                        fit: BoxFit.cover,
-                      )
-                    : Image.asset(
-                        'assets/images/placeholder.png',
-                        fit: BoxFit.cover,
-                      ),
               ),
             ),
           ),

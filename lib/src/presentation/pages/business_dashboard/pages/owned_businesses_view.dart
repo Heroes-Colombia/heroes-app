@@ -4,8 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
-import 'package:heroes_app/src/presentation/cubits/owned_businesses/owned_businesses_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/manage_business/owned_businesses/owned_businesses_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/horizontal_card_widget.dart';
 import 'package:ionicons/ionicons.dart';
 
@@ -130,10 +131,12 @@ class OwnedBusinessesView extends StatelessWidget {
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             return HorizontalCard(
-                image: businesses[index].featuredImage,
-                title: businesses[index].name,
-                id: businesses[index].id,
-                callback: () => {});
+              image: businesses[index].featuredImage,
+              title: businesses[index].name,
+              id: businesses[index].id,
+              callback: () => AutoRouter.of(context).push(
+                  OwnedBusinessDetailsView(businessId: businesses[index].id)),
+            );
           },
           childCount: businesses.length,
         ),

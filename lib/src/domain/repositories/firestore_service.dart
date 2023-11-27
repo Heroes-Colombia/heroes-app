@@ -43,6 +43,22 @@ class FirestoreService {
   }
 
   /*
+   This method is used to edit a document inside a collection with the data passed as parameter,
+   where the document id is equal to the id passed as parameter
+   example 'usersCollectionName', '123', 'uid', '{name: 'John'}'
+  */
+  Future<Map<String, dynamic>> editDocumentByDocumentId(
+      String collectionName, String id, Map<String, dynamic> data) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where(FieldPath.documentId, isEqualTo: id)
+        .get();
+    final docId = docSnapshot.docs.first.id;
+    await _firestore.collection(collectionName).doc(docId).update(data);
+    return data;
+  }
+
+  /*
   This method is used to get a document by the document id
   */
   Future<Map<String, dynamic>?> readDocumentByDocId(
