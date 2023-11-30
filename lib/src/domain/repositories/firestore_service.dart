@@ -59,6 +59,20 @@ class FirestoreService {
   }
 
   /*
+   This method is used to delete a document inside a collection 
+   where the document id is equal to the id passed as parameter
+  */
+  Future<void> deleteDocumentByDocumentId(
+      String collectionName, String id) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where(FieldPath.documentId, isEqualTo: id)
+        .get();
+    final docId = docSnapshot.docs.first.id;
+    await _firestore.collection(collectionName).doc(docId).delete();
+  }
+
+  /*
   This method is used to get a document by the document id
   */
   Future<Map<String, dynamic>?> readDocumentByDocId(

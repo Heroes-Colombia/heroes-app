@@ -91,5 +91,9 @@ class AppRouter extends $AppRouter {
             page: PromotionDetailsView.page,
             path: '/promotionDetails',
             transitionsBuilder: TransitionsBuilders.slideLeft),
+        CustomRoute(
+            page: OwnedPromotionDetailsView.page,
+            path: '/ownedPromotionDetails',
+            transitionsBuilder: TransitionsBuilders.slideLeft),
       ];
 }

@@ -219,8 +219,8 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                   id: promotions[index].businessId,
                   description: promotions[index].description,
                   callback: () {
-                    AutoRouter.of(context).push(
-                        PromotionDetailsView(promotion: promotions[index]));
+                    AutoRouter.of(context).push(OwnedPromotionDetailsView(
+                        promotion: promotions[index]));
                   });
             },
             itemCount: promotions.length,

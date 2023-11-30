@@ -102,6 +102,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     try {
       //First, we create the promotion object
       var promotion = Promotion(
+        documentId: null,
         title: promotionMap["title"]!.value,
         description: promotionMap["description"]!.value,
         instructions: promotionMap["instructions"]!.value,
@@ -132,8 +133,11 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
         "featured_image": promotionFeaturedImagePath
       };
 
-      //Then, we update the promotion iobject
-      promotion = promotion.copyWith(featuredImage: promotionFeaturedImagePath);
+      //Then, we update the promotion object
+      promotion = promotion.copyWith(
+        featuredImage: promotionFeaturedImagePath,
+        documentId: docId,
+      );
 
       //Then, we update the promotion in the database
       await firestoreService.editDocumentByDocumentId(
@@ -150,6 +154,99 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       return true;
     } catch (e) {
       log('Error: $e, Function: createPromotion, File: owned_business_details_cubit.dart',
+          stackTrace: StackTrace.current);
+      return false;
+    }
+  }
+
+  Future<bool> editPromotion(
+    Map<String, dynamic> promotionMap,
+    Promotion promotion,
+  ) async {
+    try {
+      //First, we create the promotion object
+      var promotionToEdit = Promotion(
+        documentId: promotion.documentId,
+        title: promotionMap["title"]!.value,
+        description: promotionMap["description"]!.value,
+        instructions: promotionMap["instructions"]!.value,
+        percentage: int.parse(promotionMap["percentage"]!.value),
+        expiredAt: promotionMap["expirationDate"]!.value,
+        featuredImage: promotion.featuredImage,
+        businessId: promotionMap["business_id"]!,
+        status: promotionMap["status"]!.value,
+      );
+
+      //Then, we get the firestore service and the promotions collection
+      final firestoreService = locator.get<FirestoreService>();
+      final promotionsCollection =
+          locator.get<AppConstants>().advertisementCollection;
+
+      //Then, we update the promotion in the database
+      final editedPromotion = Promotion.fromJson(
+        await firestoreService.editDocumentByDocumentId(
+          promotionsCollection,
+          promotion.documentId!,
+          promotionToEdit.toJson(),
+        ),
+      );
+
+      //Then, we update the promotion inside the state
+      final idOfPromotion = state.promotions.indexWhere(
+        (element) => element.documentId == promotion.documentId,
+      );
+
+      final newPromotions = [...state.promotions];
+      newPromotions[idOfPromotion] = editedPromotion;
+
+      //Finally, we update the state
+      emit(
+        state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          promotions: newPromotions,
+        ),
+      );
+
+      return true;
+    } catch (e) {
+      log('Error: $e, Function: editPromotion, File: owned_business_details_cubit.dart',
+          stackTrace: StackTrace.current);
+      return false;
+    }
+  }
+
+  Future<bool> deletePromotion(Promotion promotion) async {
+    try {
+      //First, we get the firestore service and the promotions collection
+      final firestoreService = locator.get<FirestoreService>();
+      final fireStorageService = locator.get<FireStorageService>();
+      final promotionsCollection =
+          locator.get<AppConstants>().advertisementCollection;
+
+      //Then, we delete the promotion in the database and the image in the storage
+      await fireStorageService.deletePromotionFeaturedImage(promotion);
+
+      await firestoreService.deleteDocumentByDocumentId(
+          promotionsCollection, promotion.documentId!);
+
+      //Then, we update the promotion inside the state
+      final idOfPromotion = state.promotions.indexWhere(
+        (element) => element.documentId == promotion.documentId!,
+      );
+      final newPromotions = [...state.promotions];
+      newPromotions.removeAt(idOfPromotion);
+
+      //Finally, we update the state
+      emit(
+        state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          promotions: newPromotions,
+        ),
+      );
+
+      return true;
+    } catch (e) {
+      log('Error: $e, Function: deletePromotion, File: owned_business_details_cubit.dart',
           stackTrace: StackTrace.current);
       return false;
     }

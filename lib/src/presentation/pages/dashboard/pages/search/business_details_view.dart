@@ -234,7 +234,10 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
 
   Widget promotionsList(List<Promotion> promotions, texts) {
     return promotions.isNotEmpty
-        ? SliverList.builder(
+        ? SliverList.separated(
+            separatorBuilder: (context, index) {
+              return const SizedBox(height: 16);
+            },
             itemBuilder: (context, index) {
               return VerticalCard(
                   image: promotions[index].featuredImage,
