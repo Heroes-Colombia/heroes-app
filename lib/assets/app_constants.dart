@@ -432,6 +432,11 @@ class AppConstants {
       "create-button": "Crear",
       "edit-button": "Editar",
       "delete-button": "Eliminar",
+      "add-manager-button": "Agregar manager",
+      "remove-manager-button": "Eliminar",
+      "slide-to-remove": "Desliza para eliminar administrador",
+      "manager-deleted": "Administrador eliminado exitosamente",
+      "manager-delete-error": "Ocurrió un error al eliminar el administrador",
     },
   };
 }

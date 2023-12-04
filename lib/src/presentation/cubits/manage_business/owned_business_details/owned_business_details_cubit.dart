@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
+import 'package:heroes_app/src/domain/models/listable_user_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
 import 'package:heroes_app/src/domain/repositories/firestorage_service.dart';
@@ -45,8 +46,6 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
         business: business,
         promotions: promotions,
         status: BusinessViewCubitStatus.success,
-        isFavourite: state.isFavourite,
-        favouriteIsLoading: state.favouriteIsLoading,
       ));
     } catch (e) {
       log('Error: $e, Function: getBusinessDetails, File: owned_owned_business_details_cubit.dart',
@@ -63,9 +62,8 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
           locator.get<AppConstants>().advertisementCollection;
 
       //We fetch the promotions from the database
-      final rawPromotions =
-          await firestoreService.readActiveDocumentsByCondition(
-              promotionsCollection, 'business_id', businessId, 999);
+      final rawPromotions = await firestoreService.readAllDocumentsInCollection(
+          promotionsCollection, 'business_id', businessId);
 
       final promotions =
           rawPromotions.map((e) => Promotion.fromJson(e)).toList();
@@ -95,6 +93,28 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       emit(state.copyWith(allUserReviews: reviews));
     } catch (e) {
       log('Error: $e, Function: getAllBusinessReviews, File: owned_business_details_cubit.dart');
+    }
+  }
+
+  Future<void> getAllBusinessManagers(String businessId) async {
+    emit(state.copyWith(allUserReviews: []));
+    try {
+      final firestoreService = locator.get<FirestoreService>();
+      final usersCollection = locator.get<AppConstants>().usersCollection;
+
+      //We fetch all the users that contains the business id in their owned_businesses array
+      final rawBusinessManagers =
+          await firestoreService.readDocumentsWhereArrayContainsId(
+              usersCollection, "owned_businesses", businessId);
+
+      final managers = rawBusinessManagers
+          .map((e) => ListableUserModel.fromJson(e))
+          .toList();
+
+      //Then return the reviews
+      emit(state.copyWith(allManagers: managers));
+    } catch (e) {
+      log('Error: $e, Function: getAllBusinessManagers, File: owned_business_details_cubit.dart');
     }
   }
 
@@ -247,6 +267,45 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       return true;
     } catch (e) {
       log('Error: $e, Function: deletePromotion, File: owned_business_details_cubit.dart',
+          stackTrace: StackTrace.current);
+      return false;
+    }
+  }
+
+  Future<bool> deleteManagerFromBusiness(
+      String businessId, String userId) async {
+    try {
+      //First, we get the firestore service and the users collection
+      final firestoreService = locator.get<FirestoreService>();
+      final usersCollection = locator.get<AppConstants>().usersCollection;
+
+      //Then, we delete the business from the user owned_businesses array
+      await firestoreService.deletePropertyFromArray(
+        usersCollection,
+        userId,
+        "uid",
+        "owned_businesses",
+        businessId,
+      );
+
+      //Then, we delete the user from the business managers array in the state
+      final idOfManager = state.allManagers.indexWhere(
+        (element) => element.uid == userId,
+      );
+      final newManagers = [...state.allManagers];
+      newManagers.removeAt(idOfManager);
+
+      //Finally, we update the state
+      emit(
+        state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          allManagers: newManagers,
+        ),
+      );
+
+      return true;
+    } catch (e) {
+      log('Error: $e, Function: deleteManagerFromBusiness, File: owned_business_details_cubit.dart',
           stackTrace: StackTrace.current);
       return false;
     }

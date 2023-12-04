@@ -14,20 +14,21 @@ class Business extends Equatable {
   final String address;
   final List<UserReview> reviews;
   final String featuredImage;
+  final String ownerUid;
 
-  const Business({
-    required this.status,
-    required this.phoneNumber,
-    required this.ownerName,
-    required this.name,
-    required this.location,
-    required this.identification,
-    required this.email,
-    required this.categories,
-    required this.address,
-    required this.reviews,
-    required this.featuredImage,
-  });
+  const Business(
+      {required this.status,
+      required this.phoneNumber,
+      required this.ownerName,
+      required this.name,
+      required this.location,
+      required this.identification,
+      required this.email,
+      required this.categories,
+      required this.address,
+      required this.reviews,
+      required this.featuredImage,
+      required this.ownerUid});
 
   @override
   List<Object?> get props => [
@@ -42,6 +43,7 @@ class Business extends Equatable {
         address,
         reviews,
         featuredImage,
+        ownerUid
       ];
 
   factory Business.fromJson(Map<String, dynamic> json) {
@@ -63,6 +65,7 @@ class Business extends Equatable {
       featuredImage: json["featured_image"] != null
           ? json['featured_image'] as String
           : "",
+      ownerUid: json["owner_uid"] != null ? json['owner_uid'] as String : "",
     );
   }
 
@@ -108,6 +111,7 @@ class Business extends Equatable {
     String? address,
     List<UserReview>? reviews,
     String? featuredImage,
+    String? ownerUid,
   }) {
     return Business(
       status: status ?? this.status,
@@ -121,6 +125,7 @@ class Business extends Equatable {
       address: address ?? this.address,
       reviews: reviews ?? this.reviews,
       featuredImage: featuredImage ?? this.featuredImage,
+      ownerUid: ownerUid ?? this.ownerUid,
     );
   }
 }

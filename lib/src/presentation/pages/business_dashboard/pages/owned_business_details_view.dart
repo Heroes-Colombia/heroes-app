@@ -10,10 +10,12 @@ import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
+import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/presentation/cubits/manage_business/owned_business_details/owned_business_details_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart' show DateFormat;
 
 @RoutePage()
@@ -113,13 +115,23 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
   ) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(state.business!.name)),
+        SliverAppBar.large(
+          title: Text(state.business!.name),
+          actions: [
+            IconButton(
+              onPressed: () => seeAllBusinessManagers(theme, texts),
+              icon: const Icon(Ionicons.people_outline),
+            ),
+            IconButton(
+              onPressed: () => seeAllComments(theme, texts),
+              icon: const Icon(Ionicons.chatbubbles_outline),
+            ),
+          ],
+        ),
         mainCard(
           state.business!,
           theme,
           texts,
-          state.isFavourite,
-          state.favouriteIsLoading,
         ),
         sectionTitle(texts, theme),
         promotionsList(state.promotions, texts),
@@ -133,8 +145,6 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     Business business,
     ThemeData theme,
     texts,
-    bool isFavourite,
-    bool favouriteIsLoading,
   ) {
     return SliverToBoxAdapter(
       child: Container(
@@ -239,8 +249,7 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
   Widget allCommentsBottomModalBody() {
     var theme = Theme.of(context);
     var locator = GetIt.instance;
-    var texts =
-        locator<AppConstants>().dashBoardTexts["OwnedbusinessDetailsView"]!;
+    var texts = locator<AppConstants>().dashBoardTexts["businessDetailsView"]!;
 
     return BlocBuilder<OwnedBusinessDetailsCubit, OwnedBusinessDetailsState>(
       builder: (context, state) {
@@ -295,6 +304,117 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                   },
                   itemCount: state.allUserReviews.length)
               : const Center(child: CircularProgressIndicator()),
+        );
+      },
+    );
+  }
+
+  Widget allBusinessManagersBody() {
+    var theme = Theme.of(context);
+    var locator = GetIt.instance;
+    var texts = locator<AppConstants>()
+        .businessDashboardTexts["ownedBusinessDetailsView"]!;
+
+    return BlocBuilder<OwnedBusinessDetailsCubit, OwnedBusinessDetailsState>(
+      builder: (context, state) {
+        isEditable(index) =>
+            state.business!.ownerUid != state.allManagers[index].uid &&
+            locator<AuthService>().getUserId() != state.allManagers[index].uid;
+
+        isOwner(index) =>
+            state.business!.ownerUid == state.allManagers[index].uid;
+
+        isManagerCurrentUser(index) =>
+            locator<AuthService>().getUserId() == state.allManagers[index].uid;
+
+        return Container(
+          color: theme.colorScheme.background,
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: state.allManagers.isNotEmpty
+                    ? ListView.separated(
+                        itemBuilder: (context, index) {
+                          var theme = Theme.of(context);
+                          return Slidable(
+                            endActionPane: isEditable(index)
+                                ? ActionPane(
+                                    motion: const ScrollMotion(),
+                                    children: [
+                                      SlidableAction(
+                                        onPressed: (context) {
+                                          handleDeleteManager(
+                                              state.allManagers[index].uid,
+                                              state.businessId!);
+                                        },
+                                        label: texts["remove-manager-button"]!,
+                                        backgroundColor:
+                                            theme.colorScheme.error,
+                                        icon: Ionicons.remove_circle_outline,
+                                      ),
+                                    ],
+                                  )
+                                : null,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceVariant
+                                      .withOpacity(0.5)),
+                              child: ListTile(
+                                leading: Icon(
+                                  isOwner(index)
+                                      ? Ionicons.star_outline
+                                      : Ionicons.person_outline,
+                                  color: theme.colorScheme.onSurfaceVariant
+                                      .withOpacity(0.9),
+                                ),
+                                title: Text(
+                                    isManagerCurrentUser(index)
+                                        ? "Yo"
+                                        : "${state.allManagers[index].firstName} ${state.allManagers[index].secondName} ${state.allManagers[index].firstLastName} ${state.allManagers[index].secondLastName}",
+                                    style: theme.textTheme.labelLarge),
+                                trailing: isEditable(index)
+                                    ? Icon(
+                                        Ionicons.chevron_back_outline,
+                                        color: theme
+                                            .colorScheme.onSurfaceVariant
+                                            .withOpacity(0.9),
+                                      )
+                                    : null,
+                                subtitle: Text(state.allManagers[index].email),
+                              ),
+                            ),
+                          );
+                        },
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(height: 16);
+                        },
+                        itemCount: state.allManagers.length)
+                    : const Center(child: CircularProgressIndicator()),
+              ),
+              const SizedBox(height: 4),
+              AsyncButtonWidget(
+                  buttonText: texts["add-manager-button"]!,
+                  onPressed: () async {}),
+              const SizedBox(height: 4),
+              Text(
+                texts["slide-to-remove"]!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                  fontSize: theme.textTheme.labelSmall!.fontSize,
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -496,6 +616,21 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     );
   }
 
+  void seeAllBusinessManagers(ThemeData theme, texts) {
+    context
+        .read<OwnedBusinessDetailsCubit>()
+        .getAllBusinessManagers(widget.businessId);
+
+    //We create the body of the modal
+    Widget body = allBusinessManagersBody();
+
+    //We show the modal
+    showBottomModal(
+      body,
+      BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
+    );
+  }
+
   void seeCreatePromotionView(ThemeData theme, texts) {
     //We create the body of the modal
     Widget body = createPromotionBody();
@@ -553,5 +688,45 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
       ),
     );
     Navigator.of(context).pop();
+  }
+
+  Future<void> handleDeleteManager(String userUid, String businessId) async {
+    final texts = GetIt.instance
+        .get<AppConstants>()
+        .businessDashboardTexts["ownedBusinessDetailsView"]!;
+
+    final isDeleted = await context
+        .read<OwnedBusinessDetailsCubit>()
+        .deleteManagerFromBusiness(businessId, userUid);
+
+    if (!context.mounted) return;
+
+    if (isDeleted) {
+      //Close the modal
+      Navigator.of(context).pop();
+
+      //Show the snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(texts["manager-deleted"]!),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+
+      return;
+    }
+    Navigator.of(context).pop();
+
+    //Show the error snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(texts["manager-deleted-error"]!),
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
+  Future<void> hadleAddManager() async {
+    //TODO: Add manager to business managers list
   }
 }

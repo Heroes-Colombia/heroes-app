@@ -108,6 +108,27 @@ class FirestoreService {
   }
 
   /*
+   This method is used to read all documents inside a collection 
+   where the condition of the property is equal to the propertyValue
+  */
+  Future<List<Map<String, dynamic>>> readAllDocumentsInCollection(
+    String collectionName,
+    String property,
+    Object propertyValue,
+  ) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where(property, isEqualTo: propertyValue)
+        .get();
+    final data = docSnapshot.docs.map((e) {
+      final data = e.data();
+      data["id"] = e.id;
+      return data;
+    }).toList();
+    return data;
+  }
+
+  /*
    This method is used to read all documents inside a collection,
    where the condition status is equal to active
   */
@@ -172,5 +193,60 @@ class FirestoreService {
     }).toList();
 
     return data;
+  }
+
+  /*
+   This method is used to read all documents inside a array property of a document,
+   where the passed id are contained in the document passed property
+  */
+  Future<List<Map<String, dynamic>>> readDocumentsWhereArrayContainsId(
+    String collectionName,
+    String property,
+    String id,
+  ) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where(property, arrayContains: id)
+        .get();
+
+    final data = docSnapshot.docs.map((e) {
+      final data = e.data();
+      data["id"] = e.id;
+      return data;
+    }).toList();
+
+    return data;
+  }
+
+  /*
+   This method is used to delete a value from an array property of a document,
+   where the passed id are contained in the document passed propertyToSearch
+  */
+  Future<List<dynamic>> deletePropertyFromArray(
+    String collectionName,
+    String userId,
+    String propertyToSearch,
+    String propertyToEdit,
+    String businessId,
+  ) async {
+    //First we get the document to edit
+    final document =
+        await readDocumentById(collectionName, userId, propertyToSearch);
+
+    //Then we get the array to edit
+    final array = document[propertyToEdit] as List<dynamic>;
+
+    //Then we delete the value from the array
+    array.remove(businessId);
+
+    //Then we edit the document
+    await editDocumentById(
+      collectionName,
+      userId,
+      propertyToSearch,
+      {propertyToEdit: array},
+    );
+
+    return array;
   }
 }
