@@ -7,6 +7,7 @@ class ListableUserModel extends Equatable {
   final String secondLastName;
   final String email;
   final String uid;
+  final List<String> managedBusinesses;
 
   const ListableUserModel({
     required this.firstName,
@@ -15,6 +16,7 @@ class ListableUserModel extends Equatable {
     required this.secondLastName,
     required this.email,
     required this.uid,
+    required this.managedBusinesses,
   });
 
   @override
@@ -25,6 +27,7 @@ class ListableUserModel extends Equatable {
         secondLastName,
         email,
         uid,
+        managedBusinesses,
       ];
 
   factory ListableUserModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +38,9 @@ class ListableUserModel extends Equatable {
       secondName: json['second_name'] as String,
       firstLastName: json['first_last_name'] as String,
       secondLastName: json['second_last_name'] as String,
+      managedBusinesses: (json['owned_businesses'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
     );
   }
 }

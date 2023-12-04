@@ -13,6 +13,7 @@ import 'package:heroes_app/src/domain/models/review_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/presentation/cubits/manage_business/owned_business_details/owned_business_details_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -403,7 +404,9 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               const SizedBox(height: 4),
               AsyncButtonWidget(
                   buttonText: texts["add-manager-button"]!,
-                  onPressed: () async {}),
+                  onPressed: () async {
+                    await hadleAddManager();
+                  }),
               const SizedBox(height: 4),
               Text(
                 texts["slide-to-remove"]!,
@@ -727,6 +730,75 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
   }
 
   Future<void> hadleAddManager() async {
-    //TODO: Add manager to business managers list
+    var newManagerEmailFormKey = GlobalKey<FormBuilderState>();
+    var texts = GetIt.instance
+        .get<AppConstants>()
+        .businessDashboardTexts["ownedBusinessDetailsView"]!;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(texts["add-manager-button"]!),
+          content: FormBuilder(
+            key: newManagerEmailFormKey,
+            child: EmailInputWidget(
+              keyName: "email",
+              name: "email",
+              label: texts["email-label"]!,
+              hintText: texts["email-hint"]!,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(texts["cancel-button"]!),
+            ),
+            AsyncButtonWidget(
+              onPressed: () async {
+                //First validate the form
+                if (!newManagerEmailFormKey.currentState!.saveAndValidate()) {
+                  return;
+                }
+
+                //Then add the manager
+                final managerAdded = await context
+                    .read<OwnedBusinessDetailsCubit>()
+                    .addManagerToBusiness(
+                        newManagerEmailFormKey
+                            .currentState!.fields["email"]!.value,
+                        context
+                            .read<OwnedBusinessDetailsCubit>()
+                            .state
+                            .businessId!);
+
+                if (!context.mounted) return;
+
+                //Check if the manager was added successfully
+                if (managerAdded) {
+                  //Close the AlertDialog
+                  Navigator.of(context).pop();
+
+                  //Close the bottom modal
+                  Navigator.of(context).pop();
+
+                  //Show the snackbar
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(texts["manager-added"]!),
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+
+                  return;
+                }
+              },
+              buttonText: texts["add-button"]!,
+            ),
+          ],
+        );
+      },
+    );
   }
 }

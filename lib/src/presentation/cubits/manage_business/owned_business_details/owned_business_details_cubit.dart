@@ -310,4 +310,58 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       return false;
     }
   }
+
+  Future<bool> addManagerToBusiness(String userEmail, String businessId) async {
+    try {
+      //First, we get the firestore service and the users collection
+      final firestoreService = locator.get<FirestoreService>();
+      final usersCollection = locator.get<AppConstants>().usersCollection;
+
+      //Then, we get the user by email
+      final rawUser = await firestoreService.readActiveDocumentsByCondition(
+        usersCollection,
+        "email",
+        userEmail,
+        1,
+      );
+
+      //If the user does not exist, we return false
+      if (rawUser.isEmpty) {
+        log("raw user$rawUser");
+        return false;
+      }
+
+      final user = ListableUserModel.fromJson(rawUser.first);
+
+      //If the user already manages the business, we return false
+      if (user.managedBusinesses.contains(businessId)) {
+        return false;
+      }
+
+      //Then, we add the business id to the user owned_businesses array in the database
+      await firestoreService.editDocumentById(
+        usersCollection,
+        user.uid,
+        "uid",
+        {
+          "owned_businesses": [...user.managedBusinesses, businessId],
+        },
+      );
+
+      //Then, we add the user to the business managers array in the state
+      final newManagers = [...state.allManagers, user];
+
+      //Finally, we update the state
+      emit(
+        state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          allManagers: newManagers,
+        ),
+      );
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }
