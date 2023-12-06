@@ -37,10 +37,9 @@ class OwnedBusinessesCubit extends Cubit<OwnedBusinessesState> {
       final ownerBusinesses =
           rawOwnerBusinesses.map((e) => ListableBusiness.fromJson(e)).toList();
 
-      businesses.addAll(ownerBusinesses);
-
       //Check if the user is not managing any business
       if (ownedBusinessesIds.isEmpty) {
+        businesses.addAll(ownerBusinesses);
         emit(state.copyWith(
           status: BusinessViewCubitStatus.success,
           businesses: businesses,
@@ -56,7 +55,10 @@ class OwnedBusinessesCubit extends Cubit<OwnedBusinessesState> {
           .map((e) => ListableBusiness.fromJson(e))
           .toList();
 
-      businesses.addAll(managedBusinesses);
+      //We check if the managedBusinesses contains the ownerBusiness and if not we add it
+      if (!businesses.contains(ownerBusinesses.first)) {
+        businesses.addAll(managedBusinesses);
+      }
 
       //We emit the state with the businesses
       emit(state.copyWith(

@@ -7,6 +7,9 @@ class AppConstants {
 
   //Firebase Storage
   final String userIdentifications = "identifications";
+  final String businessesImages = "businessesImages";
+  final String promotionImages = "promotionsImages";
+  final String featureImage = "featureImage";
 
   //User Ranks
   Map<String, Map<String, List<String>>> ranks = {
@@ -389,6 +392,55 @@ class AppConstants {
       "error-content": "Ocurrió un error al cargar los comercios",
       "error-button": "Reintentar",
       "empty-content": "No tienes comercios asignados",
+    },
+    "ownedBusinessDetailsView": {
+      "loading-title": "Cargando",
+      "loading-content": "Cargando información del comercio",
+      "promotions-title": "Promociones",
+      "add-promotion-title": "Agregar promoción",
+      "error-title": "Error",
+      "error-content": "Ocurrió un error al cargar la información del comercio",
+      "error-button": "Reintentar",
+      "empty-promotions-title": "¡Lo sentimos!",
+      "empty-promotions": "Este comercio no tiene promociones activas",
+      "review-success-title":
+          "¡Reseña creada! Espera a que sea aprobada para que sea visible",
+      "empty-value": "Por favor ingresa un valor",
+      "featured-img-filled": "Seleccionar otra foto",
+      "featured-img-hint": "Foto de la promoción",
+      "cancel-button": "Cancelar",
+      "title-label": "Título",
+      "title-hint": "Ingresa el título de la promoción",
+      "status-label": "Estado",
+      "status-hint": "Selecciona el estado de la promoción",
+      "active": "Activa",
+      "pending": "Pendiente",
+      "inactive": "Inactiva",
+      "description-label": "Descripción",
+      "description-hint": "Ingresa la descripción de la promoción",
+      "instructions-label": "Instrucciones",
+      "instructions-hint": "Ingresa las instrucciones de la promoción",
+      "percentage-label": "Porcentaje",
+      "percentage-hint": "Ingresa el porcentaje de la promoción",
+      "expiration-date-label": "Fecha de expiración",
+      "expiration-date-hint": "Ingresa la fecha de expiración de la promoción",
+      "promotion-created": "Promoción creada",
+      "promotion-edited": "Promoción editada",
+      "promotion-error": "Ocurrió un error al crear la promoción",
+      "promotion-delete-error": "Ocurrió un error al eliminar la promoción",
+      "promotion-deleted": "Promoción eliminada",
+      "create-button": "Crear",
+      "edit-button": "Editar",
+      "delete-button": "Eliminar",
+      "add-manager-button": "Agregar manager",
+      "remove-manager-button": "Eliminar",
+      "slide-to-remove": "Desliza para eliminar administrador",
+      "manager-deleted": "Administrador eliminado exitosamente",
+      "manager-delete-error": "Ocurrió un error al eliminar el administrador",
+      "manager-added": "Administrador agregado exitosamente",
+      "email-label": "Correo electrónico",
+      "email-hint": "Ingresa el correo electrónico del administrador",
+      "add-button": "Agregar",
     },
   };
 }

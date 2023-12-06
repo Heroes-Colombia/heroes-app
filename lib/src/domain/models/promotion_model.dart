@@ -11,6 +11,7 @@ class Promotion extends Equatable {
   final PromotionStatus status;
   final String title;
   final String featuredImage;
+  final String? documentId;
 
   const Promotion({
     required this.businessId,
@@ -21,6 +22,7 @@ class Promotion extends Equatable {
     required this.status,
     required this.title,
     required this.featuredImage,
+    required this.documentId,
   });
 
   @override
@@ -33,6 +35,7 @@ class Promotion extends Equatable {
         status,
         title,
         featuredImage,
+        documentId,
       ];
 
   factory Promotion.fromJson(Map<String, dynamic> json) {
@@ -49,6 +52,7 @@ class Promotion extends Equatable {
       ),
       title: json['title'] as String,
       featuredImage: json['featured_image'] as String,
+      documentId: json['id'] as String?,
     );
   }
 
@@ -56,7 +60,7 @@ class Promotion extends Equatable {
     return {
       'business_id': businessId,
       'description': description,
-      'expired_at': expiredAt.toIso8601String(),
+      'expired_at': Timestamp.fromDate(expiredAt),
       'instructions': instructions,
       'percentage': percentage,
       'status': status.toString().split('.').last,
@@ -74,6 +78,7 @@ class Promotion extends Equatable {
     String? status,
     String? title,
     String? featuredImage,
+    String? documentId,
   }) {
     return Promotion(
       businessId: businessId ?? this.businessId,
@@ -87,6 +92,7 @@ class Promotion extends Equatable {
           : this.status,
       title: title ?? this.title,
       featuredImage: featuredImage ?? this.featuredImage,
+      documentId: documentId ?? this.documentId,
     );
   }
 }

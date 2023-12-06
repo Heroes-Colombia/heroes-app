@@ -43,6 +43,36 @@ class FirestoreService {
   }
 
   /*
+   This method is used to edit a document inside a collection with the data passed as parameter,
+   where the document id is equal to the id passed as parameter
+   example 'usersCollectionName', '123', 'uid', '{name: 'John'}'
+  */
+  Future<Map<String, dynamic>> editDocumentByDocumentId(
+      String collectionName, String id, Map<String, dynamic> data) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where(FieldPath.documentId, isEqualTo: id)
+        .get();
+    final docId = docSnapshot.docs.first.id;
+    await _firestore.collection(collectionName).doc(docId).update(data);
+    return data;
+  }
+
+  /*
+   This method is used to delete a document inside a collection 
+   where the document id is equal to the id passed as parameter
+  */
+  Future<void> deleteDocumentByDocumentId(
+      String collectionName, String id) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where(FieldPath.documentId, isEqualTo: id)
+        .get();
+    final docId = docSnapshot.docs.first.id;
+    await _firestore.collection(collectionName).doc(docId).delete();
+  }
+
+  /*
   This method is used to get a document by the document id
   */
   Future<Map<String, dynamic>?> readDocumentByDocId(
@@ -67,6 +97,27 @@ class FirestoreService {
         .collection(collectionName)
         .limit(limit)
         .where("status", isEqualTo: "active")
+        .where(property, isEqualTo: propertyValue)
+        .get();
+    final data = docSnapshot.docs.map((e) {
+      final data = e.data();
+      data["id"] = e.id;
+      return data;
+    }).toList();
+    return data;
+  }
+
+  /*
+   This method is used to read all documents inside a collection 
+   where the condition of the property is equal to the propertyValue
+  */
+  Future<List<Map<String, dynamic>>> readAllDocumentsInCollection(
+    String collectionName,
+    String property,
+    Object propertyValue,
+  ) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
         .where(property, isEqualTo: propertyValue)
         .get();
     final data = docSnapshot.docs.map((e) {
@@ -142,5 +193,60 @@ class FirestoreService {
     }).toList();
 
     return data;
+  }
+
+  /*
+   This method is used to read all documents inside a array property of a document,
+   where the passed id are contained in the document passed property
+  */
+  Future<List<Map<String, dynamic>>> readDocumentsWhereArrayContainsId(
+    String collectionName,
+    String property,
+    String id,
+  ) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where(property, arrayContains: id)
+        .get();
+
+    final data = docSnapshot.docs.map((e) {
+      final data = e.data();
+      data["id"] = e.id;
+      return data;
+    }).toList();
+
+    return data;
+  }
+
+  /*
+   This method is used to delete a value from an array property of a document,
+   where the passed id are contained in the document passed propertyToSearch
+  */
+  Future<List<dynamic>> deletePropertyFromArray(
+    String collectionName,
+    String userId,
+    String propertyToSearch,
+    String propertyToEdit,
+    String businessId,
+  ) async {
+    //First we get the document to edit
+    final document =
+        await readDocumentById(collectionName, userId, propertyToSearch);
+
+    //Then we get the array to edit
+    final array = document[propertyToEdit] as List<dynamic>;
+
+    //Then we delete the value from the array
+    array.remove(businessId);
+
+    //Then we edit the document
+    await editDocumentById(
+      collectionName,
+      userId,
+      propertyToSearch,
+      {propertyToEdit: array},
+    );
+
+    return array;
   }
 }
