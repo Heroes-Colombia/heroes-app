@@ -167,7 +167,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 FilledButton(
-                  onPressed: () {},
+                  onPressed: () => navigateToBusiness(),
                   child: Text(texts["navigation-title"]),
                 ),
                 const SizedBox(width: 8),
@@ -661,5 +661,9 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
 
     //We reset the state of the cubit in case the user closes the modal
     context.read<BusinessDetailsCubit>().resetReviewState();
+  }
+
+  void navigateToBusiness() {
+    context.read<BusinessDetailsCubit>().openUrl();
   }
 }

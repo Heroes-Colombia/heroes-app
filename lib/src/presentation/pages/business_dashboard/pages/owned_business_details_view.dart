@@ -14,6 +14,7 @@ import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/presentation/cubits/manage_business/owned_business_details/owned_business_details_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/map_preview_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -126,6 +127,10 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
             IconButton(
               onPressed: () => seeAllComments(theme, texts),
               icon: const Icon(Ionicons.chatbubbles_outline),
+            ),
+            IconButton(
+              onPressed: () => seeAddLocationToBusiness(theme, texts),
+              icon: const Icon(Ionicons.location_outline),
             ),
           ],
         ),
@@ -548,6 +553,68 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     );
   }
 
+  Widget changeBusinessLocationBody() {
+    var key = GlobalKey<FormBuilderState>();
+    var locator = GetIt.instance;
+
+    var texts = locator<AppConstants>()
+        .businessDashboardTexts["ownedBusinessDetailsView"]!;
+    validateEmptyString(value, message) =>
+        locator<AppMethods>().emptyStringValidator(value, message);
+    var business = context.read<OwnedBusinessDetailsCubit>().state.business!;
+    var businessAddress = business.address;
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Container(
+        color: Theme.of(context).colorScheme.background,
+        padding: const EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 8),
+        child: FormBuilder(
+          key: key,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FormBuilderTextField(
+                name: "address",
+                initialValue: businessAddress,
+                validator: (value) =>
+                    validateEmptyString(value, texts["empty-value"]!),
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                decoration: InputDecoration(
+                  labelText: texts["address-label"]!,
+                  hintText: texts["address-hint"]!,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 200,
+                child: MapPreviewWidget(
+                  borderRadius: 12,
+                  latitude: business.location.latitude,
+                  longitude: business.location.longitude,
+                ),
+              ),
+              const SizedBox(height: 16),
+              AsyncButtonWidget(
+                buttonText: texts["edit-button"]!,
+                onPressed: () async {
+                  await handleEditAddressAndLocation(key, texts);
+                },
+              ),
+              const SizedBox(height: 4),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(texts["cancel-button"]!),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   FormBuilderField<Object> pictureField(
       Map<String, String> texts, ThemeData theme) {
     var locator = GetIt.instance;
@@ -637,6 +704,17 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
   void seeCreatePromotionView(ThemeData theme, texts) {
     //We create the body of the modal
     Widget body = createPromotionBody();
+
+    //We show the modal
+    showBottomModal(
+      body,
+      BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 8),
+    );
+  }
+
+  void seeAddLocationToBusiness(ThemeData theme, texts) {
+    //We create the body of the modal
+    Widget body = changeBusinessLocationBody();
 
     //We show the modal
     showBottomModal(
@@ -800,5 +878,35 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
         );
       },
     );
+  }
+
+  Future<void> handleEditAddressAndLocation(
+      GlobalKey<FormBuilderState> key, texts) async {
+    if (!key.currentState!.saveAndValidate()) return;
+
+    var businessAddress = key.currentState!.fields["address"]!.value;
+
+    final isAddressEdited = await context
+        .read<OwnedBusinessDetailsCubit>()
+        .setAddressToBusiness(businessAddress);
+
+    if (!context.mounted) return;
+    if (isAddressEdited) {
+      //Close the modal
+      Navigator.of(context).pop();
+
+      //Show the snackbar if the address was edited
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(texts["address-edited"]!),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+
+      return;
+    } else {
+      //We set error to the address field
+      key.currentState!.fields["address"]!.invalidate(texts["address-error"]!);
+    }
   }
 }

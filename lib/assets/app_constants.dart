@@ -382,6 +382,15 @@ class AppConstants {
       'error-content': 'Hubo un error al guardar los cambios',
       'success-content': 'Información actualizada',
       'empty-string': 'Este campo no puede estar vacío',
+    },
+    'mapView': {
+      'title': 'Mapa',
+      'search': 'Buscar',
+      'search-hint': 'Buscar comercio',
+      'search-error': 'No se encontraron resultados',
+      'search-error-button': 'Reintentar',
+      'search-error-title': 'Error',
+      'search-error-content': 'Ocurrió un error al buscar',
     }
   };
   final businessDashboardTexts = {
@@ -441,6 +450,10 @@ class AppConstants {
       "email-label": "Correo electrónico",
       "email-hint": "Ingresa el correo electrónico del administrador",
       "add-button": "Agregar",
+      "address-label": "Ubicación",
+      "address-hint": "Ingresa la ubicación del comercio",
+      "address-edited": "Ubicación editada exitosamente",
+      "address-error": "Por favor ingresa una ubicación válida",
     },
   };
 }

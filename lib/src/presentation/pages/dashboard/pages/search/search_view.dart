@@ -9,6 +9,7 @@ import 'package:heroes_app/src/domain/models/listable_business_model.dart';
 import 'package:heroes_app/src/presentation/cubits/business/business_home_view/business_home_view_cubit.dart';
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/delegates/search_business_delegate.dart';
 import 'package:heroes_app/src/presentation/widgets/horizontal_card_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/map_preview_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 
 @RoutePage()
@@ -48,7 +49,7 @@ class SearchView extends StatelessWidget {
         ),
         searchButton(theme, texts, context),
         singleTitle(theme, texts),
-        mapPreview(theme),
+        mapPreview(theme, context),
         doubleTitle(theme, texts["featuredBusiness"], texts["seeAll"], () {
           AutoRouter.of(context).push(const AllBusinessView());
         }),
@@ -159,7 +160,7 @@ class SearchView extends StatelessWidget {
     ));
   }
 
-  SliverToBoxAdapter mapPreview(ThemeData theme) {
+  SliverToBoxAdapter mapPreview(ThemeData theme, BuildContext context) {
     return SliverToBoxAdapter(
       child: Container(
         decoration: BoxDecoration(
@@ -168,12 +169,14 @@ class SearchView extends StatelessWidget {
         ),
         margin: const EdgeInsets.symmetric(horizontal: 12),
         height: 200,
-        //TODO: Add map preview
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Image.network(
-            "https://shorturl.at/glvx5",
-            fit: BoxFit.cover,
+        child: InkWell(
+          onTap: () {
+            AutoRouter.of(context).push(const MapView());
+          },
+          child: const MapPreviewWidget(
+            borderRadius: 20,
+            latitude: null,
+            longitude: null,
           ),
         ),
       ),

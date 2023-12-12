@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
@@ -7,7 +8,7 @@ class Business extends Equatable {
   final String phoneNumber;
   final String ownerName;
   final String name;
-  final List<String> location;
+  final GeoPoint location;
   final String identification;
   final String email;
   final List<dynamic> categories;
@@ -53,8 +54,9 @@ class Business extends Equatable {
       phoneNumber: json['phone_number'] as String,
       ownerName: json['owner_name'] as String,
       name: json['name'] as String,
-      location:
-          json["location"] != null ? json['location'] as List<String> : [],
+      location: json["location"] != null
+          ? json['location'] as GeoPoint
+          : const GeoPoint(0, 0),
       identification: json['identification'] as String,
       email: json['email'] as String,
       categories: json["categories"] != null ? json['categories'] : [],
@@ -104,7 +106,7 @@ class Business extends Equatable {
     String? phoneNumber,
     String? ownerName,
     String? name,
-    List<String>? location,
+    GeoPoint? location,
     String? identification,
     String? email,
     List<String>? categories,
