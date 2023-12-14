@@ -14,6 +14,9 @@ import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:geocoding/geocoding.dart';
+import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 final _formKeySignUpBusiness = GlobalKey<FormBuilderState>();
 
@@ -359,7 +362,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
     if (!formIsValid) return;
 
     //create a modifiable copy of the form data
-    final formData =
+    var formData =
         Map<String, dynamic>.from(_formKeySignUpBusiness.currentState!.value);
 
     //If the user wants to create a new business attached to the new account
@@ -367,12 +370,24 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
       //Then create the user data and the business data
       final userData =
           User.toInitialFirebaseJson(formData, UserPermissions.business);
+
+      //Then we transform the address to a GeoPoint
+      final location = await transformToLatLng(formData['address']);
+      if (location == null) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
+        return;
+      }
+
+      formData['location'] = GeoPoint(location.latitude, location.longitude);
       final businessData = Business.toInitialFirebaseJson(formData);
 
       //Then we extract the image from the form data
       final businessRutImg = formData['RUT_img'];
 
       //Then we create the user in firestore and the business in firestore
+      if (!context.mounted) return;
       final isBusinessCreated = await context
           .read<AuthCubit>()
           .signUpBusiness(userData, businessData, businessRutImg);
@@ -416,5 +431,16 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
         texts["registerSuccess-button"]!, () {
       AutoRouter.of(context).replaceAll([LoginView(onResult: (callback) {})]);
     });
+  }
+
+  Future<Location?> transformToLatLng(String address) async {
+    try {
+      var location =
+          await locator.get<AppMethods>().getCoordinatesFromAddress(address);
+      return location;
+    } catch (e) {
+      log('Error: $e, Function: transformToLatLng, File: owned_business_details_cubit.dart');
+      return null;
+    }
   }
 }
