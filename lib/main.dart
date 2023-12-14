@@ -16,6 +16,7 @@ import 'package:heroes_app/src/presentation/cubits/business/business_search_resu
 import 'package:heroes_app/src/presentation/cubits/favourite_businesses/favourite_businesses_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/manage_business/owned_business_details/owned_business_details_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/manage_business/owned_businesses/owned_businesses_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/map/map_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -87,6 +88,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => OwnedBusinessDetailsCubit()..getInitial(),
+        ),
+        BlocProvider(
+          create: (context) => MapCubit()..getInitial(),
         ),
       ],
       child: MaterialApp.router(
