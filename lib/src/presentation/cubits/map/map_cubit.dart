@@ -48,6 +48,7 @@ class MapCubit extends Cubit<MapState> {
                   title: business.name,
                   snippet: business.address,
                 ),
+                icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
                 onTap: () {
                   AutoRouter.of(context).push(
                     BusinessDetailsView(businessId: business.businessId),
@@ -64,9 +65,20 @@ class MapCubit extends Cubit<MapState> {
         status: BusinessViewCubitStatus.success,
         allMarkers: markers,
         userLocation: userCurrentLocation,
+        filtredMarkers: markers,
       ));
     } catch (e) {
       log('Error: $e, Function: getMapInitialInformation, File: map_cubit.dart');
     }
+  }
+
+  void searchBusiness(String query) {
+    //We serach the business by name and see if it matches the query
+    final searchedBusiness = state.allMarkers
+        .where((element) => element.infoWindow.title!.contains(query))
+        .toList();
+
+    //Then we set the state with the new info
+    emit(state.copyWith(filtredMarkers: searchedBusiness));
   }
 }
