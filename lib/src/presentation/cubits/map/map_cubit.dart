@@ -1,12 +1,15 @@
 import 'dart:developer';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
+import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/business_marker.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 import 'package:location/location.dart';
@@ -21,7 +24,7 @@ class MapCubit extends Cubit<MapState> {
     emit(state.copyWith(status: BusinessViewCubitStatus.loading));
   }
 
-  Future<void> getMapInitialInformation() async {
+  Future<void> getMapInitialInformation(BuildContext context) async {
     try {
       //First we get the business collection from Firestore
       final businessCollection = locator.get<AppConstants>().businessCollection;
@@ -46,7 +49,9 @@ class MapCubit extends Cubit<MapState> {
                   snippet: business.address,
                 ),
                 onTap: () {
-                  //TODO: Add onTap functionality
+                  AutoRouter.of(context).push(
+                    BusinessDetailsView(businessId: business.businessId),
+                  );
                 },
               ))
           .toList();

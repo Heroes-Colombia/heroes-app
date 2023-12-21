@@ -31,7 +31,7 @@ class MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
-    context.read<MapCubit>().getMapInitialInformation();
+    context.read<MapCubit>().getMapInitialInformation(context);
   }
 
   @override
@@ -41,8 +41,15 @@ class MapViewState extends State<MapView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mapa'),
-      ),
+          title: TextField(
+        decoration: InputDecoration(
+          hintText: 'Search',
+          suffixIcon: IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.search),
+          ),
+        ),
+      )),
       body: BlocBuilder<MapCubit, MapState>(
         builder: (context, state) {
           switch (state.status) {
