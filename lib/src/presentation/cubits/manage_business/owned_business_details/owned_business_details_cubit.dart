@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
@@ -381,6 +382,11 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       //Then we transform the coordinates to a geoPoint
       final geoPoint = GeoPoint(coordinates.latitude, coordinates.longitude);
 
+      //Then we get the geoHash from the coordinates
+      final geo = GeoFlutterFire();
+      GeoFirePoint currentPosition = geo.point(
+          latitude: coordinates.latitude, longitude: coordinates.longitude);
+
       //Then, we add the address and the location to the business
       await firestoreService.editDocumentByDocumentId(
         businessCollection,
@@ -388,6 +394,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
         {
           "address": address,
           "location": geoPoint,
+          "geo_hash": currentPosition.data,
         },
       );
 

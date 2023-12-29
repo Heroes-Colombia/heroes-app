@@ -276,7 +276,7 @@ class AppConstants {
       'signupButton': 'Registrarse',
       'signupErrorTitle': 'Error al registrarse',
       "registerAsBusiness": "¿Registrar un nuevo comercio?",
-      "personalInfo": "Información del manager o responsable",
+      "personalInfo": "Información del administrador o responsable",
       "genericValidator": "Este campo no puede estar vacío",
       "registerSuccess-title": "¡Registro exitoso!",
       "registerSuccess-body":
@@ -298,7 +298,7 @@ class AppConstants {
     "searchView": {
       "title": "Comercios aliados",
       "search-title": "¿Qué comercio buscas?",
-      "nearPromotions": "Promociones cercanas",
+      "nearPromotions": "Comercios cercanos",
       "featuredBusiness": "Comercios destacados",
       "business": "Comercios",
       "seeAll": "Ver todos",
@@ -391,6 +391,8 @@ class AppConstants {
       'search-error-button': 'Reintentar',
       'search-error-title': 'Error',
       'search-error-content': 'Ocurrió un error al buscar',
+      "search-suggestions": "Sugerencias",
+      "search-results": "Resultados",
     }
   };
   final businessDashboardTexts = {
@@ -441,7 +443,7 @@ class AppConstants {
       "create-button": "Crear",
       "edit-button": "Editar",
       "delete-button": "Eliminar",
-      "add-manager-button": "Agregar manager",
+      "add-manager-button": "Agregar administrador",
       "remove-manager-button": "Eliminar",
       "slide-to-remove": "Desliza para eliminar administrador",
       "manager-deleted": "Administrador eliminado exitosamente",

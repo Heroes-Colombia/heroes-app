@@ -44,6 +44,9 @@ dependencies:
   url_launcher: ^6.2.2
   geocoding: ^2.1.1
   material_floating_search_bar_2: ^0.5.0
+  geolocator: ^10.1.0
+  dart_geohash: ^2.0.2
+  geoflutterfire2: ^2.3.15
 
 dev_dependencies:
   flutter_test:
