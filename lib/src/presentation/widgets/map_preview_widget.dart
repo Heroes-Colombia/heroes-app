@@ -22,6 +22,8 @@ class _MapPreviewWidgetState extends State<MapPreviewWidget> {
   final locator = GetIt.instance;
   double? latitude;
   double? longitude;
+  String? mapUrl;
+  Brightness? brightness;
 
   @override
   void initState() {
@@ -33,6 +35,8 @@ class _MapPreviewWidgetState extends State<MapPreviewWidget> {
         latitude = widget.latitude;
         longitude = widget.longitude;
       });
+
+      getMapInfo();
     } else {
       //If not, get the user location and use it to get the map preview
       locator<AppMethods>().getUserLocation().then((value) {
@@ -42,19 +46,27 @@ class _MapPreviewWidgetState extends State<MapPreviewWidget> {
           latitude = value.latitude;
           longitude = value.longitude;
         });
+
+        getMapInfo();
       });
     }
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    brightness = Theme.of(context).brightness;
+    getMapInfo();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    var url =
-        'https://maps.googleapis.com/maps/api/staticmap?center=$latitude,$longitude&zoom=18&size=600x300&maptype=roadmap&markers=color:green%7Clabel:Yo%7C$latitude,$longitude&key=AIzaSyC1Q-0MKSzN0IpvklnNc1t4yPEpzQScC9o&map_id=7f1b54e9ff3283c0';
     return latitude != null && longitude != null
         ? ClipRRect(
             borderRadius: BorderRadius.circular(widget.borderRadius),
             child: Image.network(
-              url,
+              mapUrl ?? '',
               fit: BoxFit.cover,
               width: double.infinity,
             ),
@@ -62,5 +74,32 @@ class _MapPreviewWidgetState extends State<MapPreviewWidget> {
         : const Center(
             child: CircularProgressIndicator(),
           );
+  }
+
+  void getMapInfo() {
+    var latitude = this.latitude;
+    var longitude = this.longitude;
+
+    if (latitude == null || longitude == null) return;
+
+    const zoom = 18;
+    const size = '600x300';
+    const mapType = 'roadmap';
+    var markers = 'color:green%7Clabel:Yo%7C$latitude,$longitude';
+
+    var currentTheme = brightness;
+
+    final url = locator.get<AppMethods>().getStaticMapURL(
+          zoom,
+          size,
+          mapType,
+          markers,
+          latitude,
+          longitude,
+          currentTheme,
+        );
+    setState(() {
+      mapUrl = url;
+    });
   }
 }

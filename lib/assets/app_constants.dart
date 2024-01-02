@@ -11,6 +11,14 @@ class AppConstants {
   final String promotionImages = "promotionsImages";
   final String featureImage = "featureImage";
 
+  //Map themes
+  final String lightMapTheme = "7f1b54e9ff3283c0";
+  final String darkMapTheme = "b3f5bac810144125";
+
+  //Google maps static api
+  final String googleMapsStaticApi =
+      "https://maps.googleapis.com/maps/api/staticmap";
+
   //User Ranks
   Map<String, Map<String, List<String>>> ranks = {
     "POLICIA NACIONAL": {
@@ -157,23 +165,6 @@ class AppConstants {
         "Soldado (servicio militar)",
       ],
     },
-    /*
-    // Please especify if the Opcionales are needed to be shown
-    "OPCIONALES": {
-      "BOMBEROS": [
-        // Please especify the options for Bomberos
-      ],
-      "DEFENSA CIVIL": [
-        // Please especify the options for Defensa Civil
-      ],
-      "FISCALIA GENERAL DE LA NACION": [
-        // Please especify the options for Fiscalia General de la Nacion
-      ],
-      "MINISTERIO DE DEFENSA": [
-        // Please especify the options for Ministerio de Defensa
-      ],
-    },
-    */
   };
 
   //Texts for UI

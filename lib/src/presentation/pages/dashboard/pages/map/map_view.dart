@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:auto_route/auto_route.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -143,8 +142,8 @@ class MapViewState extends State<MapView> {
       mapToolbarEnabled: true,
       compassEnabled: false,
       cloudMapId: appTheme == Brightness.light
-          ? '7f1b54e9ff3283c0'
-          : "b3f5bac810144125",
+          ? locator.get<AppConstants>().lightMapTheme
+          : locator.get<AppConstants>().darkMapTheme,
       buildingsEnabled: false,
       mapType: MapType.normal,
       initialCameraPosition: CameraPosition(
