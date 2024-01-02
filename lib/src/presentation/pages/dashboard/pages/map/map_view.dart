@@ -91,7 +91,7 @@ class MapViewState extends State<MapView> {
           },
           onQueryChanged: (query) {
             setState(() {
-              useAutomaticSearch = false;
+              useAutomaticSearch = true;
               useSearchResults = false;
             });
             context.read<MapCubit>().searchBusiness(query);
