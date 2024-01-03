@@ -11,6 +11,14 @@ class AppConstants {
   final String promotionImages = "promotionsImages";
   final String featureImage = "featureImage";
 
+  //Map themes
+  final String lightMapTheme = "7f1b54e9ff3283c0";
+  final String darkMapTheme = "b3f5bac810144125";
+
+  //Google maps static api
+  final String googleMapsStaticApi =
+      "https://maps.googleapis.com/maps/api/staticmap";
+
   //User Ranks
   Map<String, Map<String, List<String>>> ranks = {
     "POLICIA NACIONAL": {
@@ -157,23 +165,6 @@ class AppConstants {
         "Soldado (servicio militar)",
       ],
     },
-    /*
-    // Please especify if the Opcionales are needed to be shown
-    "OPCIONALES": {
-      "BOMBEROS": [
-        // Please especify the options for Bomberos
-      ],
-      "DEFENSA CIVIL": [
-        // Please especify the options for Defensa Civil
-      ],
-      "FISCALIA GENERAL DE LA NACION": [
-        // Please especify the options for Fiscalia General de la Nacion
-      ],
-      "MINISTERIO DE DEFENSA": [
-        // Please especify the options for Ministerio de Defensa
-      ],
-    },
-    */
   };
 
   //Texts for UI
@@ -276,7 +267,7 @@ class AppConstants {
       'signupButton': 'Registrarse',
       'signupErrorTitle': 'Error al registrarse',
       "registerAsBusiness": "¿Registrar un nuevo comercio?",
-      "personalInfo": "Información del manager o responsable",
+      "personalInfo": "Información del administrador o responsable",
       "genericValidator": "Este campo no puede estar vacío",
       "registerSuccess-title": "¡Registro exitoso!",
       "registerSuccess-body":
@@ -298,7 +289,7 @@ class AppConstants {
     "searchView": {
       "title": "Comercios aliados",
       "search-title": "¿Qué comercio buscas?",
-      "nearPromotions": "Promociones cercanas",
+      "nearPromotions": "Comercios cercanos",
       "featuredBusiness": "Comercios destacados",
       "business": "Comercios",
       "seeAll": "Ver todos",
@@ -382,6 +373,17 @@ class AppConstants {
       'error-content': 'Hubo un error al guardar los cambios',
       'success-content': 'Información actualizada',
       'empty-string': 'Este campo no puede estar vacío',
+    },
+    'mapView': {
+      'title': 'Mapa',
+      'search': 'Buscar',
+      'search-hint': 'Buscar comercio',
+      'search-error': 'No se encontraron resultados',
+      'search-error-button': 'Reintentar',
+      'search-error-title': 'Error',
+      'search-error-content': 'Ocurrió un error al buscar',
+      "search-suggestions": "Sugerencias",
+      "search-results": "Resultados",
     }
   };
   final businessDashboardTexts = {
@@ -432,7 +434,7 @@ class AppConstants {
       "create-button": "Crear",
       "edit-button": "Editar",
       "delete-button": "Eliminar",
-      "add-manager-button": "Agregar manager",
+      "add-manager-button": "Agregar administrador",
       "remove-manager-button": "Eliminar",
       "slide-to-remove": "Desliza para eliminar administrador",
       "manager-deleted": "Administrador eliminado exitosamente",
@@ -441,6 +443,10 @@ class AppConstants {
       "email-label": "Correo electrónico",
       "email-hint": "Ingresa el correo electrónico del administrador",
       "add-button": "Agregar",
+      "address-label": "Ubicación",
+      "address-hint": "Ingresa la ubicación del comercio",
+      "address-edited": "Ubicación editada exitosamente",
+      "address-error": "Por favor ingresa una ubicación válida",
     },
   };
 }

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geoflutterfire2/geoflutterfire2.dart';
 
 //This class is a wrapper for Firestore
 class FirestoreService {
@@ -248,5 +249,31 @@ class FirestoreService {
     );
 
     return array;
+  }
+
+  /*
+   This method is used to get the documents inside a collection,
+   where the docs are in the distance in Km passed as parameter 
+   to the location passed as parameter
+  */
+  Stream<List<DocumentSnapshot<Object?>>> getDocumentsNearPosition(
+    GeoPoint location,
+    double maxDistance,
+    String collection,
+  ) {
+    final geofire = GeoFlutterFire();
+
+    GeoFirePoint center = geofire.point(
+        latitude: location.latitude, longitude: location.longitude);
+    var collectionReference = _firestore.collection(collection);
+
+    double radius = maxDistance;
+    String field = 'geo_hash';
+
+    Stream<List<DocumentSnapshot>> stream = geofire
+        .collection(collectionRef: collectionReference)
+        .within(center: center, radius: radius, field: field);
+
+    return stream;
   }
 }

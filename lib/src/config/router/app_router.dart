@@ -95,5 +95,12 @@ class AppRouter extends $AppRouter {
             page: OwnedPromotionDetailsView.page,
             path: '/ownedPromotionDetails',
             transitionsBuilder: TransitionsBuilders.slideLeft),
+
+        //Individual map hero routes
+        CustomRoute(
+          page: MapView.page,
+          path: '/mapView',
+          transitionsBuilder: TransitionsBuilders.slideLeft,
+        ),
       ];
 }

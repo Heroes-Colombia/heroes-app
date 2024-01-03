@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
@@ -210,5 +211,19 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
   //This method is used to reset the favourite state to false
   void resetReviewState() {
     emit(state.copyWith(isReviewLoading: false));
+  }
+
+  //This method is used to navigate to the business in google maps
+  void openUrl() async {
+    try {
+      var googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=';
+      if (state.business!.address == "") return;
+
+      var finalUrl = googleMapsUrl + state.business!.address;
+      Uri encodedUri = Uri.parse(finalUrl);
+      await locator.get<AppMethods>().openAppFromUri(encodedUri);
+    } catch (e) {
+      log('Error: $e, Function: openUrl, File: business_details_cubit.dart');
+    }
   }
 }

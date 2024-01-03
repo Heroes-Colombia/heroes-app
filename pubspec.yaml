@@ -39,6 +39,15 @@ dependencies:
   intl: ^0.18.1
   form_builder_extra_fields: ^10.1.0
   flutter_slidable: ^3.0.1
+  google_maps_flutter: ^2.5.0
+  location: ^5.0.3
+  url_launcher: ^6.2.2
+  geocoding: ^2.1.1
+  material_floating_search_bar_2: ^0.5.0
+  geolocator: ^10.1.0
+  dart_geohash: ^2.0.2
+  geoflutterfire2: ^2.3.15
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +61,7 @@ flutter:
   uses-material-design: true
   assets:
    - assets/images/file-not-found.png
+   - .env
 
 flutter_native_splash:
   color: "#9F79EC"

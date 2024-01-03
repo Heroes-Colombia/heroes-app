@@ -1,10 +1,14 @@
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/listable_user_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
@@ -362,6 +366,69 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<bool> setAddressToBusiness(String address) async {
+    try {
+      //First, we get the firestore service and the users collection
+      final firestoreService = locator.get<FirestoreService>();
+      final businessCollection = locator.get<AppConstants>().businessCollection;
+
+      //Then we get the business coordinates from the address
+      final coordinates = await transformToLatLng(address);
+      if (coordinates == null) return false;
+
+      //Then we transform the coordinates to a geoPoint
+      final geoPoint = GeoPoint(coordinates.latitude, coordinates.longitude);
+
+      //Then we get the geoHash from the coordinates
+      final geo = GeoFlutterFire();
+      GeoFirePoint currentPosition = geo.point(
+          latitude: coordinates.latitude, longitude: coordinates.longitude);
+
+      //Then, we add the address and the location to the business
+      await firestoreService.editDocumentByDocumentId(
+        businessCollection,
+        state.businessId!,
+        {
+          "address": address,
+          "location": geoPoint,
+          "geo_hash": currentPosition.data,
+        },
+      );
+
+      //Then we get the updated business
+      final rawBusiness = await firestoreService.readDocumentByDocId(
+        businessCollection,
+        state.businessId!,
+      );
+
+      final business = Business.fromJson(rawBusiness!);
+
+      //Finally, we update the state
+      emit(
+        state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          business: business,
+        ),
+      );
+
+      return true;
+    } catch (e) {
+      log('Error: $e, Function: setAddressToBusiness, File: owned_business_details_cubit.dart');
+      return false;
+    }
+  }
+
+  Future<Location?> transformToLatLng(String address) async {
+    try {
+      var location =
+          await locator.get<AppMethods>().getCoordinatesFromAddress(address);
+      return location;
+    } catch (e) {
+      log('Error: $e, Function: transformToLatLng, File: owned_business_details_cubit.dart');
+      return null;
     }
   }
 }
