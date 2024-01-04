@@ -331,7 +331,6 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       //If the user does not exist, we return false
       if (rawUser.isEmpty) {
-        log("raw user$rawUser");
         return false;
       }
 

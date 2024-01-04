@@ -439,6 +439,7 @@ class AppConstants {
       "slide-to-remove": "Desliza para eliminar administrador",
       "manager-deleted": "Administrador eliminado exitosamente",
       "manager-delete-error": "Ocurrió un error al eliminar el administrador",
+      "email-error": "Por favor ingresa un correo electrónico válido",
       "manager-added": "Administrador agregado exitosamente",
       "email-label": "Correo electrónico",
       "email-hint": "Ingresa el correo electrónico del administrador",

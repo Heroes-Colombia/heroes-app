@@ -870,6 +870,20 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                   );
 
                   return;
+                } else {
+                  //Close the AlertDialog
+                  Navigator.of(context).pop();
+
+                  //Close the bottom modal
+                  Navigator.of(context).pop();
+
+                  //Show the snackbar
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(texts["email-error"]!),
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
                 }
               },
               buttonText: texts["add-button"]!,

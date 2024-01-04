@@ -55,10 +55,10 @@ class OwnedBusinessesCubit extends Cubit<OwnedBusinessesState> {
           .map((e) => ListableBusiness.fromJson(e))
           .toList();
 
-      //We check if the managedBusinesses contains the ownerBusiness and if not we add it
-      if (!businesses.contains(ownerBusinesses.first)) {
-        businesses.addAll(managedBusinesses);
-      }
+      //We check if we have the owned business inside our managed businesses list
+      businesses.addAll(ownerBusinesses);
+      businesses.addAll(managedBusinesses
+          .where((element) => !ownerBusinesses.contains(element)));
 
       //We emit the state with the businesses
       emit(state.copyWith(
