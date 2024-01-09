@@ -48,6 +48,8 @@ dependencies:
   dart_geohash: ^2.0.2
   geoflutterfire2: ^2.3.15
   flutter_dotenv: ^5.1.0
+  firebase_messaging: ^14.7.9
+  flutter_local_notifications: ^16.3.0
 
 dev_dependencies:
   flutter_test:
