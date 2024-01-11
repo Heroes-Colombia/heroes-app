@@ -7,6 +7,7 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/src/domain/models/user_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
+import 'package:heroes_app/src/domain/repositories/shared_preferences_service.dart';
 
 part 'profile_state.dart';
 
@@ -64,5 +65,24 @@ class ProfileCubit extends Cubit<ProfileState> {
       log("Error: $e, Function: updateProfileInfo, File: profile_cubit.dart");
       emit(ProfileError());
     }
+  }
+
+  //This method is used to check if the user has notification preferences saved on the device
+  Future<bool> getNotificationPreferencesForTopic(String topic) async {
+    final isTopicActive =
+        await locator.get<SharedPreferencesService>().getBool(topic);
+
+    return isTopicActive;
+  }
+
+  //This method is used to check if the user has notification preferences saved on the device
+  Future<bool> setNotificationPreferencesForTopic(String topic) async {
+    final isTopicActive =
+        await locator.get<SharedPreferencesService>().getBool(topic);
+    await locator
+        .get<SharedPreferencesService>()
+        .setBool(topic, !isTopicActive);
+
+    return isTopicActive;
   }
 }

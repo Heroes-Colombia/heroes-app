@@ -364,6 +364,9 @@ class AppConstants {
       'light-mode': 'Tema claro',
       'system-mode': 'Tema del sistema',
       'logout-error-message': 'Ocurrió un error al cerrar sesión',
+      "notifications": "Notificaciones",
+      "favorites-topic": "Promociones de comercos favoritos",
+      "discover-topic": "Promociones cercanas",
     },
     'editprofileView': {
       'title': 'Editar perfil',

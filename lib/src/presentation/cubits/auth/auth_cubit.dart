@@ -13,6 +13,7 @@ import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/cloud_message_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestorage_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
+import 'package:heroes_app/src/domain/repositories/shared_preferences_service.dart';
 import 'package:heroes_app/src/locator.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -54,6 +55,11 @@ class AuthCubit extends Cubit<AuthState> {
       //Check if the user is a business
       if (user.permission == UserPermissions.business) {
         if (!context.mounted) return false;
+        //We suscribe the user to the business user channel
+        final businessTopic = locator.get<AppConstants>().businessUserTopic;
+        locator.get<CloudMessageService>().subscribeToTopic(businessTopic);
+        emit(const AuthState(authStatus: AuthStatus.businessLoggedIn));
+        //And we replace the current route with the business dashboard
         AutoRouter.of(context).replaceAll([const BusinessDashBoardView()]);
         return true;
       }
@@ -250,17 +256,60 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  //This method is used to suscribe the user to the default topics
+  //This method handles the normal user subscription to the default topics
   Future<void> setInitialTopicsForUser() async {
     final normalTopic = locator.get<AppConstants>().normalUserTopic;
+    final favoritesTopic = locator.get<AppConstants>().favoriteTopic;
+    final discoverPromotionsTopic = locator.get<AppConstants>().discoverTopic;
+
+    //We check if the user already has a device notification preferences
+    final containsDiscoverTopicKey = await locator
+        .get<SharedPreferencesService>()
+        .containsKey(discoverPromotionsTopic);
+
+    final containsFavoritesTopicKey = await locator
+        .get<SharedPreferencesService>()
+        .containsKey(favoritesTopic);
+
+    //If the user doesn't have a device notification preferences, we save it
+    if (!containsDiscoverTopicKey && !containsFavoritesTopicKey) {
+      await locator.get<CloudMessageService>().subscribeToTopic(normalTopic);
+
+      await locator
+          .get<SharedPreferencesService>()
+          .setBool(favoritesTopic, true);
+      await locator.get<CloudMessageService>().subscribeToTopic(favoritesTopic);
+
+      await locator
+          .get<SharedPreferencesService>()
+          .setBool(discoverPromotionsTopic, true);
+      await locator
+          .get<CloudMessageService>()
+          .subscribeToTopic(discoverPromotionsTopic);
+
+      return;
+    }
+
+    //If the user already has a device notification preferences, we subscribe the user to the default topics
     await locator.get<CloudMessageService>().subscribeToTopic(normalTopic);
 
-    final favoritesTopic = locator.get<AppConstants>().favoriteTopic;
-    await locator.get<CloudMessageService>().subscribeToTopic(favoritesTopic);
+    final favoritesTopicSavedValue =
+        await locator.get<SharedPreferencesService>().getBool(favoritesTopic);
 
-    final discoverPromotionsTopic = locator.get<AppConstants>().discoverTopic;
-    await locator
-        .get<CloudMessageService>()
-        .subscribeToTopic(discoverPromotionsTopic);
+    favoritesTopicSavedValue
+        ? await locator
+            .get<CloudMessageService>()
+            .subscribeToTopic(favoritesTopic)
+        : null;
+
+    final discoverTopicSavedValue = await locator
+        .get<SharedPreferencesService>()
+        .getBool(discoverPromotionsTopic);
+
+    discoverTopicSavedValue
+        ? await locator
+            .get<CloudMessageService>()
+            .subscribeToTopic(discoverPromotionsTopic)
+        : null;
   }
 }

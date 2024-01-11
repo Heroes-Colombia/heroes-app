@@ -36,7 +36,8 @@ class CloudMessageService {
     //This method is used to handle the notifications listeners
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
-      log(message.data.toString());
+      log("Message data received");
+      log("data: ${message.data}");
       if (notification != null) {
         FlutterLocalNotificationsPlugin().show(
           notification.hashCode,

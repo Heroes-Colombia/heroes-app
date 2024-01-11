@@ -4,14 +4,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
+import 'package:heroes_app/src/domain/repositories/cloud_message_service.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
 import 'package:ionicons/ionicons.dart';
 
 @RoutePage()
-class ProfileView extends StatelessWidget {
-  ProfileView({Key? key}) : super(key: key);
+class ProfileView extends StatefulWidget {
+  const ProfileView({Key? key}) : super(key: key);
+
+  @override
+  State<ProfileView> createState() => _ProfileViewState();
+}
+
+class _ProfileViewState extends State<ProfileView> {
   final locator = GetIt.instance;
+  var favoriteTopic = true;
+  var discoverTopic = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    initTopics();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +69,7 @@ class ProfileView extends StatelessWidget {
                     onChanged: (_) => changeThemeMode(context),
                   ),
                 ),
+                notificationSettingsWidget(texts, theme),
               ]),
             ),
           ),
@@ -58,6 +77,63 @@ class ProfileView extends StatelessWidget {
       ),
     );
   }
+
+  //Widgets
+  BlocBuilder<AuthCubit, AuthState> notificationSettingsWidget(
+    Map<String, String> texts,
+    ThemeData theme,
+  ) {
+    return BlocBuilder<AuthCubit, AuthState>(builder: (context, state) {
+      if (state.authStatus != AuthStatus.businessLoggedIn) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16),
+            Text(texts['notifications']!, style: theme.textTheme.labelLarge),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Ionicons.notifications_outline),
+              title: Text(texts['favorites-topic']!),
+              trailing: Switch(
+                value: favoriteTopic,
+                onChanged: (value) {
+                  handleSetNotificationPreference(
+                    locator.get<AppConstants>().favoriteTopic,
+                    value,
+                  );
+
+                  setState(() {
+                    favoriteTopic = value;
+                  });
+                },
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Ionicons.notifications_outline),
+              title: Text(texts['discover-topic']!),
+              trailing: Switch(
+                value: discoverTopic,
+                onChanged: (value) {
+                  handleSetNotificationPreference(
+                    locator.get<AppConstants>().discoverTopic,
+                    value,
+                  );
+
+                  setState(() {
+                    discoverTopic = value;
+                  });
+                },
+              ),
+            ),
+          ],
+        );
+      } else {
+        return const SizedBox.shrink();
+      }
+    });
+  }
+
+  //Methods
 
   //This method is used to log out the user
   void doLogOut(BuildContext context, texts) async {
@@ -88,5 +164,38 @@ class ProfileView extends StatelessWidget {
     } else {
       AdaptiveTheme.of(context).setDark();
     }
+  }
+
+  //This method is used to get the notification
+  void initTopics() async {
+    //We get the user notification topics preferences
+    final favoriteTopicName = locator.get<AppConstants>().favoriteTopic;
+    final discoverTopicName = locator.get<AppConstants>().discoverTopic;
+
+    final favoriteTopicNewValue = await context
+        .read<ProfileCubit>()
+        .getNotificationPreferencesForTopic(favoriteTopicName);
+    if (!context.mounted) return;
+
+    final discoverTopicNewValue = await context
+        .read<ProfileCubit>()
+        .getNotificationPreferencesForTopic(discoverTopicName);
+
+    setState(() {
+      favoriteTopic = favoriteTopicNewValue;
+      discoverTopic = discoverTopicNewValue;
+    });
+  }
+
+  void handleSetNotificationPreference(String topic, bool newValue) async {
+    await context
+        .read<ProfileCubit>()
+        .setNotificationPreferencesForTopic(topic);
+
+    if (!context.mounted) return;
+
+    newValue
+        ? locator.get<CloudMessageService>().subscribeToTopic(topic)
+        : locator.get<CloudMessageService>().unsubscribeFromTopic(topic);
   }
 }

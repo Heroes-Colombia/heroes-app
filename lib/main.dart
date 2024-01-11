@@ -33,18 +33,13 @@ Future<void> main() async {
   //DIO dependencies
   await initializeDependencies();
   //Cloud messaging dependencies
-  GetIt.instance
+  final userAcceptNotifications = await GetIt.instance
       .get<CloudMessageService>()
-      .getNotificationsPermission()
-      .then((userAcceptNotifications) => () async {
-            if (userAcceptNotifications) {
-              await FirebaseMessaging.instance.getInitialMessage();
-              await GetIt.instance
-                  .get<CloudMessageService>()
-                  .initLocalNotifications();
-            }
-          });
-
+      .getNotificationsPermission();
+  if (userAcceptNotifications) {
+    await FirebaseMessaging.instance.getInitialMessage();
+    await GetIt.instance.get<CloudMessageService>().initLocalNotifications();
+  }
   //Formating locale
   await initializeDateFormatting('es', null);
   //Theme dependencies
