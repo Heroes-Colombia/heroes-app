@@ -245,8 +245,8 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                   id: promotions[index].businessId,
                   description: promotions[index].description,
                   callback: () {
-                    AutoRouter.of(context).push(
-                        PromotionDetailsView(promotion: promotions[index]));
+                    AutoRouter.of(context).push(PromotionDetailsView(
+                        promotion: promotions[index], promotionId: null));
                   });
             },
             itemCount: promotions.length,

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_it/get_it.dart';
+
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 
 class CloudMessageService {
@@ -33,7 +34,7 @@ class CloudMessageService {
     const initSettings = InitializationSettings(android: android, iOS: ios);
     await FlutterLocalNotificationsPlugin().initialize(initSettings);
 
-    //This method is used to handle the notifications listeners
+    //This method is used to handle the notifications on foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
       log("Message data received");

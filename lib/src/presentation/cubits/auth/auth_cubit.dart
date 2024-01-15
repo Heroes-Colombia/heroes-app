@@ -69,7 +69,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       //If the user is logged in and verified, we emit the userLoggedIn state
       if (!context.mounted) return false;
-      AutoRouter.of(context).replaceAll([const DashBoardView()]);
+      AutoRouter.of(context).replaceAll([DashBoardView()]);
       return true;
     } catch (e) {
       log('Error: $e, Function: logIn, File: auth_cubit.dart');

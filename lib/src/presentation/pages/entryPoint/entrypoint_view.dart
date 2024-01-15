@@ -83,7 +83,7 @@ class _EntryPointViewState extends State<EntryPointView> {
 
   Widget userLoggedIn() {
     //Redirect to the home view
-    AutoRouter.of(context).replaceAll([const DashBoardView()]);
+    AutoRouter.of(context).replaceAll([DashBoardView()]);
     return const CustomScrollView(
       slivers: [
         SliverFillRemaining(child: Center(child: CircularProgressIndicator()))

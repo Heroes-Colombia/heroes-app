@@ -1,15 +1,35 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
+import 'package:heroes_app/src/presentation/cubits/promotion/promotion_details_cubit.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 
 @RoutePage()
-class PromotionDetailsView extends StatelessWidget {
-  final Promotion promotion;
-  const PromotionDetailsView({super.key, required this.promotion});
+class PromotionDetailsView extends StatefulWidget {
+  final Promotion? promotion;
+  final String? promotionId;
+  const PromotionDetailsView(
+      {super.key, required this.promotion, required this.promotionId});
+
+  @override
+  State<PromotionDetailsView> createState() => _PromotionDetailsViewState();
+}
+
+class _PromotionDetailsViewState extends State<PromotionDetailsView> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.promotion == null && widget.promotionId != null) {
+      context
+          .read<PromotionDetailsCubit>()
+          .getPromotionDetails(widget.promotionId!);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,41 +39,64 @@ class PromotionDetailsView extends StatelessWidget {
         locator.get<AppConstants>().dashBoardTexts['promotionDetailsView']!;
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar.large(title: Text(promotion.title)),
-          SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.only(
-                  left: 16, right: 16, bottom: 24, top: 12),
-              child: SizedBox(
-                height: 300,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                  child: promotion.featuredImage.isNotEmpty
-                      ? Image.network(
-                          promotion.featuredImage,
-                          fit: BoxFit.cover,
-                        )
-                      : Image.asset(
-                          'assets/images/placeholder.png',
-                          fit: BoxFit.cover,
-                        ),
+      body: widget.promotion != null
+          ? promotionBodyWidget(texts, theme, widget.promotion!)
+          : BlocBuilder<PromotionDetailsCubit, PromotionDetailsState>(
+              builder: (context, state) {
+                switch (state.status) {
+                  case BusinessViewCubitStatus.initial:
+                    return const Center(child: CircularProgressIndicator());
+                  case BusinessViewCubitStatus.loading:
+                    return const Center(child: CircularProgressIndicator());
+                  case BusinessViewCubitStatus.success:
+                    return promotionBodyWidget(texts, theme, state.promotion!);
+                  case BusinessViewCubitStatus.error:
+                    return const Center(child: Text('Error'));
+
+                  default:
+                    return const Center(child: CircularProgressIndicator());
+                }
+              },
+            ),
+    );
+  }
+
+  CustomScrollView promotionBodyWidget(
+      Map<String, String> texts, ThemeData theme, Promotion promotion) {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar.large(title: Text(promotion.title)),
+        SliverToBoxAdapter(
+          child: Container(
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, bottom: 24, top: 12),
+            child: SizedBox(
+              height: 300,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
+                child: promotion.featuredImage.isNotEmpty
+                    ? Image.network(
+                        promotion.featuredImage,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.asset(
+                        'assets/images/placeholder.png',
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
           ),
-          sectionTitle(texts['description-title']!, theme),
-          sectionBody(theme, promotion.description),
-          sectionTitle(texts['instructions-title']!, theme),
-          sectionBody(theme, promotion.instructions),
-          sectionTitle(texts['expiration-title']!, theme),
-          sectionBody(theme, getExpirationDate(promotion.expiredAt))
-        ],
-      ),
+        ),
+        sectionTitle(texts['description-title']!, theme),
+        sectionBody(theme, promotion.description),
+        sectionTitle(texts['instructions-title']!, theme),
+        sectionBody(theme, promotion.instructions),
+        sectionTitle(texts['expiration-title']!, theme),
+        sectionBody(theme, getExpirationDate(promotion.expiredAt))
+      ],
     );
   }
 
