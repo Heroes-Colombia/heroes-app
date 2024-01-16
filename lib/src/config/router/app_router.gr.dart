@@ -89,9 +89,11 @@ abstract class $AppRouter extends _i23.RootStackRouter {
       );
     },
     DashBoardView.name: (routeData) {
+      final args = routeData.argsAs<DashBoardViewArgs>(
+          orElse: () => const DashBoardViewArgs());
       return _i23.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i5.DashBoardView(),
+        child: _i5.DashBoardView(key: args.key),
       );
     },
     EditProfileView.name: (routeData) {
@@ -173,11 +175,9 @@ abstract class $AppRouter extends _i23.RootStackRouter {
       );
     },
     ProfileView.name: (routeData) {
-      final args = routeData.argsAs<ProfileViewArgs>(
-          orElse: () => const ProfileViewArgs());
       return _i23.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: _i16.ProfileView(key: args.key),
+        child: const _i16.ProfileView(),
       );
     },
     PromotionDetailsView.name: (routeData) {
@@ -187,6 +187,7 @@ abstract class $AppRouter extends _i23.RootStackRouter {
         child: _i17.PromotionDetailsView(
           key: args.key,
           promotion: args.promotion,
+          promotionId: args.promotionId,
         ),
       );
     },
@@ -315,16 +316,31 @@ class BusinessDetailsViewArgs {
 
 /// generated route for
 /// [_i5.DashBoardView]
-class DashBoardView extends _i23.PageRouteInfo<void> {
-  const DashBoardView({List<_i23.PageRouteInfo>? children})
-      : super(
+class DashBoardView extends _i23.PageRouteInfo<DashBoardViewArgs> {
+  DashBoardView({
+    _i24.Key? key,
+    List<_i23.PageRouteInfo>? children,
+  }) : super(
           DashBoardView.name,
+          args: DashBoardViewArgs(key: key),
           initialChildren: children,
         );
 
   static const String name = 'DashBoardView';
 
-  static const _i23.PageInfo<void> page = _i23.PageInfo<void>(name);
+  static const _i23.PageInfo<DashBoardViewArgs> page =
+      _i23.PageInfo<DashBoardViewArgs>(name);
+}
+
+class DashBoardViewArgs {
+  const DashBoardViewArgs({this.key});
+
+  final _i24.Key? key;
+
+  @override
+  String toString() {
+    return 'DashBoardViewArgs{key: $key}';
+  }
 }
 
 /// generated route for
@@ -588,31 +604,16 @@ class OwnedPromotionDetailsViewArgs {
 
 /// generated route for
 /// [_i16.ProfileView]
-class ProfileView extends _i23.PageRouteInfo<ProfileViewArgs> {
-  ProfileView({
-    _i24.Key? key,
-    List<_i23.PageRouteInfo>? children,
-  }) : super(
+class ProfileView extends _i23.PageRouteInfo<void> {
+  const ProfileView({List<_i23.PageRouteInfo>? children})
+      : super(
           ProfileView.name,
-          args: ProfileViewArgs(key: key),
           initialChildren: children,
         );
 
   static const String name = 'ProfileView';
 
-  static const _i23.PageInfo<ProfileViewArgs> page =
-      _i23.PageInfo<ProfileViewArgs>(name);
-}
-
-class ProfileViewArgs {
-  const ProfileViewArgs({this.key});
-
-  final _i24.Key? key;
-
-  @override
-  String toString() {
-    return 'ProfileViewArgs{key: $key}';
-  }
+  static const _i23.PageInfo<void> page = _i23.PageInfo<void>(name);
 }
 
 /// generated route for
@@ -621,13 +622,15 @@ class PromotionDetailsView
     extends _i23.PageRouteInfo<PromotionDetailsViewArgs> {
   PromotionDetailsView({
     _i24.Key? key,
-    required _i25.Promotion promotion,
+    required _i25.Promotion? promotion,
+    required String? promotionId,
     List<_i23.PageRouteInfo>? children,
   }) : super(
           PromotionDetailsView.name,
           args: PromotionDetailsViewArgs(
             key: key,
             promotion: promotion,
+            promotionId: promotionId,
           ),
           initialChildren: children,
         );
@@ -642,15 +645,18 @@ class PromotionDetailsViewArgs {
   const PromotionDetailsViewArgs({
     this.key,
     required this.promotion,
+    required this.promotionId,
   });
 
   final _i24.Key? key;
 
-  final _i25.Promotion promotion;
+  final _i25.Promotion? promotion;
+
+  final String? promotionId;
 
   @override
   String toString() {
-    return 'PromotionDetailsViewArgs{key: $key, promotion: $promotion}';
+    return 'PromotionDetailsViewArgs{key: $key, promotion: $promotion, promotionId: $promotionId}';
   }
 }
 

@@ -15,6 +15,18 @@ class AppConstants {
   final String lightMapTheme = "7f1b54e9ff3283c0";
   final String darkMapTheme = "b3f5bac810144125";
 
+  //Firebase Cloud Messaging topics
+
+  //Types of users in the app (used to filter the users in the admin panel)
+  final String businessUserTopic = "business";
+  final String normalUserTopic = "user";
+
+  //Used to send notifications to users with the business in their favourites
+  final String favoriteTopic = "favoriteBusinessPromotion";
+
+  //Used to send notifications to users of a nearby business
+  final String discoverTopic = "discoverNearbyBusiness";
+
   //Google maps static api
   final String googleMapsStaticApi =
       "https://maps.googleapis.com/maps/api/staticmap";
@@ -352,6 +364,9 @@ class AppConstants {
       'light-mode': 'Tema claro',
       'system-mode': 'Tema del sistema',
       'logout-error-message': 'Ocurrió un error al cerrar sesión',
+      "notifications": "Notificaciones",
+      "favorites-topic": "Promociones de comercos favoritos",
+      "discover-topic": "Promociones cercanas",
     },
     'editprofileView': {
       'title': 'Editar perfil',
@@ -439,6 +454,7 @@ class AppConstants {
       "slide-to-remove": "Desliza para eliminar administrador",
       "manager-deleted": "Administrador eliminado exitosamente",
       "manager-delete-error": "Ocurrió un error al eliminar el administrador",
+      "email-error": "Por favor ingresa un correo electrónico válido",
       "manager-added": "Administrador agregado exitosamente",
       "email-label": "Correo electrónico",
       "email-hint": "Ingresa el correo electrónico del administrador",

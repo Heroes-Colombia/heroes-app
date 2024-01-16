@@ -1,7 +1,12 @@
+import 'dart:developer';
+
+import 'package:auto_route/auto_route.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -177,5 +182,27 @@ class AppMethods {
     final staticMapApi = locator.get<AppConstants>().googleMapsStaticApi;
 
     return '$staticMapApi?center=$latitude,$longitude&zoom=$zoom&size=$size&maptype=$mapType&markers=$markers&key=$mapKey&map_id=$mapThemeId';
+  }
+
+  //This method is used to handle RemoteMessage
+  Future<void> handleRemoteMessage(
+    RemoteMessage message,
+    BuildContext context,
+  ) async {
+    if (message.data.containsKey("promotion")) {
+      AutoRouter.of(context).push(PromotionDetailsView(
+        promotion: null,
+        promotionId: message.data["promotion"],
+      ));
+    } else if (message.data.containsKey("business")) {
+      AutoRouter.of(context).push(BusinessDetailsView(
+        businessId: message.data["business"],
+      ));
+    } else if (message.data.containsKey("route")) {
+      log("Route found for: ${message.data}");
+      AutoRouter.of(context).pushNamed("/${message.data["route"]}");
+    } else {
+      log("No route found for: ${message.data}");
+    }
   }
 }

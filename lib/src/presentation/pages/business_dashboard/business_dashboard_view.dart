@@ -12,7 +12,7 @@ class BusinessDashBoardView extends StatelessWidget {
     return AutoTabsScaffold(
       routes: [
         OwnedBusinessesView(),
-        ProfileView(),
+        const ProfileView(),
       ],
       bottomNavigationBuilder: (context, tabsRouter) {
         return NavigationBar(

@@ -13,6 +13,7 @@ class User extends Equatable {
   final String email;
   final bool verified;
   final List<String> favouriteBusinesses;
+  final String? deviceNotificationToken;
 
   const User({
     required this.uid,
@@ -26,6 +27,7 @@ class User extends Equatable {
     required this.email,
     required this.verified,
     required this.favouriteBusinesses,
+    this.deviceNotificationToken,
   });
 
   @override
@@ -40,7 +42,8 @@ class User extends Equatable {
         permission,
         rank,
         verified,
-        favouriteBusinesses
+        favouriteBusinesses,
+        deviceNotificationToken
       ];
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -59,34 +62,8 @@ class User extends Equatable {
       favouriteBusinesses: json['favourite_businesses'] != null
           ? List<String>.from(json['favourite_businesses'])
           : [],
+      deviceNotificationToken: json['device_notification_token'] as String?,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'uid': uid,
-      'email': email,
-      'license': license,
-      'first_name': firstName,
-      'second_name': secondName,
-      'first_last_name': firstLastName,
-      'second_last_name': secondLastName,
-      'rank': rank,
-      'permission': permission.toString().split('.').last,
-      'verified': verified,
-    };
-  }
-
-  Map<String, dynamic> toJsonRequest() {
-    return {
-      'email': email,
-      'license': license,
-      'first_name': firstName,
-      'second_name': secondName,
-      'first_last_name': firstLastName,
-      'second_last_name': secondLastName,
-      'rank': rank,
-    };
   }
 
   static Map<String, dynamic> toInitialFirebaseJson(
@@ -122,6 +99,7 @@ class User extends Equatable {
     String? rank,
     bool? verified,
     List<String>? favouriteBusinesses,
+    String? deviceNotificationToken,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -135,6 +113,8 @@ class User extends Equatable {
       verified: verified ?? this.verified,
       rank: rank ?? this.rank,
       favouriteBusinesses: favouriteBusinesses ?? this.favouriteBusinesses,
+      deviceNotificationToken:
+          deviceNotificationToken ?? this.deviceNotificationToken,
     );
   }
 }
