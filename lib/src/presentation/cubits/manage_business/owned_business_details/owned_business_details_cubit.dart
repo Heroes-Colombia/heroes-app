@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:get_it/get_it.dart';
@@ -10,9 +11,11 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
+import 'package:heroes_app/src/domain/models/business_payment_method.dart';
 import 'package:heroes_app/src/domain/models/listable_user_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
+import 'package:heroes_app/src/domain/repositories/business_subscription_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestorage_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 import 'package:image_picker/image_picker.dart';
@@ -119,6 +122,73 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       emit(state.copyWith(allManagers: managers));
     } catch (e) {
       log('Error: $e, Function: getAllBusinessManagers, File: owned_business_details_cubit.dart');
+    }
+  }
+
+  //This method is used to get all the payment methods of a business
+  Future<void> getAllCardTokens(String businessId) async {
+    try {
+      final firestoreService = locator.get<FirestoreService>();
+      final paymentMethodsCollection =
+          locator.get<AppConstants>().paymentMethodsCollection;
+
+      //We fetch all the payment methods
+      final rawPaymentMethods =
+          await firestoreService.readCreatedDocumentsByCondition(
+              paymentMethodsCollection, "business_id", businessId, 999);
+      final paymentMethods =
+          rawPaymentMethods.map((e) => PaymentMethod.fromJson(e)).toList();
+
+      //Then set the payment methods in the state
+      emit(state.copyWith(allPaymentMethods: paymentMethods));
+    } catch (e) {
+      log('Error: $e, Function: getAllCardTokens, File: owned_business_details_cubit.dart');
+    }
+  }
+
+  Future<void> createCardToken(
+      Map<String, dynamic> cardData, BuildContext context) async {
+    try {
+      //First, we get the business id
+      final businessId = state.businessId!;
+
+      //Then, we get the business subscription service
+      final businessSubscriptionService =
+          locator.get<BusinessSubscriptionService>();
+
+      //Then, we create the card token
+      final newPaymentMethod =
+          await businessSubscriptionService.createCardToken(cardData);
+
+      //Then, we get the firestore service and the payment methods collection
+      final firestoreService = locator.get<FirestoreService>();
+      final paymentMethodsCollection =
+          locator.get<AppConstants>().paymentMethodsCollection;
+
+      //Then, we add the business id to the payment method
+      var editablePaymentMethod = newPaymentMethod.toJson();
+      editablePaymentMethod["business_id"] = businessId;
+
+      //Then, we save the payment method in the database
+      await firestoreService.createDocument(
+        paymentMethodsCollection,
+        editablePaymentMethod,
+      );
+
+      //Then, we update the payment method in the state
+      final newPaymentMethods = [newPaymentMethod, ...state.allPaymentMethods];
+
+      //Finally, we update the state
+      emit(
+        state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          allPaymentMethods: newPaymentMethods,
+        ),
+      );
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+    } catch (e) {
+      log('Error: $e, Function: createCardToken, File: owned_business_details_cubit.dart');
     }
   }
 
@@ -310,6 +380,41 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       return true;
     } catch (e) {
       log('Error: $e, Function: deleteManagerFromBusiness, File: owned_business_details_cubit.dart',
+          stackTrace: StackTrace.current);
+      return false;
+    }
+  }
+
+  Future<bool> deletePaymentMethodFromBusiness(
+      PaymentMethod paymentMethod) async {
+    try {
+      //First, we get the firestore service and the paymentMethod collection
+      final firestoreService = locator.get<FirestoreService>();
+      final paymentMethodCollection =
+          locator.get<AppConstants>().paymentMethodsCollection;
+
+      //Then, we delete the paymentMethod in the database
+      await firestoreService.deleteDocumentByDocumentProperty(
+          paymentMethodCollection, "id", paymentMethod.id);
+
+      //Then, we update the promotion inside the state
+      final idOfPayment = state.allPaymentMethods.indexWhere(
+        (element) => element.id == paymentMethod.id,
+      );
+      final newPaymentMethods = [...state.allPaymentMethods];
+      newPaymentMethods.removeAt(idOfPayment);
+
+      //Finally, we update the state
+      emit(
+        state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          allPaymentMethods: newPaymentMethods,
+        ),
+      );
+
+      return true;
+    } catch (e) {
+      log('Error: $e, Function: deletePaymentMethodFromBusiness, File: owned_business_details_cubit.dart',
           stackTrace: StackTrace.current);
       return false;
     }

@@ -74,6 +74,20 @@ class FirestoreService {
   }
 
   /*
+   This method is used to delete a document inside a collection 
+   where the UNIQUE property is equal to the property value passed as parameter
+  */
+  Future<void> deleteDocumentByDocumentProperty(
+      String collectionName, String property, String valueOfProperty) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where(property, isEqualTo: valueOfProperty)
+        .get();
+    final docId = docSnapshot.docs.first.id;
+    await _firestore.collection(collectionName).doc(docId).delete();
+  }
+
+  /*
   This method is used to get a document by the document id
   */
   Future<Map<String, dynamic>?> readDocumentByDocId(
@@ -103,6 +117,30 @@ class FirestoreService {
     final data = docSnapshot.docs.map((e) {
       final data = e.data();
       data["id"] = e.id;
+      return data;
+    }).toList();
+    return data;
+  }
+
+  /*
+   This method is used to read all documents inside a collection,
+   where the condition of the property is equal to the propertyValue 
+   passed as parameter
+  */
+  Future<List<Map<String, dynamic>>> readCreatedDocumentsByCondition(
+    String collectionName,
+    String property,
+    Object propertyValue,
+    int limit,
+  ) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .limit(limit)
+        .where("status", isEqualTo: "CREATED")
+        .where(property, isEqualTo: propertyValue)
+        .get();
+    final data = docSnapshot.docs.map((e) {
+      final data = e.data();
       return data;
     }).toList();
     return data;

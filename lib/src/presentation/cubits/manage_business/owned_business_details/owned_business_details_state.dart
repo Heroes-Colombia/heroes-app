@@ -7,6 +7,7 @@ final class OwnedBusinessDetailsState extends Equatable {
   final List<Promotion> promotions;
   final List<UserReview> allUserReviews;
   final List<ListableUserModel> allManagers;
+  final List<PaymentMethod> allPaymentMethods;
   final bool isManagersLoading;
   final bool isReviewLoading;
 
@@ -19,6 +20,7 @@ final class OwnedBusinessDetailsState extends Equatable {
     this.isReviewLoading = false,
     this.allManagers = const [],
     this.isManagersLoading = false,
+    this.allPaymentMethods = const [],
   });
 
   OwnedBusinessDetailsState copyWith({
@@ -31,6 +33,7 @@ final class OwnedBusinessDetailsState extends Equatable {
     bool isReviewLoading = false,
     List<ListableUserModel>? allManagers,
     bool isManagersLoading = false,
+    List<PaymentMethod>? allPaymentMethods,
   }) {
     return OwnedBusinessDetailsState(
       businessId: businessId ?? this.businessId,
@@ -41,6 +44,7 @@ final class OwnedBusinessDetailsState extends Equatable {
       isReviewLoading: isReviewLoading,
       allManagers: allManagers ?? this.allManagers,
       isManagersLoading: isManagersLoading,
+      allPaymentMethods: allPaymentMethods ?? this.allPaymentMethods,
     );
   }
 
@@ -54,5 +58,6 @@ final class OwnedBusinessDetailsState extends Equatable {
         isReviewLoading,
         allManagers,
         isManagersLoading,
+        allPaymentMethods,
       ];
 }

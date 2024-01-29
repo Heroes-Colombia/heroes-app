@@ -4,6 +4,7 @@ class AppConstants {
   final String reviewsCollection = 'reviews';
   final String businessCollection = 'businesses';
   final String advertisementCollection = 'advertisements';
+  final String paymentMethodsCollection = 'payment_methods';
 
   //Firebase Storage
   final String userIdentifications = "identifications";
@@ -30,6 +31,11 @@ class AppConstants {
   //Google maps static api
   final String googleMapsStaticApi =
       "https://maps.googleapis.com/maps/api/staticmap";
+
+  //Woompi urls
+  final String woompiBaseSandboxUrl = "https://sandbox.wompi.co/v1";
+  final String woompiBaseProductionUrl = "https://production.wompi.co/v1";
+  final String woompiCreateTokenUrl = "/tokens/cards";
 
   //User Ranks
   Map<String, Map<String, List<String>>> ranks = {
@@ -450,12 +456,16 @@ class AppConstants {
       "edit-button": "Editar",
       "delete-button": "Eliminar",
       "add-manager-button": "Agregar administrador",
+      "add-payment-button": "Agregar método de pago",
       "remove-manager-button": "Eliminar",
       "slide-to-remove": "Desliza para eliminar administrador",
+      "slide-to-remove-payment": "Desliza para eliminar el método de pago",
       "manager-deleted": "Administrador eliminado exitosamente",
+      "payment-deleted": "Método de pago eliminado exitosamente",
       "manager-delete-error": "Ocurrió un error al eliminar el administrador",
       "email-error": "Por favor ingresa un correo electrónico válido",
       "manager-added": "Administrador agregado exitosamente",
+      "payment-added": "Método de pago agregado exitosamente",
       "email-label": "Correo electrónico",
       "email-hint": "Ingresa el correo electrónico del administrador",
       "add-button": "Agregar",
@@ -463,6 +473,28 @@ class AppConstants {
       "address-hint": "Ingresa la ubicación del comercio",
       "address-edited": "Ubicación editada exitosamente",
       "address-error": "Por favor ingresa una ubicación válida",
+      "card-holder-label": "Nombre del titular",
+      "card-holder-hint": "Ingresa el nombre del titular de la tarjeta",
+      "card-number-label": "Número de la tarjeta",
+      "card-number-hint": "Ingresa el número de la tarjeta",
+      "card-expiration-year-label": "Año de expiración",
+      "card-expiration-year-hint": "Ingresa el año de expiración de la tarjeta",
+      "card-expiration-month-label": "Mes de expiración",
+      "card-expiration-month-hint":
+          "Ingresa el mes de expiración de la tarjeta",
+      "card-cvv-label": "CVC",
+      "card-cvv-hint": "Ingresa el CVC de la tarjeta",
+      "card-error": "Por favor ingresa una tarjeta válida",
+      "card-added": "Tarjeta agregada exitosamente",
+    },
+  };
+
+  final servicesTexts = {
+    "businessSubscriptionService": {
+      "createCardToken-error":
+          "Ocurrió un error creando el método de pago, intente de nuevo más tarde",
+      "createCardToken-invalid-card":
+          "Tarjeta inválida, por favor verifique los datos ingresados",
     },
   };
 }

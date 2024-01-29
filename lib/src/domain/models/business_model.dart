@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/domain/models/business_payment_method.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
 
 class Business extends Equatable {
@@ -14,6 +15,7 @@ class Business extends Equatable {
   final List<dynamic> categories;
   final String address;
   final List<UserReview> reviews;
+  final List<PaymentMethod> paymentMethods;
   final String featuredImage;
   final String ownerUid;
 
@@ -28,6 +30,7 @@ class Business extends Equatable {
       required this.categories,
       required this.address,
       required this.reviews,
+      required this.paymentMethods,
       required this.featuredImage,
       required this.ownerUid});
 
@@ -43,6 +46,7 @@ class Business extends Equatable {
         categories,
         address,
         reviews,
+        paymentMethods,
         featuredImage,
         ownerUid
       ];
@@ -61,6 +65,11 @@ class Business extends Equatable {
       email: json['email'] as String,
       categories: json["categories"] != null ? json['categories'] : [],
       address: json['address'] as String,
+      paymentMethods: json["payment_methods"] != null
+          ? json['payment_methods']
+              .map((e) => PaymentMethod.fromJson(e))
+              .toList()
+          : [],
       reviews: json["revies"] != null
           ? json['reviews'].map((e) => UserReview.fromJson(e)).toList()
           : [],
@@ -112,6 +121,7 @@ class Business extends Equatable {
     List<String>? categories,
     String? address,
     List<UserReview>? reviews,
+    List<PaymentMethod>? paymentMethods,
     String? featuredImage,
     String? ownerUid,
   }) {
@@ -126,6 +136,7 @@ class Business extends Equatable {
       categories: categories ?? this.categories,
       address: address ?? this.address,
       reviews: reviews ?? this.reviews,
+      paymentMethods: paymentMethods ?? this.paymentMethods,
       featuredImage: featuredImage ?? this.featuredImage,
       ownerUid: ownerUid ?? this.ownerUid,
     );

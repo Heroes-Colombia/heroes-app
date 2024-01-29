@@ -132,6 +132,12 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               onPressed: () => seeAddLocationToBusiness(theme, texts),
               icon: const Icon(Ionicons.location_outline),
             ),
+            IconButton(
+              onPressed: () => seeAllPaymenthMethods(theme, texts),
+              icon: const Icon(
+                Ionicons.card_outline,
+              ),
+            ),
           ],
         ),
         mainCard(
@@ -615,6 +621,98 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     );
   }
 
+  Widget allPaymentMethodsBody() {
+    var theme = Theme.of(context);
+    var locator = GetIt.instance;
+    var texts = locator<AppConstants>()
+        .businessDashboardTexts["ownedBusinessDetailsView"]!;
+
+    return BlocBuilder<OwnedBusinessDetailsCubit, OwnedBusinessDetailsState>(
+      builder: (context, state) {
+        return Container(
+          color: theme.colorScheme.background,
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: state.allPaymentMethods.isNotEmpty
+                    ? ListView.separated(
+                        itemBuilder: (context, index) {
+                          return Slidable(
+                              endActionPane: ActionPane(
+                                motion: const ScrollMotion(),
+                                children: [
+                                  SlidableAction(
+                                    onPressed: (context) {
+                                      context
+                                          .read<OwnedBusinessDetailsCubit>()
+                                          .deletePaymentMethodFromBusiness(
+                                              state.allPaymentMethods[index]);
+                                    },
+                                    label: texts["remove-manager-button"]!,
+                                    backgroundColor: theme.colorScheme.error,
+                                    icon: Ionicons.remove_circle_outline,
+                                  ),
+                                ],
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceVariant
+                                      .withOpacity(0.5),
+                                ),
+                                child: ListTile(
+                                  leading: Icon(
+                                    Ionicons.card_outline,
+                                    color: theme.colorScheme.onSurfaceVariant
+                                        .withOpacity(0.9),
+                                  ),
+                                  title: Text(
+                                      "${state.allPaymentMethods[index].brand} ${state.allPaymentMethods[index].lastFourNumbers}",
+                                      style: theme.textTheme.labelLarge),
+                                  subtitle: Text(state
+                                      .allPaymentMethods[index].cardHolder),
+                                  trailing: Icon(
+                                    Ionicons.chevron_back_outline,
+                                    color: theme.colorScheme.onSurfaceVariant
+                                        .withOpacity(0.9),
+                                  ),
+                                ),
+                              ));
+                        },
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(height: 16);
+                        },
+                        itemCount: state.allPaymentMethods.length)
+                    : const Center(child: CircularProgressIndicator()),
+              ),
+              const SizedBox(height: 4),
+              AsyncButtonWidget(
+                  buttonText: texts["add-payment-button"]!,
+                  onPressed: () async => await handleAddPaymentMethod()),
+              const SizedBox(height: 4),
+              Text(
+                texts["slide-to-remove-payment"]!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                  fontSize: theme.textTheme.labelSmall!.fontSize,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   FormBuilderField<Object> pictureField(
       Map<String, String> texts, ThemeData theme) {
     var locator = GetIt.instance;
@@ -720,6 +818,21 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     showBottomModal(
       body,
       BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 8),
+    );
+  }
+
+  void seeAllPaymenthMethods(ThemeData theme, texts) {
+    //We create the body of the modal
+    context
+        .read<OwnedBusinessDetailsCubit>()
+        .getAllCardTokens(widget.businessId);
+
+    Widget body = allPaymentMethodsBody();
+
+    //We show the modal
+    showBottomModal(
+      body,
+      BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
     );
   }
 
@@ -888,6 +1001,123 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               },
               buttonText: texts["add-button"]!,
             ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> handleAddPaymentMethod() async {
+    var newPaymentMethodFormKey = GlobalKey<FormBuilderState>();
+    var texts = GetIt.instance
+        .get<AppConstants>()
+        .businessDashboardTexts["ownedBusinessDetailsView"]!;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(texts["add-payment-button"]!),
+          content: FormBuilder(
+            key: newPaymentMethodFormKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FormBuilderTextField(
+                  name: "card_holder",
+                  validator: (value) => GetIt.instance<AppMethods>()
+                      .emptyStringValidator(value, texts["empty-value"]!),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  decoration: InputDecoration(
+                    labelText: texts["card-holder-label"]!,
+                    hintText: texts["card-holder-hint"]!,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FormBuilderTextField(
+                  name: "number",
+                  keyboardType: TextInputType.number,
+                  validator: (value) => GetIt.instance<AppMethods>()
+                      .emptyStringValidator(value, texts["empty-value"]!),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  decoration: InputDecoration(
+                    labelText: texts["card-number-label"]!,
+                    hintText: texts["card-number-hint"]!,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FormBuilderTextField(
+                        name: "exp_month",
+                        keyboardType: TextInputType.datetime,
+                        validator: (value) => GetIt.instance<AppMethods>()
+                            .emptyStringValidator(value, texts["empty-value"]!),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        decoration: InputDecoration(
+                          labelText: texts["card-expiration-year-label"]!,
+                          hintText: texts["card-expiration-year-hint"]!,
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FormBuilderTextField(
+                        name: "exp_year",
+                        keyboardType: TextInputType.datetime,
+                        validator: (value) => GetIt.instance<AppMethods>()
+                            .emptyStringValidator(value, texts["empty-value"]!),
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        decoration: InputDecoration(
+                          labelText: texts["card-expiration-month-label"]!,
+                          hintText: texts["card-expiration-month-hint"]!,
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                FormBuilderTextField(
+                  name: "cvc",
+                  keyboardType: TextInputType.number,
+                  validator: (value) => GetIt.instance<AppMethods>()
+                      .emptyStringValidator(value, texts["empty-value"]!),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  decoration: InputDecoration(
+                    labelText: texts["card-cvv-label"]!,
+                    hintText: texts["card-cvv-hint"]!,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(texts["cancel-button"]!),
+            ),
+            AsyncButtonWidget(
+              buttonText: texts["add-button"]!,
+              onPressed: () async {
+                //First validate the form
+                if (!newPaymentMethodFormKey.currentState!.saveAndValidate()) {
+                  return;
+                }
+                //Then we create the payment method
+                final cardData = newPaymentMethodFormKey.currentState!.value;
+                await context
+                    .read<OwnedBusinessDetailsCubit>()
+                    .createCardToken(cardData, context);
+              },
+            )
           ],
         );
       },
