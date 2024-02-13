@@ -13,7 +13,7 @@ final updateUserForm = GlobalKey<FormBuilderState>();
 
 @RoutePage()
 class EditProfileView extends StatelessWidget {
-  EditProfileView({Key? key}) : super(key: key);
+  EditProfileView({super.key});
   final locator = GetIt.instance;
 
   @override
@@ -31,10 +31,10 @@ class EditProfileView extends StatelessWidget {
           body: BlocBuilder<ProfileCubit, ProfileState>(
             builder: (context, state) {
               switch (state.runtimeType) {
-                case ProfileInitial:
+                case const (ProfileInitial):
                   context.read<ProfileCubit>().getInitialProfileInfo();
                   return loadingView(context, theme, texts);
-                case ProfileLoaded:
+                case const (ProfileLoaded):
                   return successView(context, state.user!, texts, theme);
                 default:
                   return errorView(context, theme, texts);

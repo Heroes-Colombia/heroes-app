@@ -12,7 +12,7 @@ import 'package:ionicons/ionicons.dart';
 
 @RoutePage()
 class OwnedBusinessesView extends StatelessWidget {
-  OwnedBusinessesView({Key? key}) : super(key: key);
+  OwnedBusinessesView({super.key});
   final GetIt locator = GetIt.instance;
 
   @override

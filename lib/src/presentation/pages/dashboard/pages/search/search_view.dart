@@ -14,7 +14,7 @@ import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 
 @RoutePage()
 class SearchView extends StatelessWidget {
-  SearchView({Key? key}) : super(key: key);
+  SearchView({super.key});
   final locator = GetIt.instance;
 
   @override

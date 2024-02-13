@@ -11,7 +11,7 @@ final _formKey = GlobalKey<FormBuilderState>();
 
 @RoutePage()
 class RestorePassword extends StatelessWidget {
-  RestorePassword({Key? key}) : super(key: key);
+  RestorePassword({super.key});
   final locator = GetIt.instance;
 
   @override

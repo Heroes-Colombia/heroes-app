@@ -12,7 +12,7 @@ import 'package:ionicons/ionicons.dart';
 
 @RoutePage()
 class FavoritesView extends StatelessWidget {
-  const FavoritesView({Key? key}) : super(key: key);
+  const FavoritesView({super.key});
 
   @override
   Widget build(BuildContext context) {

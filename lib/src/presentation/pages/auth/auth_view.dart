@@ -4,7 +4,7 @@ import 'package:heroes_app/src/config/router/app_router.gr.dart';
 
 @RoutePage()
 class AuthView extends StatelessWidget {
-  const AuthView({Key? key}) : super(key: key);
+  const AuthView({super.key});
 
   @override
   Widget build(BuildContext context) {

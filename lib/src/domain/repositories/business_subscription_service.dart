@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
@@ -41,15 +42,98 @@ class BusinessSubscriptionService {
     return newPaymentMethod;
   }
 
-  Future<void> createPaymentSource() async {}
+  //This method is used to create a token for a given card and save it in the firebase database
+  Future<Map<String, dynamic>> getAcceptanceToken() async {
+    //First we create a POST request to wompi to create a card token
+    final baseUrl = locator.get<AppConstants>().woompiBaseSandboxUrl;
+    final acceptanceUrl =
+        '$baseUrl${locator.get<AppConstants>().woompiAcceptanceTokenUrl}${dotenv.env['WOOMPI_API_KEY_TEST']}';
+    final response = await http.get(Uri.parse(acceptanceUrl), headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+    var data = jsonDecode(response.body);
+    log(data["data"]["presigned_acceptance"].toString());
+    return data["data"]["presigned_acceptance"];
+  }
 
-  Future<void> createSubscription() async {}
+  //This method is used to create a token for a given card and save it in the firebase database
+  Future<String?> createPaymentSource(String selectedPaymentToken,
+      String acceptanceToken, String businessEmail) async {
+    //First we create a POST request to wompi to create a card token
+    final url = locator.get<AppConstants>().cloudFunctionsBaseUrl +
+        locator.get<AppConstants>().createPaymentMethod;
 
-  Future<void> cancelSubscription() async {}
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: jsonEncode({
+        "selectedPaymentMethod": selectedPaymentToken,
+        "acceptanceToken": acceptanceToken,
+        "businessEmail": businessEmail
+      }),
+    );
 
-  Future<void> editSubscription() async {}
+    if (response.statusCode != 201) {
+      final errorMessages = jsonDecode(response.body);
+      return errorMessages;
+    }
 
-  Future<void> getSubscription() async {}
+    return null;
+  }
 
-  Future<void> getSubscriptionList() async {}
+  //This method is used to refresh the status of a transaction
+  Future<String?> refreshTransactionStatus(String transactionId) async {
+    //First we create a POST request to wompi to create a card token
+    final url = locator.get<AppConstants>().cloudFunctionsBaseUrl +
+        locator.get<AppConstants>().checkTransactionStatus;
+
+    final response = await http.put(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: jsonEncode({
+        "transactionId": transactionId,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final errorMessages = jsonDecode(response.body);
+      return errorMessages;
+    }
+
+    return null;
+  }
+
+  //This method is used to create a subscription for a business
+  Future<String?> createSubscription(int selectedPaymentSource,
+      String customerEmail, String businessId, String plan) async {
+    final url = locator.get<AppConstants>().cloudFunctionsBaseUrl +
+        locator.get<AppConstants>().createTransaction;
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: jsonEncode({
+        "paymentMethodId": selectedPaymentSource,
+        "customerEmail": customerEmail,
+        "businessId": businessId,
+        "plan": plan
+      }),
+    );
+
+    if (response.statusCode != 201) {
+      final errorMessages = jsonDecode(response.body);
+      return errorMessages;
+    }
+
+    return null;
+  }
 }

@@ -6,12 +6,11 @@ import 'package:heroes_app/assets/app_methods.dart';
 
 class EmailInputWidget extends StatelessWidget {
   const EmailInputWidget(
-      {Key? key,
+      {super.key,
       required this.keyName,
       required this.name,
       required this.label,
-      required this.hintText})
-      : super(key: key);
+      required this.hintText});
 
   final String keyName;
   final String name;

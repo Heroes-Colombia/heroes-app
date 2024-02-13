@@ -17,7 +17,7 @@ final _formKey = GlobalKey<FormBuilderState>();
 
 @RoutePage()
 class SignUpView extends StatelessWidget {
-  SignUpView({Key? key, required this.onResult}) : super(key: key);
+  SignUpView({super.key, required this.onResult});
   final Function(bool?) onResult;
   final locator = GetIt.instance;
 

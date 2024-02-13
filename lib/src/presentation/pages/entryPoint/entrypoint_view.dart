@@ -7,7 +7,7 @@ import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 
 @RoutePage()
 class EntryPointView extends StatefulWidget {
-  const EntryPointView({Key? key}) : super(key: key);
+  const EntryPointView({super.key});
 
   @override
   State<EntryPointView> createState() => _EntryPointViewState();

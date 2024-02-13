@@ -6,7 +6,7 @@ import 'package:ionicons/ionicons.dart';
 
 @RoutePage()
 class UnverifiedUserView extends StatelessWidget {
-  UnverifiedUserView({Key? key}) : super(key: key);
+  UnverifiedUserView({super.key});
   final locator = GetIt.instance;
   @override
   Widget build(BuildContext context) {

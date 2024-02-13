@@ -7,12 +7,11 @@ import 'package:ionicons/ionicons.dart';
 
 class PasswordInput extends StatefulWidget {
   const PasswordInput(
-      {Key? key,
+      {super.key,
       required this.keyName,
       required this.name,
       required this.label,
-      required this.hintText})
-      : super(key: key);
+      required this.hintText});
 
   final String keyName;
   final String name;

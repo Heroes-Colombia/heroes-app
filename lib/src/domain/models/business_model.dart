@@ -6,6 +6,8 @@ import 'package:heroes_app/src/domain/models/review_model.dart';
 
 class Business extends Equatable {
   final BusinessStatus status;
+  final BusinessSubscriptionStatus subscriptionStatus;
+  final String? latestTransactionDocumentId;
   final String phoneNumber;
   final String ownerName;
   final String name;
@@ -21,6 +23,8 @@ class Business extends Equatable {
 
   const Business(
       {required this.status,
+      required this.subscriptionStatus,
+      required this.latestTransactionDocumentId,
       required this.phoneNumber,
       required this.ownerName,
       required this.name,
@@ -37,6 +41,8 @@ class Business extends Equatable {
   @override
   List<Object?> get props => [
         status,
+        subscriptionStatus,
+        latestTransactionDocumentId,
         phoneNumber,
         ownerName,
         name,
@@ -77,6 +83,14 @@ class Business extends Equatable {
           ? json['featured_image'] as String
           : "",
       ownerUid: json["owner_uid"] != null ? json['owner_uid'] as String : "",
+      subscriptionStatus: BusinessSubscriptionStatus.values.firstWhere(
+        (element) =>
+            element.toString().split('.').last == json['subscription_status'],
+        orElse: () => BusinessSubscriptionStatus.inactive,
+      ),
+      latestTransactionDocumentId: json["latest_transaction"] != null
+          ? json['latest_transaction'] as String
+          : "",
     );
   }
 
@@ -112,6 +126,8 @@ class Business extends Equatable {
 
   Business copyWith({
     BusinessStatus? status,
+    BusinessSubscriptionStatus? subscriptionStatus,
+    String? latestTransactionDocumentId,
     String? phoneNumber,
     String? ownerName,
     String? name,
@@ -127,6 +143,9 @@ class Business extends Equatable {
   }) {
     return Business(
       status: status ?? this.status,
+      subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
+      latestTransactionDocumentId:
+          latestTransactionDocumentId ?? this.latestTransactionDocumentId,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       ownerName: ownerName ?? this.ownerName,
       name: name ?? this.name,

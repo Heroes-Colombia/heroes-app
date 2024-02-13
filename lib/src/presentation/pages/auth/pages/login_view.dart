@@ -15,7 +15,7 @@ final _formKey = GlobalKey<FormBuilderState>();
 @RoutePage()
 class LoginView extends StatelessWidget {
   final Function(bool?) onResult;
-  LoginView({Key? key, required this.onResult}) : super(key: key);
+  LoginView({super.key, required this.onResult});
   final locator = GetIt.instance;
   @override
   Widget build(BuildContext context) {

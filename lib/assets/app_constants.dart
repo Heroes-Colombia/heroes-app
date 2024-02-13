@@ -5,6 +5,7 @@ class AppConstants {
   final String businessCollection = 'businesses';
   final String advertisementCollection = 'advertisements';
   final String paymentMethodsCollection = 'payment_methods';
+  final String transactionsCollection = 'business_transactions';
 
   //Firebase Storage
   final String userIdentifications = "identifications";
@@ -16,15 +17,13 @@ class AppConstants {
   final String lightMapTheme = "7f1b54e9ff3283c0";
   final String darkMapTheme = "b3f5bac810144125";
 
-  //Firebase Cloud Messaging topics
-
   //Types of users in the app (used to filter the users in the admin panel)
   final String businessUserTopic = "business";
   final String normalUserTopic = "user";
 
+  //Firebase Cloud Messaging topics
   //Used to send notifications to users with the business in their favourites
   final String favoriteTopic = "favoriteBusinessPromotion";
-
   //Used to send notifications to users of a nearby business
   final String discoverTopic = "discoverNearbyBusiness";
 
@@ -36,6 +35,14 @@ class AppConstants {
   final String woompiBaseSandboxUrl = "https://sandbox.wompi.co/v1";
   final String woompiBaseProductionUrl = "https://production.wompi.co/v1";
   final String woompiCreateTokenUrl = "/tokens/cards";
+  final String woompiAcceptanceTokenUrl = "/merchants/";
+
+  //Cloud functions urls
+  final String cloudFunctionsBaseUrl =
+      "https://us-central1-heroes-cd74a.cloudfunctions.net/widgets";
+  final String createPaymentMethod = "/createPaymentMethod";
+  final String createTransaction = "/createTransaction";
+  final String checkTransactionStatus = "/checkTransactionStatus";
 
   //User Ranks
   Map<String, Map<String, List<String>>> ranks = {
@@ -478,14 +485,27 @@ class AppConstants {
       "card-number-label": "Número de la tarjeta",
       "card-number-hint": "Ingresa el número de la tarjeta",
       "card-expiration-year-label": "Año de expiración",
-      "card-expiration-year-hint": "Ingresa el año de expiración de la tarjeta",
+      "card-expiration-year-hint": "00",
       "card-expiration-month-label": "Mes de expiración",
-      "card-expiration-month-hint":
-          "Ingresa el mes de expiración de la tarjeta",
+      "card-expiration-month-hint": "00",
       "card-cvv-label": "CVC",
       "card-cvv-hint": "Ingresa el CVC de la tarjeta",
       "card-error": "Por favor ingresa una tarjeta válida",
       "card-added": "Tarjeta agregada exitosamente",
+      "subscription-active": "Ver suscripción",
+      "subscription-inactive": "Iniciar suscripción",
+      "subscription-pending": "Refrescar estado",
+      "subscription-canceled": "Suscripción cancelada",
+      "subscription-free-trial": "Prueba gratuita",
+      "subscription-mark-to-renew": "Renovar suscripción",
+      "select-payment": "Seleccionar método de pago",
+      "valid-cards": "Tarjetas válidas",
+      "accept-terms":
+          "Acepto haber leído los términos y condiciones y la política de privacidad para hacer esta compra. (Enlace a términos y condiciones)",
+      "no-payment-methods": "No hay métodos de pago disponibles",
+      "create-subscription": "Suscribirse",
+      "subscription-created": "Transacción exitosa, espere a que sea aprobada",
+      "create-subscription-error": "Ocurrió un error al crear la suscripción",
     },
   };
 

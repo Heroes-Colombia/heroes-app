@@ -11,6 +11,7 @@ class PaymentMethod extends Equatable {
   final String bin;
   final String cardHolder;
   final DateTime expiresAt;
+  final int? paymentMethodId;
 
   const PaymentMethod({
     required this.status,
@@ -22,6 +23,7 @@ class PaymentMethod extends Equatable {
     required this.bin,
     required this.cardHolder,
     required this.expiresAt,
+    required this.paymentMethodId,
   });
 
   @override
@@ -35,6 +37,7 @@ class PaymentMethod extends Equatable {
         bin,
         cardHolder,
         expiresAt,
+        paymentMethodId,
       ];
 
   factory PaymentMethod.fromJson(Map<String, dynamic> json) {
@@ -51,6 +54,7 @@ class PaymentMethod extends Equatable {
       bin: json['bin'] as String,
       cardHolder: json['card_holder'] as String,
       expiresAt: expiresAt.toDate(),
+      paymentMethodId: json['payment_method_id'] as int?,
     );
   }
 
@@ -66,6 +70,7 @@ class PaymentMethod extends Equatable {
       bin: json['bin'] as String,
       cardHolder: json['card_holder'] as String,
       expiresAt: DateTime.parse(json['expires_at'] as String),
+      paymentMethodId: json['payment_method_id'] as int?,
     );
   }
 
@@ -80,6 +85,7 @@ class PaymentMethod extends Equatable {
       'bin': bin,
       'card_holder': cardHolder,
       'expires_at': expiresAt,
+      'payment_method_id': paymentMethodId,
     };
   }
 }
