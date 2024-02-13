@@ -12,6 +12,7 @@ import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/business_payment_method.dart';
+import 'package:heroes_app/src/domain/models/business_transaction.dart';
 import 'package:heroes_app/src/domain/models/listable_user_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
@@ -122,6 +123,30 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       emit(state.copyWith(allManagers: managers));
     } catch (e) {
       log('Error: $e, Function: getAllBusinessManagers, File: owned_business_details_cubit.dart');
+    }
+  }
+
+  Future<void> getLatestTransaction() async {
+    try {
+      //First we get the collection and the firestore service
+      final transactionsCollection =
+          locator.get<AppConstants>().transactionsCollection;
+      final firestoreService = locator.get<FirestoreService>();
+
+      //Then we get the latest transaction of the business
+      final rawTransaction = await firestoreService.readDocumentByDocId(
+        transactionsCollection,
+        state.business!.latestTransactionDocumentId!,
+      );
+
+      final transaction = BusinessTransaction.fromJson(rawTransaction!);
+
+      //Then we update the state
+      emit(state.copyWith(
+        latestTransaction: transaction,
+      ));
+    } catch (e) {
+      log('Error: $e, Function: getLatestTransaction, File: owned_business_details_cubit.dart');
     }
   }
 
@@ -526,7 +551,8 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
         businessCollection,
         state.businessId!,
         {
-          "subscription_status": BusinessSubscriptionStatus.canceled.toString(),
+          "subscription_status":
+              BusinessSubscriptionStatus.canceled.toString().split('.').last,
         },
       );
 
@@ -704,5 +730,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       log('Error: $e, Function: transformToLatLng, File: owned_business_details_cubit.dart');
       return null;
     }
+  }
+
+  void clearState() async {
+    emit(const OwnedBusinessDetailsState());
   }
 }

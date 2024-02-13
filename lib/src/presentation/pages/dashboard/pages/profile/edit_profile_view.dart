@@ -20,10 +20,11 @@ class EditProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
     var texts = locator.get<AppConstants>().dashBoardTexts['editprofileView']!;
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
         context.read<ProfileCubit>().restoreProfileState();
-        return true;
+        Navigator.of(context).pop();
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),

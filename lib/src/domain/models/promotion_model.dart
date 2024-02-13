@@ -42,9 +42,7 @@ class Promotion extends Equatable {
     return Promotion(
       businessId: json['business_id'] as String,
       description: json['description'] as String,
-      expiredAt: DateTime.fromMillisecondsSinceEpoch(
-        (json['expired_at'] as Timestamp).millisecondsSinceEpoch,
-      ),
+      expiredAt: (json['expired_at'] as Timestamp).toDate(),
       instructions: json['instructions'] as String,
       percentage: json['percentage'] as int,
       status: PromotionStatus.values.firstWhere(

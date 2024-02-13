@@ -48,24 +48,32 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
         .businessDashboardTexts["ownedBusinessDetailsView"];
     final theme = Theme.of(context);
 
-    return Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: BlocBuilder<OwnedBusinessDetailsCubit, OwnedBusinessDetailsState>(
-          builder: (context, state) {
-            switch (state.status) {
-              case BusinessViewCubitStatus.initial:
-                return loadingView(theme, texts);
-              case BusinessViewCubitStatus.loading:
-                return loadingView(theme, texts);
-              case BusinessViewCubitStatus.success:
-                return succesView(theme, texts, state);
-              case BusinessViewCubitStatus.error:
-                return errorView(theme, texts);
-              default:
-                return const Center(child: Text('Error'));
-            }
-          },
-        ));
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        context.read<OwnedBusinessDetailsCubit>().clearState();
+        Navigator.of(context).pop();
+      },
+      child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          body:
+              BlocBuilder<OwnedBusinessDetailsCubit, OwnedBusinessDetailsState>(
+            builder: (context, state) {
+              switch (state.status) {
+                case BusinessViewCubitStatus.initial:
+                  return loadingView(theme, texts);
+                case BusinessViewCubitStatus.loading:
+                  return loadingView(theme, texts);
+                case BusinessViewCubitStatus.success:
+                  return succesView(theme, texts, state);
+                case BusinessViewCubitStatus.error:
+                  return errorView(theme, texts);
+                default:
+                  return const Center(child: Text('Error'));
+              }
+            },
+          )),
+    );
   }
 
   //View state methods
@@ -212,10 +220,8 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
         case BusinessSubscriptionStatus.active:
           return Expanded(
             child: TextButton(
-              onPressed: null,
-              child: Text(
-                texts["subscription-active"]!,
-              ),
+              onPressed: () => handleSeeSubscriptionDetails(texts),
+              child: Text(texts["subscription-active"]!),
             ),
           );
         case BusinessSubscriptionStatus.inactive:
@@ -1347,6 +1353,57 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
         });
   }
 
+  Future<void> handleSeeSubscriptionDetails(texts) async {
+    context.read<OwnedBusinessDetailsCubit>().getLatestTransaction();
+
+    showDialog(
+        useSafeArea: false,
+        context: context,
+        builder: (context) {
+          return BlocBuilder<OwnedBusinessDetailsCubit,
+              OwnedBusinessDetailsState>(
+            builder: (context, state) {
+              return SizedBox(
+                child: AlertDialog(
+                  title: Text(texts["subscription-details"]!),
+                  content: state.latestTransaction != null
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(texts["subscription-type"]! +
+                                ": " +
+                                state.latestTransaction!.plan),
+                            Text(texts["subscription-creation-date"]! +
+                                ": ${DateFormat("dd/MM/yyyy").format(state.latestTransaction!.createdAt)}"),
+                            Text(texts["subscription-expiration-date"]! +
+                                ": ${DateFormat("dd/MM/yyyy").format(state.latestTransaction!.expirationDate)}"),
+                          ],
+                        )
+                      : SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.2,
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => cancelSubscription(texts),
+                      child: Text(texts["cancel-subscription"]!),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(texts["cancel-button"]!),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        });
+  }
+
   Future<void> handleRefreshSubscriptionStatus() async {
     await context.read<OwnedBusinessDetailsCubit>().refreshSubscriptionStatus();
   }
@@ -1378,7 +1435,9 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     }
   }
 
-  Future<void> cancellSubscription(texts) async {
+  Future<void> cancelSubscription(texts) async {
     await context.read<OwnedBusinessDetailsCubit>().cancelSubscription();
+    if (!context.mounted) return;
+    Navigator.of(context).pop();
   }
 }

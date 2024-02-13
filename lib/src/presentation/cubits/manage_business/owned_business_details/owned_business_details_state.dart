@@ -13,6 +13,7 @@ final class OwnedBusinessDetailsState extends Equatable {
   final bool isReviewLoading;
   final bool userAcceptedTerms;
   final Map<String, dynamic> acceptanceData;
+  final BusinessTransaction? latestTransaction;
 
   const OwnedBusinessDetailsState({
     this.businessId,
@@ -27,6 +28,7 @@ final class OwnedBusinessDetailsState extends Equatable {
     this.allPaymentMethods = const [],
     this.userAcceptedTerms = false,
     this.acceptanceData = const {},
+    this.latestTransaction,
   });
 
   OwnedBusinessDetailsState copyWith({
@@ -43,6 +45,7 @@ final class OwnedBusinessDetailsState extends Equatable {
     List<PaymentMethod>? allPaymentMethods,
     bool userAcceptedTerms = false,
     Map<String, dynamic>? acceptanceData,
+    BusinessTransaction? latestTransaction,
   }) {
     return OwnedBusinessDetailsState(
       businessId: businessId ?? this.businessId,
@@ -57,6 +60,7 @@ final class OwnedBusinessDetailsState extends Equatable {
       allPaymentMethods: allPaymentMethods ?? this.allPaymentMethods,
       userAcceptedTerms: userAcceptedTerms,
       acceptanceData: acceptanceData ?? this.acceptanceData,
+      latestTransaction: latestTransaction ?? this.latestTransaction,
     );
   }
 
@@ -74,5 +78,6 @@ final class OwnedBusinessDetailsState extends Equatable {
         allPaymentMethods,
         userAcceptedTerms,
         acceptanceData,
+        latestTransaction,
       ];
 }
