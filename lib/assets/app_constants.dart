@@ -4,6 +4,8 @@ class AppConstants {
   final String reviewsCollection = 'reviews';
   final String businessCollection = 'businesses';
   final String advertisementCollection = 'advertisements';
+  final String paymentMethodsCollection = 'payment_methods';
+  final String transactionsCollection = 'business_transactions';
 
   //Firebase Storage
   final String userIdentifications = "identifications";
@@ -15,21 +17,32 @@ class AppConstants {
   final String lightMapTheme = "7f1b54e9ff3283c0";
   final String darkMapTheme = "b3f5bac810144125";
 
-  //Firebase Cloud Messaging topics
-
   //Types of users in the app (used to filter the users in the admin panel)
   final String businessUserTopic = "business";
   final String normalUserTopic = "user";
 
+  //Firebase Cloud Messaging topics
   //Used to send notifications to users with the business in their favourites
   final String favoriteTopic = "favoriteBusinessPromotion";
-
   //Used to send notifications to users of a nearby business
   final String discoverTopic = "discoverNearbyBusiness";
 
   //Google maps static api
   final String googleMapsStaticApi =
       "https://maps.googleapis.com/maps/api/staticmap";
+
+  //Woompi urls
+  final String woompiBaseSandboxUrl = "https://sandbox.wompi.co/v1";
+  final String woompiBaseProductionUrl = "https://production.wompi.co/v1";
+  final String woompiCreateTokenUrl = "/tokens/cards";
+  final String woompiAcceptanceTokenUrl = "/merchants/";
+
+  //Cloud functions urls
+  final String cloudFunctionsBaseUrl =
+      "https://us-central1-heroes-cd74a.cloudfunctions.net/widgets";
+  final String createPaymentMethod = "/createPaymentMethod";
+  final String createTransaction = "/createTransaction";
+  final String checkTransactionStatus = "/checkTransactionStatus";
 
   //User Ranks
   Map<String, Map<String, List<String>>> ranks = {
@@ -425,7 +438,7 @@ class AppConstants {
       "empty-value": "Por favor ingresa un valor",
       "featured-img-filled": "Seleccionar otra foto",
       "featured-img-hint": "Foto de la promoción",
-      "cancel-button": "Cancelar",
+      "cancel-button": "Cerrar",
       "title-label": "Título",
       "title-hint": "Ingresa el título de la promoción",
       "status-label": "Estado",
@@ -450,12 +463,16 @@ class AppConstants {
       "edit-button": "Editar",
       "delete-button": "Eliminar",
       "add-manager-button": "Agregar administrador",
+      "add-payment-button": "Agregar método de pago",
       "remove-manager-button": "Eliminar",
       "slide-to-remove": "Desliza para eliminar administrador",
+      "slide-to-remove-payment": "Desliza para eliminar el método de pago",
       "manager-deleted": "Administrador eliminado exitosamente",
+      "payment-deleted": "Método de pago eliminado exitosamente",
       "manager-delete-error": "Ocurrió un error al eliminar el administrador",
       "email-error": "Por favor ingresa un correo electrónico válido",
       "manager-added": "Administrador agregado exitosamente",
+      "payment-added": "Método de pago agregado exitosamente",
       "email-label": "Correo electrónico",
       "email-hint": "Ingresa el correo electrónico del administrador",
       "add-button": "Agregar",
@@ -463,6 +480,46 @@ class AppConstants {
       "address-hint": "Ingresa la ubicación del comercio",
       "address-edited": "Ubicación editada exitosamente",
       "address-error": "Por favor ingresa una ubicación válida",
+      "card-holder-label": "Nombre del titular",
+      "card-holder-hint": "Ingresa el nombre del titular de la tarjeta",
+      "card-number-label": "Número de la tarjeta",
+      "card-number-hint": "Ingresa el número de la tarjeta",
+      "card-expiration-year-label": "Año de expiración",
+      "card-expiration-year-hint": "00",
+      "card-expiration-month-label": "Mes de expiración",
+      "card-expiration-month-hint": "00",
+      "card-cvv-label": "CVC",
+      "card-cvv-hint": "Ingresa el CVC de la tarjeta",
+      "card-error": "Por favor ingresa una tarjeta válida",
+      "card-added": "Tarjeta agregada exitosamente",
+      "subscription-active": "Ver suscripción",
+      "subscription-inactive": "Iniciar suscripción",
+      "subscription-pending": "Refrescar estado",
+      "subscription-canceled": "Suscripción cancelada",
+      "subscription-free-trial": "Prueba gratuita",
+      "subscription-mark-to-renew": "Renovar suscripción",
+      "cancel-subscription": "Cancelar suscripción",
+      "subscription-details": "Detalles de la suscripción",
+      "subscription-creation-date": "Fecha de inicio",
+      "subscription-expiration-date": "Fecha de expiración",
+      "subscription-type": "Tipo de suscripción",
+      "select-payment": "Seleccionar método de pago",
+      "valid-cards": "Tarjetas válidas",
+      "accept-terms":
+          "Acepto haber leído los términos y condiciones y la política de privacidad para hacer esta compra. (Enlace a términos y condiciones)",
+      "no-payment-methods": "No hay métodos de pago disponibles",
+      "create-subscription": "Suscribirse",
+      "subscription-created": "Transacción exitosa, espere a que sea aprobada",
+      "create-subscription-error": "Ocurrió un error al crear la suscripción",
+    },
+  };
+
+  final servicesTexts = {
+    "businessSubscriptionService": {
+      "createCardToken-error":
+          "Ocurrió un error creando el método de pago, intente de nuevo más tarde",
+      "createCardToken-invalid-card":
+          "Tarjeta inválida, por favor verifique los datos ingresados",
     },
   };
 }

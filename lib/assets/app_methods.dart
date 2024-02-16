@@ -78,6 +78,54 @@ class AppMethods {
     return null;
   }
 
+  //Validate month input field
+  String? cardMonthValidator(String? value, String invalidMonth) {
+    if (value == null || value.isEmpty) {
+      return invalidMonth;
+    }
+    final regex = RegExp(r"^\d{2}$");
+    if (int.parse(value) < 1 ||
+        int.parse(value) > 12 ||
+        !regex.hasMatch(value)) {
+      return invalidMonth;
+    }
+    return null;
+  }
+
+  String? cardYearValidator(String? value, String invalidYear) {
+    if (value == null || value.isEmpty) {
+      return invalidYear;
+    }
+    final regex = RegExp(r"^\d{2}$");
+    final last2Digits = DateTime.now().year.toString().substring(2);
+    if (int.parse(value) < int.parse(last2Digits) || !regex.hasMatch(value)) {
+      return invalidYear;
+    }
+    return null;
+  }
+
+  String? cardHolderNameValidator(String? value, String invalidName) {
+    if (value == null || value.isEmpty) {
+      return invalidName;
+    }
+    final regex = RegExp(r"^[a-zA-Z\s]*$");
+    if (!regex.hasMatch(value) || value.length < 5) {
+      return invalidName;
+    }
+    return null;
+  }
+
+  String? cvvValidator(String? value, String invalidCvv) {
+    if (value == null || value.isEmpty) {
+      return invalidCvv;
+    }
+    final regex = RegExp(r"^\d{3}$");
+    if (!regex.hasMatch(value)) {
+      return invalidCvv;
+    }
+    return null;
+  }
+
   //Get the picture from the camera
   Future<XFile?> takePicture() async {
     final ImagePicker picker = ImagePicker();

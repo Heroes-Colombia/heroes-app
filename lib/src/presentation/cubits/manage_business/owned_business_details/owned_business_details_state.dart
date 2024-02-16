@@ -7,8 +7,13 @@ final class OwnedBusinessDetailsState extends Equatable {
   final List<Promotion> promotions;
   final List<UserReview> allUserReviews;
   final List<ListableUserModel> allManagers;
+  final List<PaymentMethod> allPaymentMethods;
+  final String selectedPaymentMethod;
   final bool isManagersLoading;
   final bool isReviewLoading;
+  final bool userAcceptedTerms;
+  final Map<String, dynamic> acceptanceData;
+  final BusinessTransaction? latestTransaction;
 
   const OwnedBusinessDetailsState({
     this.businessId,
@@ -18,7 +23,12 @@ final class OwnedBusinessDetailsState extends Equatable {
     this.status = BusinessViewCubitStatus.initial,
     this.isReviewLoading = false,
     this.allManagers = const [],
+    this.selectedPaymentMethod = '',
     this.isManagersLoading = false,
+    this.allPaymentMethods = const [],
+    this.userAcceptedTerms = false,
+    this.acceptanceData = const {},
+    this.latestTransaction,
   });
 
   OwnedBusinessDetailsState copyWith({
@@ -30,7 +40,12 @@ final class OwnedBusinessDetailsState extends Equatable {
     List<UserReview>? allUserReviews,
     bool isReviewLoading = false,
     List<ListableUserModel>? allManagers,
+    String selectedPaymentMethod = '',
     bool isManagersLoading = false,
+    List<PaymentMethod>? allPaymentMethods,
+    bool userAcceptedTerms = false,
+    Map<String, dynamic>? acceptanceData,
+    BusinessTransaction? latestTransaction,
   }) {
     return OwnedBusinessDetailsState(
       businessId: businessId ?? this.businessId,
@@ -40,7 +55,12 @@ final class OwnedBusinessDetailsState extends Equatable {
       promotions: promotions ?? this.promotions,
       isReviewLoading: isReviewLoading,
       allManagers: allManagers ?? this.allManagers,
+      selectedPaymentMethod: selectedPaymentMethod,
       isManagersLoading: isManagersLoading,
+      allPaymentMethods: allPaymentMethods ?? this.allPaymentMethods,
+      userAcceptedTerms: userAcceptedTerms,
+      acceptanceData: acceptanceData ?? this.acceptanceData,
+      latestTransaction: latestTransaction ?? this.latestTransaction,
     );
   }
 
@@ -53,6 +73,11 @@ final class OwnedBusinessDetailsState extends Equatable {
         allUserReviews,
         isReviewLoading,
         allManagers,
+        selectedPaymentMethod,
         isManagersLoading,
+        allPaymentMethods,
+        userAcceptedTerms,
+        acceptanceData,
+        latestTransaction,
       ];
 }

@@ -22,7 +22,7 @@ final _formKeySignUpBusiness = GlobalKey<FormBuilderState>();
 
 @RoutePage()
 class SignUpBusinessView extends StatefulWidget {
-  const SignUpBusinessView({Key? key}) : super(key: key);
+  const SignUpBusinessView({super.key});
 
   @override
   State<SignUpBusinessView> createState() => _SignUpBusinessViewState();

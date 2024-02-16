@@ -8,7 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 
 @RoutePage()
 class DashBoardView extends StatelessWidget {
-  DashBoardView({Key? key}) : super(key: key);
+  DashBoardView({super.key});
   final locator = GetIt.instance;
 
   @override

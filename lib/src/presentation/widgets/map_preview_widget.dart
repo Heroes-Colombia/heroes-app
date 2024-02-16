@@ -8,11 +8,11 @@ class MapPreviewWidget extends StatefulWidget {
   final double? longitude;
 
   const MapPreviewWidget({
-    Key? key,
+    super.key,
     required this.borderRadius,
     required this.latitude,
     required this.longitude,
-  }) : super(key: key);
+  });
 
   @override
   State<MapPreviewWidget> createState() => _MapPreviewWidgetState();

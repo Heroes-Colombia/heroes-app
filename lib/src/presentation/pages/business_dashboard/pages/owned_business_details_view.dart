@@ -19,6 +19,7 @@ import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
 class OwnedBusinessDetailsView extends StatefulWidget {
@@ -47,27 +48,35 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
         .businessDashboardTexts["ownedBusinessDetailsView"];
     final theme = Theme.of(context);
 
-    return Scaffold(
-        body: BlocBuilder<OwnedBusinessDetailsCubit, OwnedBusinessDetailsState>(
-      builder: (context, state) {
-        switch (state.status) {
-          case BusinessViewCubitStatus.initial:
-            return loadingView(theme, texts);
-          case BusinessViewCubitStatus.loading:
-            return loadingView(theme, texts);
-          case BusinessViewCubitStatus.success:
-            return succesView(theme, texts, state);
-          case BusinessViewCubitStatus.error:
-            return errorView(theme, texts);
-          default:
-            return const Center(child: Text('Error'));
-        }
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        context.read<OwnedBusinessDetailsCubit>().clearState();
+        Navigator.of(context).pop();
       },
-    ));
+      child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          body:
+              BlocBuilder<OwnedBusinessDetailsCubit, OwnedBusinessDetailsState>(
+            builder: (context, state) {
+              switch (state.status) {
+                case BusinessViewCubitStatus.initial:
+                  return loadingView(theme, texts);
+                case BusinessViewCubitStatus.loading:
+                  return loadingView(theme, texts);
+                case BusinessViewCubitStatus.success:
+                  return succesView(theme, texts, state);
+                case BusinessViewCubitStatus.error:
+                  return errorView(theme, texts);
+                default:
+                  return const Center(child: Text('Error'));
+              }
+            },
+          )),
+    );
   }
 
   //View state methods
-
   CustomScrollView loadingView(ThemeData theme, texts) {
     return CustomScrollView(
       slivers: [
@@ -132,6 +141,12 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               onPressed: () => seeAddLocationToBusiness(theme, texts),
               icon: const Icon(Ionicons.location_outline),
             ),
+            IconButton(
+              onPressed: () => seeAllPaymenthMethods(theme, texts),
+              icon: const Icon(
+                Ionicons.card_outline,
+              ),
+            ),
           ],
         ),
         mainCard(
@@ -183,9 +198,13 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                FilledButton(
-                  onPressed: () => seeCreatePromotionView(theme, texts),
-                  child: Text(texts["add-promotion-title"]),
+                subscriptionButton(business, texts),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => seeCreatePromotionView(theme, texts),
+                    child: Text(texts["add-promotion-title"]),
+                  ),
                 ),
               ],
             ),
@@ -193,6 +212,55 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
         ),
       ),
     );
+  }
+
+  Builder subscriptionButton(Business business, texts) {
+    return Builder(builder: (context) {
+      switch (business.subscriptionStatus) {
+        case BusinessSubscriptionStatus.active:
+          return Expanded(
+            child: TextButton(
+              onPressed: () => handleSeeSubscriptionDetails(texts),
+              child: Text(texts["subscription-active"]!),
+            ),
+          );
+        case BusinessSubscriptionStatus.inactive:
+          return Expanded(
+            child: FilledButton(
+              onPressed: () => handleCreateSubscription(texts),
+              child: Text(texts["subscription-inactive"]!),
+            ),
+          );
+        case BusinessSubscriptionStatus.pending:
+          return Expanded(
+            child: AsyncButtonWidget(
+              buttonText: texts["subscription-pending"]!,
+              onPressed: () => handleRefreshSubscriptionStatus(),
+            ),
+          );
+        case BusinessSubscriptionStatus.freeTrial:
+          return Expanded(
+            child: TextButton(
+              onPressed: null,
+              child: Text(texts["subscription-free-trial"]!),
+            ),
+          );
+        case BusinessSubscriptionStatus.markToRenew:
+          return Expanded(
+            child: OutlinedButton(
+              onPressed: () => handleCreateSubscription(texts),
+              child: Text(texts["subscription-mark-to-renew"]!),
+            ),
+          );
+        case BusinessSubscriptionStatus.canceled:
+          return Expanded(
+            child: TextButton(
+              onPressed: () => handleCreateSubscription(texts),
+              child: Text(texts["subscription-canceled"]!),
+            ),
+          );
+      }
+    });
   }
 
   SliverToBoxAdapter sectionTitle(texts, ThemeData theme) {
@@ -615,6 +683,106 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     );
   }
 
+  Widget allPaymentMethodsBody() {
+    var theme = Theme.of(context);
+    var locator = GetIt.instance;
+    var texts = locator<AppConstants>()
+        .businessDashboardTexts["ownedBusinessDetailsView"]!;
+
+    return BlocBuilder<OwnedBusinessDetailsCubit, OwnedBusinessDetailsState>(
+      builder: (context, state) {
+        return Container(
+          color: theme.colorScheme.background,
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: state.allPaymentMethods.isNotEmpty
+                    ? ListView.separated(
+                        itemBuilder: (context, index) {
+                          return Slidable(
+                              endActionPane: ActionPane(
+                                motion: const ScrollMotion(),
+                                children: [
+                                  SlidableAction(
+                                    onPressed: (context) {
+                                      context
+                                          .read<OwnedBusinessDetailsCubit>()
+                                          .deletePaymentMethodFromBusiness(
+                                              state.allPaymentMethods[index]);
+                                    },
+                                    label: texts["remove-manager-button"]!,
+                                    backgroundColor: theme.colorScheme.error,
+                                    icon: Ionicons.remove_circle_outline,
+                                  ),
+                                ],
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 12),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceVariant
+                                      .withOpacity(0.5),
+                                ),
+                                child: ListTile(
+                                  leading: Icon(
+                                    Ionicons.card_outline,
+                                    color: theme.colorScheme.onSurfaceVariant
+                                        .withOpacity(0.9),
+                                  ),
+                                  title: Text(
+                                      "${state.allPaymentMethods[index].brand} ${state.allPaymentMethods[index].lastFourNumbers}",
+                                      style: theme.textTheme.labelLarge),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(state
+                                          .allPaymentMethods[index].cardHolder),
+                                      Text(
+                                          "Expira: ${DateFormat("dd/MM/yyyy").format(state.allPaymentMethods[index].expiresAt)}")
+                                    ],
+                                  ),
+                                  trailing: Icon(
+                                    Ionicons.chevron_back_outline,
+                                    color: theme.colorScheme.onSurfaceVariant
+                                        .withOpacity(0.9),
+                                  ),
+                                ),
+                              ));
+                        },
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(height: 16);
+                        },
+                        itemCount: state.allPaymentMethods.length)
+                    : Center(child: Text(texts["no-payment-methods"]!)),
+              ),
+              const SizedBox(height: 4),
+              AsyncButtonWidget(
+                  buttonText: texts["add-payment-button"]!,
+                  onPressed: () async => await handleAddPaymentMethod()),
+              const SizedBox(height: 4),
+              Text(
+                texts["slide-to-remove-payment"]!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                  fontSize: theme.textTheme.labelSmall!.fontSize,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   FormBuilderField<Object> pictureField(
       Map<String, String> texts, ThemeData theme) {
     var locator = GetIt.instance;
@@ -670,7 +838,6 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
         .getBusinessDetails(widget.businessId);
   }
 
-  //This method is used to see all the comments of a business
   void seeAllComments(ThemeData theme, texts) {
     context
         .read<OwnedBusinessDetailsCubit>()
@@ -720,6 +887,21 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     showBottomModal(
       body,
       BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 8),
+    );
+  }
+
+  void seeAllPaymenthMethods(ThemeData theme, texts) {
+    //We create the body of the modal
+    context
+        .read<OwnedBusinessDetailsCubit>()
+        .getAllPaymentMethods(widget.businessId);
+
+    Widget body = allPaymentMethodsBody();
+
+    //We show the modal
+    showBottomModal(
+      body,
+      BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
     );
   }
 
@@ -894,6 +1076,170 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     );
   }
 
+  Future<void> handleAddPaymentMethod() async {
+    var newPaymentMethodFormKey = GlobalKey<FormBuilderState>();
+    var texts = GetIt.instance
+        .get<AppConstants>()
+        .businessDashboardTexts["ownedBusinessDetailsView"]!;
+    context.read<OwnedBusinessDetailsCubit>().getAcceptanceToken();
+
+    var theme = Theme.of(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return BlocBuilder<OwnedBusinessDetailsCubit,
+            OwnedBusinessDetailsState>(builder: (context, state) {
+          return AlertDialog(
+            title: Text(texts["add-payment-button"]!),
+            content: FormBuilder(
+              key: newPaymentMethodFormKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FormBuilderTextField(
+                    name: "card_holder",
+                    //MIn 5 max 128
+                    validator: (value) => GetIt.instance<AppMethods>()
+                        .cardHolderNameValidator(value, texts["empty-value"]!),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    maxLength: 128,
+                    decoration: InputDecoration(
+                      labelText: texts["card-holder-label"]!,
+                      hintText: texts["card-holder-hint"]!,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  FormBuilderTextField(
+                    name: "number",
+                    maxLength: 16,
+                    keyboardType: TextInputType.number,
+                    validator: (value) => GetIt.instance<AppMethods>()
+                        .emptyStringValidator(value, texts["empty-value"]!),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    decoration: InputDecoration(
+                      labelText: texts["card-number-label"]!,
+                      hintText: texts["card-number-hint"]!,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FormBuilderTextField(
+                          name: "exp_year",
+                          maxLength: 2,
+                          keyboardType: TextInputType.datetime,
+                          validator: (value) => GetIt.instance<AppMethods>()
+                              .cardYearValidator(value, texts["empty-value"]!),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: InputDecoration(
+                            labelText: texts["card-expiration-year-label"]!,
+                            hintText: texts["card-expiration-year-hint"]!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FormBuilderTextField(
+                          maxLength: 2,
+                          name: "exp_month",
+                          keyboardType: TextInputType.datetime,
+                          validator: (value) => GetIt.instance<AppMethods>()
+                              .cardMonthValidator(value, texts["empty-value"]!),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: InputDecoration(
+                            labelText: texts["card-expiration-month-label"]!,
+                            hintText: texts["card-expiration-month-hint"]!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  FormBuilderTextField(
+                    name: "cvc",
+                    maxLength: 3,
+                    keyboardType: TextInputType.number,
+                    validator: (value) => GetIt.instance<AppMethods>()
+                        .cvvValidator(value, texts["empty-value"]!),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    decoration: InputDecoration(
+                      labelText: texts["card-cvv-label"]!,
+                      hintText: texts["card-cvv-hint"]!,
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Checkbox(
+                        value: context
+                            .read<OwnedBusinessDetailsCubit>()
+                            .state
+                            .userAcceptedTerms,
+                        onChanged: (value) => context
+                            .read<OwnedBusinessDetailsCubit>()
+                            .changeUserAcceptedTerms(value!),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => launchUrl(Uri.parse(context
+                              .read<OwnedBusinessDetailsCubit>()
+                              .state
+                              .acceptanceData["permalink"])),
+                          child: Text(
+                            texts["accept-terms"]!,
+                            style: TextStyle(
+                                fontSize: theme.textTheme.labelSmall!.fontSize),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(texts["cancel-button"]!),
+              ),
+              context.read<OwnedBusinessDetailsCubit>().state.userAcceptedTerms
+                  ? AsyncButtonWidget(
+                      buttonText: texts["add-button"]!,
+                      onPressed: () async {
+                        //First validate the form
+                        if (!newPaymentMethodFormKey.currentState!
+                            .saveAndValidate()) {
+                          return;
+                        }
+                        //Then we create the payment method
+                        final cardData =
+                            newPaymentMethodFormKey.currentState!.value;
+                        await context
+                            .read<OwnedBusinessDetailsCubit>()
+                            .createCardToken(cardData, context);
+                      },
+                    )
+                  : FilledButton(
+                      onPressed: null,
+                      child: Text(texts["add-button"]!),
+                    ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
   Future<void> handleEditAddressAndLocation(
       GlobalKey<FormBuilderState> key, texts) async {
     if (!key.currentState!.saveAndValidate()) return;
@@ -922,5 +1268,176 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
       //We set error to the address field
       key.currentState!.fields["address"]!.invalidate(texts["address-error"]!);
     }
+  }
+
+  Future<void> handleCreateSubscription(texts) async {
+    //First we get the payment methods
+    context
+        .read<OwnedBusinessDetailsCubit>()
+        .getAllPaymentMethods(widget.businessId);
+
+    showDialog(
+        useSafeArea: false,
+        context: context,
+        builder: (context) {
+          return BlocBuilder<OwnedBusinessDetailsCubit,
+              OwnedBusinessDetailsState>(
+            builder: (context, state) {
+              final paymentMethods = state.allPaymentMethods;
+              var selectedPaymentMethodId = state.selectedPaymentMethod;
+
+              return AlertDialog(
+                title: Text(texts["select-payment"]!),
+                content: paymentMethods.isNotEmpty
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 16),
+                          Text(texts["valid-cards"]!),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.2,
+                            width: MediaQuery.of(context).size.width * 1,
+                            child: ListView.separated(
+                              itemBuilder: (context, index) {
+                                return paymentMethods[index]
+                                            .expiresAt
+                                            .isAfter(DateTime.now()) &&
+                                        paymentMethods[index].paymentMethodId !=
+                                            null
+                                    ? RadioListTile(
+                                        value: paymentMethods[index].id,
+                                        groupValue: selectedPaymentMethodId,
+                                        onChanged: (value) {
+                                          if (value == null) return;
+                                          context
+                                              .read<OwnedBusinessDetailsCubit>()
+                                              .setSelectedPaymentMethod(
+                                                  paymentMethods[index].id);
+                                        },
+                                        title: Text(
+                                            "${paymentMethods[index].brand} ${paymentMethods[index].lastFourNumbers}"),
+                                      )
+                                    : const SizedBox();
+                              },
+                              separatorBuilder: (context, index) {
+                                return const SizedBox(height: 16);
+                              },
+                              itemCount: paymentMethods.length,
+                            ),
+                          ),
+                        ],
+                      )
+                    : SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.2,
+                        width: MediaQuery.of(context).size.width * 1,
+                        child:
+                            Center(child: Text(texts["no-payment-methods"]!)),
+                      ),
+                actions: [
+                  state.selectedPaymentMethod != ""
+                      ? AsyncButtonWidget(
+                          buttonText: texts["create-subscription"]!,
+                          onPressed: () => createSubscription(texts),
+                        )
+                      : FilledButton(
+                          onPressed: null,
+                          child: Text(texts["create-subscription"]!),
+                        ),
+                ],
+              );
+            },
+          );
+        });
+  }
+
+  Future<void> handleSeeSubscriptionDetails(texts) async {
+    context.read<OwnedBusinessDetailsCubit>().getLatestTransaction();
+
+    showDialog(
+        useSafeArea: false,
+        context: context,
+        builder: (context) {
+          return BlocBuilder<OwnedBusinessDetailsCubit,
+              OwnedBusinessDetailsState>(
+            builder: (context, state) {
+              return SizedBox(
+                child: AlertDialog(
+                  title: Text(texts["subscription-details"]!),
+                  content: state.latestTransaction != null
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(texts["subscription-type"]! +
+                                ": " +
+                                state.latestTransaction!.plan),
+                            Text(texts["subscription-creation-date"]! +
+                                ": ${DateFormat("dd/MM/yyyy").format(state.latestTransaction!.createdAt)}"),
+                            Text(texts["subscription-expiration-date"]! +
+                                ": ${DateFormat("dd/MM/yyyy").format(state.latestTransaction!.expirationDate)}"),
+                          ],
+                        )
+                      : SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.2,
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => cancelSubscription(texts),
+                      child: Text(texts["cancel-subscription"]!),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(texts["cancel-button"]!),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        });
+  }
+
+  Future<void> handleRefreshSubscriptionStatus() async {
+    await context.read<OwnedBusinessDetailsCubit>().refreshSubscriptionStatus();
+  }
+
+  void createScaffoldMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
+
+  Future<void> createSubscription(texts) async {
+    final subscriptionCreated =
+        await context.read<OwnedBusinessDetailsCubit>().createSubscription();
+    if (subscriptionCreated) {
+      if (!context.mounted) return;
+
+      //We refresh the business details
+      context
+          .read<OwnedBusinessDetailsCubit>()
+          .getBusinessDetails(widget.businessId);
+      Navigator.of(context).pop();
+      createScaffoldMessage(texts["subscription-created"]!);
+    } else {
+      if (!context.mounted) return;
+      Navigator.of(context).pop();
+      createScaffoldMessage(texts["create-subscription-error"]!);
+    }
+  }
+
+  Future<void> cancelSubscription(texts) async {
+    await context.read<OwnedBusinessDetailsCubit>().cancelSubscription();
+    if (!context.mounted) return;
+    Navigator.of(context).pop();
   }
 }

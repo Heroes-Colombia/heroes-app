@@ -6,7 +6,7 @@ import 'package:heroes_app/src/config/router/app_router.gr.dart';
 
 @RoutePage()
 class FirstTimeView extends StatelessWidget {
-  FirstTimeView({Key? key}) : super(key: key);
+  FirstTimeView({super.key});
   final GetIt locator = GetIt.instance;
   @override
   Widget build(BuildContext context) {

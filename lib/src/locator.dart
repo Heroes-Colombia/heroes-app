@@ -4,6 +4,7 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
+import 'package:heroes_app/src/domain/repositories/business_subscription_service.dart';
 import 'package:heroes_app/src/domain/repositories/cloud_message_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestorage_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
@@ -42,4 +43,7 @@ Future<void> initializeDependencies() async {
     CloudMessageService(),
   );
   locator.registerSingleton<AppRouter>(AppRouter());
+
+  locator.registerSingleton<BusinessSubscriptionService>(
+      BusinessSubscriptionService());
 }

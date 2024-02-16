@@ -5,7 +5,7 @@ import 'package:heroes_app/src/config/router/app_router.gr.dart';
 
 @RoutePage()
 class BusinessDashBoardView extends StatelessWidget {
-  const BusinessDashBoardView({Key? key}) : super(key: key);
+  const BusinessDashBoardView({super.key});
 
   @override
   Widget build(BuildContext context) {
