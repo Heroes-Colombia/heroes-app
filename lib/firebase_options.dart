@@ -63,11 +63,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyB9CAK0XhZdzdXjpb9jo6R-XvT7IKSagSM',
-    appId: '1:928314563960:ios:d1b69ea0890be865b3bc8d',
+    appId: '1:928314563960:ios:e13a6dbed7b2d0d8b3bc8d',
     messagingSenderId: '928314563960',
     projectId: 'heroes-cd74a',
     storageBucket: 'heroes-cd74a.appspot.com',
-    iosBundleId: 'com.example.heroesApp',
+    iosBundleId: 'com.heroescolombia.heroes',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
