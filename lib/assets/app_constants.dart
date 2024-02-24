@@ -202,13 +202,15 @@ class AppConstants {
   };
   final authTexts = {
     'welcomeView': {
-      'welcome': '¡Bienvenido, Héroe!',
+      'welcome':
+          'La aplicación que pretende reconocer, apreciar y acompañar a nuestros heroes de todos los días.',
       'login': 'Iniciar sesión',
       'register': 'Registrarse',
       'registerAsBusiness': 'Registrarse como comerciante',
     },
     'loginView': {
       'title': 'Iniciar sesión',
+      "sub-title": "¡Qué bueno tenerte denuevo Héroe!",
       'forgotPassword': 'Olvidé mi contraseña',
       'email-label': 'Correo electrónico',
       'email-hint': 'Ingresa tu correo electrónico',
@@ -300,7 +302,8 @@ class AppConstants {
       "registerSuccess-button": "Aceptar",
     },
     'restorePasswordView': {
-      'title': '¿Olvidaste tu contraseña?',
+      'title': 'Recuperar contraseña',
+      "sub-title": "Por favor ingresa el correo electrónico de tu cuenta.",
       'email-label': 'Correo electrónico',
       'email-hint': 'Ingresa tu correo electrónico',
       'email-validator': 'Por favor ingresa un correo electrónico válido',

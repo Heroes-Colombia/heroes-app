@@ -12,6 +12,7 @@ import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:flutter_svg/svg.dart';
 
 final _formKey = GlobalKey<FormBuilderState>();
 
@@ -31,10 +32,14 @@ class SignUpView extends StatelessWidget {
       child: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: Text(texts['title']!),
-            pinned: true,
-            floating: true,
-            snap: true,
+            title: Text(
+              texts['title']!,
+              style: TextStyle(
+                color: theme.colorScheme.onBackground,
+                fontSize: theme.textTheme.bodyLarge!.fontSize,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           SliverToBoxAdapter(
             child: FormBuilder(
@@ -45,6 +50,17 @@ class SignUpView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Hero(
+                      tag: "logo",
+                      child: SvgPicture.asset(
+                        theme.brightness == Brightness.dark
+                            ? 'assets/images/heroes_black_logo.svg'
+                            : 'assets/images/heroes_white_logo.svg',
+                        height: 50,
+                        width: double.infinity,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
                     FormBuilderTextField(
                       name: 'license',
                       key: const Key('license'),
