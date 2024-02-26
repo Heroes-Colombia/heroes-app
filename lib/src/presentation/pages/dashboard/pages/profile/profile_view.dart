@@ -2,6 +2,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
@@ -39,29 +40,62 @@ class _ProfileViewState extends State<ProfileView> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: Text(texts['title']!),
+            title: Text(
+              texts['title']!,
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w900,
+                fontSize: theme.textTheme.headlineSmall!.fontSize,
+              ),
+            ),
           ),
           SliverToBoxAdapter(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ListBody(children: [
                 const SizedBox(height: 16),
-                Text(texts['account']!, style: theme.textTheme.labelLarge),
+                Text(
+                  texts['account']!,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.bold,
+                    fontSize: theme.textTheme.labelLarge!.fontSize,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 ListTile(
-                  leading: const Icon(Ionicons.person_outline),
+                  leading: SvgPicture.asset(
+                    'assets/icon/editProfile.svg',
+                    width: 24,
+                    height: 24,
+                    colorFilter: ColorFilter.mode(
+                      theme.colorScheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                   title: Text(texts['edit-profile']!),
                   onTap: () => context.router.push(EditProfileView()),
                 ),
                 ListTile(
-                    leading: const Icon(Ionicons.log_out_outline),
+                    leading: Icon(
+                      Ionicons.log_out_outline,
+                      color: theme.colorScheme.primary,
+                    ),
                     title: Text(texts['logout']!),
                     onTap: () => doLogOut(context, texts)),
                 const SizedBox(height: 16),
-                Text(texts['settings']!, style: theme.textTheme.labelLarge),
+                Text(
+                  texts['settings']!,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.bold,
+                    fontSize: theme.textTheme.labelLarge!.fontSize,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 ListTile(
-                  leading: const Icon(Ionicons.moon_outline),
+                  leading: Icon(Ionicons.moon_outline,
+                      color: theme.colorScheme.primary),
                   title: Text(texts['dark-mode']!),
                   trailing: Switch(
                     value: AdaptiveTheme.of(context).mode ==
@@ -89,10 +123,25 @@ class _ProfileViewState extends State<ProfileView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            Text(texts['notifications']!, style: theme.textTheme.labelLarge),
+            Text(
+              texts['notifications']!,
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.bold,
+                fontSize: theme.textTheme.labelLarge!.fontSize,
+              ),
+            ),
             const SizedBox(height: 8),
             ListTile(
-              leading: const Icon(Ionicons.notifications_outline),
+              leading: SvgPicture.asset(
+                'assets/icon/notifications_outline.svg',
+                width: 28,
+                height: 28,
+                colorFilter: ColorFilter.mode(
+                  theme.colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
               title: Text(texts['favorites-topic']!),
               trailing: Switch(
                 value: favoriteTopic,
@@ -109,7 +158,15 @@ class _ProfileViewState extends State<ProfileView> {
               ),
             ),
             ListTile(
-              leading: const Icon(Ionicons.notifications_outline),
+              leading: SvgPicture.asset(
+                'assets/icon/notifications_outline.svg',
+                width: 28,
+                height: 28,
+                colorFilter: ColorFilter.mode(
+                  theme.colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
               title: Text(texts['discover-topic']!),
               trailing: Switch(
                 value: discoverTopic,

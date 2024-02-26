@@ -1,10 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
+import 'package:heroes_app/src/domain/models/business_category.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
 import 'package:heroes_app/src/presentation/cubits/business/business_home_view/business_home_view_cubit.dart';
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/delegates/search_business_delegate.dart';
@@ -26,9 +28,9 @@ class SearchView extends StatelessWidget {
         switch (state.businessHomeViewState) {
           case BusinessViewCubitStatus.initial:
             context.read<BusinessHomeViewCubit>().getRequiredData();
-            return loadingView(texts);
+            return loadingView(texts, Theme.of(context));
           case BusinessViewCubitStatus.loading:
-            return loadingView(texts);
+            return loadingView(texts, Theme.of(context));
           case BusinessViewCubitStatus.success:
             return successView(context, texts, state);
           default:
@@ -43,19 +45,34 @@ class SearchView extends StatelessWidget {
     var theme = Theme.of(context);
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(
-          title: Text(texts["title"]),
+        SliverAppBar(
+          stretch: true,
           pinned: true,
+          actions: [
+            IconButton(
+              onPressed: () => showSearch(
+                  context: context, delegate: SearchBusinessDelegate()),
+              icon: SvgPicture.asset(
+                "assets/icon/search.svg",
+                colorFilter: ColorFilter.mode(
+                  theme.colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
+            )
+          ],
         ),
-        searchButton(theme, texts, context),
-        singleTitle(theme, texts),
+        logo(theme, texts),
+        singleTitle(theme, texts["categories"]),
+        categoriesList(state.businessCategories),
+        singleTitle(theme, texts["nearPromotions"]),
         mapPreview(theme, context),
         doubleTitle(theme, texts["featuredBusiness"], texts["seeAll"], () {
-          AutoRouter.of(context).push(const AllBusinessView());
+          AutoRouter.of(context).push(AllBusinessView(initialCategoryId: null));
         }),
         horizontalList(state.featuredBusinesses),
         doubleTitle(theme, texts["business"], texts["seeAll"], () {
-          AutoRouter.of(context).push(const AllBusinessView());
+          AutoRouter.of(context).push(AllBusinessView(initialCategoryId: null));
         }),
         verticalList(state.normalBusinesses),
         const SliverToBoxAdapter(child: SizedBox(height: 16))
@@ -63,17 +80,28 @@ class SearchView extends StatelessWidget {
     );
   }
 
-  CustomScrollView loadingView(texts) {
+  CustomScrollView loadingView(texts, theme) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(
+        SliverAppBar(
+          stretch: true,
           pinned: true,
-          title: Text(texts["title"]),
+          actions: [
+            IconButton(
+              onPressed: () => {},
+              icon: SvgPicture.asset(
+                "assets/icon/search.svg",
+                colorFilter: ColorFilter.mode(
+                  theme.colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
+            )
+          ],
         ),
+        logo(theme, texts),
         const SliverFillRemaining(
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
+          child: Center(child: CircularProgressIndicator()),
         )
       ],
     );
@@ -96,6 +124,24 @@ class SearchView extends StatelessWidget {
   }
 
   //Widget methods
+  SliverToBoxAdapter logo(ThemeData theme, texts) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 60),
+        child: Hero(
+          tag: "loading-logo",
+          child: SvgPicture.asset("assets/images/heroes_white_logo.svg",
+              width: double.infinity,
+              height: 40,
+              colorFilter: ColorFilter.mode(
+                theme.colorScheme.primary,
+                BlendMode.srcIn,
+              )),
+        ),
+      ),
+    );
+  }
+
   SliverToBoxAdapter searchButton(
     ThemeData theme,
     texts,
@@ -143,17 +189,17 @@ class SearchView extends StatelessWidget {
     );
   }
 
-  SliverToBoxAdapter singleTitle(ThemeData theme, texts) {
+  SliverToBoxAdapter singleTitle(ThemeData theme, text) {
     return SliverToBoxAdapter(
         child: Padding(
       padding: const EdgeInsets.only(top: 12),
       child: ListTile(
         title: Text(
-          texts["nearPromotions"],
+          text,
           style: TextStyle(
             color: theme.colorScheme.onSurfaceVariant,
             fontSize: theme.textTheme.labelLarge!.fontSize,
-            fontWeight: theme.textTheme.labelLarge!.fontWeight,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
@@ -200,10 +246,67 @@ class SearchView extends StatelessWidget {
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
               fontSize: theme.textTheme.labelLarge!.fontSize,
-              fontWeight: theme.textTheme.labelLarge!.fontWeight,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          trailing: Text(buttonText),
+          trailing: Text(
+            buttonText,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: theme.textTheme.labelMedium!.fontSize,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget categoriesList(List<BusinessCategory> businessCategories) {
+    return SliverToBoxAdapter(
+      child: Container(
+        height: 48,
+        margin: const EdgeInsets.symmetric(horizontal: 12),
+        child: ListView.separated(
+          padding: const EdgeInsets.all(0.0),
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, index) {
+            return InkWell(
+              onTap: () => AutoRouter.of(context).push(
+                AllBusinessView(
+                  initialCategoryId: businessCategories[index].id,
+                ),
+              ),
+              child: Container(
+                height: 48,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surfaceVariant
+                      .withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Text(businessCategories[index].name),
+                    const SizedBox(width: 8),
+                    SvgPicture.network(
+                      businessCategories[index].imageUrl,
+                      width: 24,
+                      height: 24,
+                      fit: BoxFit.contain,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+          separatorBuilder: (context, index) {
+            return const SizedBox(width: 16);
+          },
+          itemCount: businessCategories.length,
         ),
       ),
     );

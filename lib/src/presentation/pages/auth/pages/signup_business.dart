@@ -62,6 +62,10 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
                       : 'assets/images/heroes_white_logo.svg',
                   height: 50,
                   width: double.infinity,
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.primary,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
             ),

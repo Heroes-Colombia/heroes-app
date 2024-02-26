@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
@@ -49,11 +50,7 @@ class _EntryPointViewState extends State<EntryPointView> {
   }
 
   Widget loadingView() {
-    return const CustomScrollView(
-      slivers: [
-        SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-      ],
-    );
+    return brandingWidget();
   }
 
   Widget userNotLoggedInView(BuildContext context) {
@@ -62,11 +59,7 @@ class _EntryPointViewState extends State<EntryPointView> {
       FirstTimeView(),
       LoginView(onResult: (guardCallback) {}),
     ]);
-    return const CustomScrollView(
-      slivers: [
-        SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-      ],
-    );
+    return brandingWidget();
   }
 
   Widget userLoggedInButNotVerified(BuildContext context) {
@@ -84,22 +77,14 @@ class _EntryPointViewState extends State<EntryPointView> {
   Widget userLoggedIn() {
     //Redirect to the home view
     AutoRouter.of(context).replaceAll([DashBoardView()]);
-    return const CustomScrollView(
-      slivers: [
-        SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-      ],
-    );
+    return brandingWidget();
   }
 
   Widget userIsBusiness() {
     //Redirect to the business dashboard view
     AutoRouter.of(context).replaceAll([const BusinessDashBoardView()]);
 
-    return const CustomScrollView(
-      slivers: [
-        SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-      ],
-    );
+    return brandingWidget();
   }
 
   Widget logInError() {
@@ -110,6 +95,32 @@ class _EntryPointViewState extends State<EntryPointView> {
           child: Text("Error"),
         ))
       ],
+    );
+  }
+
+  Widget brandingWidget() {
+    return Center(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Hero(
+            tag: "logo",
+            child: SvgPicture.asset(
+              "assets/images/heroes_white_logo.svg",
+              height: 40,
+              width: 300,
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.primary,
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
+          const SizedBox(height: 34),
+          const CircularProgressIndicator()
+        ],
+      ),
     );
   }
 }

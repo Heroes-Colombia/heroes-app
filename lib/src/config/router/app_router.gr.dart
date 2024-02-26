@@ -61,9 +61,14 @@ abstract class $AppRouter extends _i23.RootStackRouter {
   @override
   final Map<String, _i23.PageFactory> pagesMap = {
     AllBusinessView.name: (routeData) {
+      final args = routeData.argsAs<AllBusinessViewArgs>(
+          orElse: () => const AllBusinessViewArgs());
       return _i23.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i1.AllBusinessView(),
+        child: _i1.AllBusinessView(
+          key: args.key,
+          initialCategoryId: args.initialCategoryId,
+        ),
       );
     },
     AuthView.name: (routeData) {
@@ -236,16 +241,40 @@ abstract class $AppRouter extends _i23.RootStackRouter {
 
 /// generated route for
 /// [_i1.AllBusinessView]
-class AllBusinessView extends _i23.PageRouteInfo<void> {
-  const AllBusinessView({List<_i23.PageRouteInfo>? children})
-      : super(
+class AllBusinessView extends _i23.PageRouteInfo<AllBusinessViewArgs> {
+  AllBusinessView({
+    _i24.Key? key,
+    String? initialCategoryId,
+    List<_i23.PageRouteInfo>? children,
+  }) : super(
           AllBusinessView.name,
+          args: AllBusinessViewArgs(
+            key: key,
+            initialCategoryId: initialCategoryId,
+          ),
           initialChildren: children,
         );
 
   static const String name = 'AllBusinessView';
 
-  static const _i23.PageInfo<void> page = _i23.PageInfo<void>(name);
+  static const _i23.PageInfo<AllBusinessViewArgs> page =
+      _i23.PageInfo<AllBusinessViewArgs>(name);
+}
+
+class AllBusinessViewArgs {
+  const AllBusinessViewArgs({
+    this.key,
+    this.initialCategoryId,
+  });
+
+  final _i24.Key? key;
+
+  final String? initialCategoryId;
+
+  @override
+  String toString() {
+    return 'AllBusinessViewArgs{key: $key, initialCategoryId: $initialCategoryId}';
+  }
 }
 
 /// generated route for

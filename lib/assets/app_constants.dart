@@ -6,6 +6,7 @@ class AppConstants {
   final String advertisementCollection = 'advertisements';
   final String paymentMethodsCollection = 'payment_methods';
   final String transactionsCollection = 'business_transactions';
+  final String businessCategoryCollection = 'business_categories';
 
   //Firebase Storage
   final String userIdentifications = "identifications";
@@ -245,7 +246,7 @@ class AppConstants {
       'first-lastname-hint': 'Ingresa tu primer apellido',
       'second-lastname-label': 'Segundo apellido',
       'second-lastname-hint': 'Ingresa tu segundo apellido',
-      'rank-label': 'Rango',
+      'rank-label': 'Fuerza a la que pertenece',
       'rank-hint': 'Ingresa tu rango',
       'password-label': 'Contraseña',
       'password-hint': 'Ingresa tu contraseña',
@@ -319,6 +320,7 @@ class AppConstants {
       "search-title": "¿Qué comercio buscas?",
       "nearPromotions": "Comercios cercanos",
       "featuredBusiness": "Comercios destacados",
+      "categories": "Categorías",
       "business": "Comercios",
       "seeAll": "Ver todos",
       "search-business": "Buscar comercio",
@@ -329,7 +331,9 @@ class AppConstants {
       "loading-title": "Cargando",
       "error-title": "Error",
       "error-content": "Ocurrió un error al cargar los comercios",
-      "error-button": "Reintentar"
+      "error-button": "Reintentar",
+      "all-categories": "Todas las categorías",
+      "empty-content": "No se encontraron comercios",
     },
     "favouriteView": {
       "title": "Favoritos",
@@ -375,7 +379,7 @@ class AppConstants {
       'account': 'Cuenta',
       'edit-profile': 'Editar perfil',
       'logout': 'Cerrar sesión',
-      'settings': 'Ajustes',
+      'settings': 'Aplicación',
       'dark-mode': 'Tema oscuro',
       'light-mode': 'Tema claro',
       'system-mode': 'Tema del sistema',
@@ -398,7 +402,7 @@ class AppConstants {
       'first-lastname-hint': 'Ingresa tu primer apellido',
       'second-lastname-label': 'Segundo apellido',
       'second-lastname-hint': 'Ingresa tu segundo apellido',
-      'rank-label': 'Rango',
+      'rank-label': 'Fuerza a la que pertenece',
       'rank-hint': 'Ingresa tu rango',
       'savechanges-button': 'Guardar cambios',
       'error-content': 'Hubo un error al guardar los cambios',
