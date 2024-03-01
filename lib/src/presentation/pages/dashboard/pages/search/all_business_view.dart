@@ -183,6 +183,7 @@ class _AllBusinessViewState extends State<AllBusinessView> {
                 image: businesses[index].featuredImage,
                 title: businesses[index].name,
                 id: businesses[index].id,
+                category: null,
                 callback: () {
                   AutoRouter.of(context).push(
                     BusinessDetailsView(

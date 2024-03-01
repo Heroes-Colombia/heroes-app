@@ -74,7 +74,7 @@ class _ProfileViewState extends State<ProfileView> {
                     ),
                   ),
                   title: Text(texts['edit-profile']!),
-                  onTap: () => context.router.push(EditProfileView()),
+                  onTap: () => context.router.push(DetailsProfileView()),
                 ),
                 ListTile(
                     leading: Icon(

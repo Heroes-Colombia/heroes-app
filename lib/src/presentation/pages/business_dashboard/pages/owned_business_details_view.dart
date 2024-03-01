@@ -302,6 +302,7 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                   title: promotions[index].title,
                   id: promotions[index].businessId,
                   description: promotions[index].description,
+                  category: null,
                   callback: () {
                     AutoRouter.of(context).push(OwnedPromotionDetailsView(
                         promotion: promotions[index]));
@@ -315,6 +316,7 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               title: texts["empty-promotions-title"]!,
               description: texts["empty-promotions"]!,
               id: "",
+              category: null,
               callback: () {},
             ),
           );

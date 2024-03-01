@@ -13,6 +13,7 @@ import 'package:heroes_app/src/domain/models/review_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/presentation/cubits/business/business_details/business_details_cubit.dart';
 import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';
+import 'package:heroes_app/src/presentation/widgets/map_preview_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -31,6 +32,9 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
   void initState() {
     super.initState();
     context.read<BusinessDetailsCubit>().getInitial();
+    context
+        .read<BusinessDetailsCubit>()
+        .getAllBusinessReviews(widget.businessId);
   }
 
   @override
@@ -64,7 +68,15 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
   CustomScrollView loadingView(ThemeData theme, texts) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(texts["loading-title"])),
+        SliverAppBar.large(
+            title: Text(
+          texts["loading-title"],
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w900,
+            fontSize: theme.textTheme.headlineSmall!.fontSize,
+          ),
+        )),
         SliverFillRemaining(
           child: Center(
             child: CircularProgressIndicator(
@@ -79,7 +91,15 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
   CustomScrollView errorView(ThemeData theme, texts) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(texts["error-title"])),
+        SliverAppBar.large(
+            title: Text(
+          texts["error-title"],
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w900,
+            fontSize: theme.textTheme.headlineSmall!.fontSize,
+          ),
+        )),
         SliverFillRemaining(
           child: Center(
               child: Column(
@@ -109,8 +129,17 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     BusinessDetailsState state,
   ) {
     return CustomScrollView(
+      physics: const NeverScrollableScrollPhysics(),
       slivers: [
-        SliverAppBar.large(title: Text(state.business!.name)),
+        SliverAppBar.large(
+            title: Text(
+          state.business!.name,
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w900,
+            fontSize: theme.textTheme.headlineSmall!.fontSize,
+          ),
+        )),
         mainCard(
           state.business!,
           theme,
@@ -118,11 +147,31 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
           state.isFavourite,
           state.favouriteIsLoading,
         ),
-        sectionDoubleTitle(texts, theme, state.allUserReviews),
-        commentsList(state.reviews, theme, texts),
-        sectionTitle(texts, theme),
-        promotionsList(state.promotions, texts),
-        const SliverToBoxAdapter(child: SizedBox(height: 16))
+        SliverFillRemaining(
+          child: DefaultTabController(
+            length: 3,
+            child: Column(
+              children: [
+                TabBar(
+                  tabs: [
+                    Tab(text: texts["promotions-title"]),
+                    Tab(text: texts["information-title"]),
+                    Tab(text: texts["comments-title"]),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      promotionsList(state.promotions, texts),
+                      informationList(state.business, theme, texts),
+                      allCommentsBottomModalBody()
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
       ],
     );
   }
@@ -166,7 +215,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                FilledButton(
+                OutlinedButton(
                   onPressed: () => navigateToBusiness(),
                   child: Text(texts["navigation-title"]),
                 ),
@@ -234,7 +283,8 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
 
   Widget promotionsList(List<Promotion> promotions, texts) {
     return promotions.isNotEmpty
-        ? SliverList.separated(
+        ? ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 16),
             separatorBuilder: (context, index) {
               return const SizedBox(height: 16);
             },
@@ -244,6 +294,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                   title: promotions[index].title,
                   id: promotions[index].businessId,
                   description: promotions[index].description,
+                  category: null,
                   callback: () {
                     AutoRouter.of(context).push(PromotionDetailsView(
                         promotion: promotions[index], promotionId: null));
@@ -251,45 +302,57 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
             },
             itemCount: promotions.length,
           )
-        : SliverToBoxAdapter(
-            child: VerticalCard(
+        : ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            itemBuilder: (context, index) => VerticalCard(
               image: "",
               title: texts["empty-promotions-title"]!,
               description: texts["empty-promotions"]!,
               id: "",
+              category: null,
               callback: () {},
             ),
+            itemCount: 1,
           );
   }
 
-  Widget commentsList(List<UserReview> comments, ThemeData theme, texts) {
-    return SliverToBoxAdapter(
-      child: Container(
-        height: 174,
-        margin: const EdgeInsets.symmetric(horizontal: 12),
-        child: comments.isNotEmpty
-            ? ListView.separated(
-                padding: const EdgeInsets.all(0.0),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) {
-                  return !(index == comments.length - 1)
-                      ? commentCard(theme, comments[index])
-                      : Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            commentCard(theme, comments[index]),
-                            const SizedBox(width: 12),
-                            addCommentCard(theme, texts),
-                          ],
-                        );
+  Widget informationList(Business? business, ThemeData theme, texts) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      itemCount: 1,
+      itemBuilder: (context, index) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              texts["address-title"]!,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: theme.textTheme.labelLarge!.fontSize),
+            ),
+            const SizedBox(height: 4),
+            Text(business!.address),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+              ),
+              height: 200,
+              child: InkWell(
+                onTap: () {
+                  AutoRouter.of(context).push(const MapView());
                 },
-                separatorBuilder: (context, index) {
-                  return const SizedBox(width: 12);
-                },
-                itemCount: comments.length,
-              )
-            : emptyCommentsCard(theme, texts),
-      ),
+                child: MapPreviewWidget(
+                  borderRadius: 20,
+                  latitude: business.location.latitude,
+                  longitude: business.location.longitude,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -421,55 +484,133 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
       builder: (context, state) {
         return Container(
           color: theme.colorScheme.background,
-          padding: const EdgeInsets.symmetric(vertical: 24),
           child: state.allUserReviews.isNotEmpty
               ? ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   itemBuilder: (context, index) {
                     var theme = Theme.of(context);
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 12),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceVariant
-                              .withOpacity(0.5)),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            state.allUserReviews[index].comment,
-                            style: theme.textTheme.labelLarge,
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    return index == 0
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text(
-                                  "${texts["raiting"]!}: ${state.allUserReviews[index].rate}",
-                                  style: theme.textTheme.labelMedium!.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant
-                                          .withOpacity(0.9))),
-                              Text(
-                                  DateFormat("dd/MM/yyyy, hh:mm a", "es")
-                                      .format(state
-                                          .allUserReviews[index].createdAt),
-                                  style: theme.textTheme.labelMedium!.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant
-                                          .withOpacity(0.9))),
+                              TextButton(
+                                  onPressed: () => seeRaitingMenu(),
+                                  child: Text(texts["add-comment-button"]!)),
+                              const SizedBox(height: 16),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 12),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceVariant
+                                        .withOpacity(0.5)),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      state.allUserReviews[index].comment,
+                                      style: theme.textTheme.labelLarge,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                            "${texts["raiting"]!}: ${state.allUserReviews[index].rate}",
+                                            style: theme.textTheme.labelMedium!
+                                                .copyWith(
+                                                    color: theme.colorScheme
+                                                        .onSurfaceVariant
+                                                        .withOpacity(0.9))),
+                                        Text(
+                                            DateFormat(
+                                                    "dd/MM/yyyy, hh:mm a", "es")
+                                                .format(state
+                                                    .allUserReviews[index]
+                                                    .createdAt),
+                                            style: theme.textTheme.labelMedium!
+                                                .copyWith(
+                                                    color: theme.colorScheme
+                                                        .onSurfaceVariant
+                                                        .withOpacity(0.9))),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
                             ],
                           )
-                        ],
-                      ),
-                    );
+                        : Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 12),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceVariant
+                                    .withOpacity(0.5)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  state.allUserReviews[index].comment,
+                                  style: theme.textTheme.labelLarge,
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                        "${texts["raiting"]!}: ${state.allUserReviews[index].rate}",
+                                        style: theme.textTheme.labelMedium!
+                                            .copyWith(
+                                                color: theme.colorScheme
+                                                    .onSurfaceVariant
+                                                    .withOpacity(0.9))),
+                                    Text(
+                                        DateFormat("dd/MM/yyyy, hh:mm a", "es")
+                                            .format(state.allUserReviews[index]
+                                                .createdAt),
+                                        style: theme.textTheme.labelMedium!
+                                            .copyWith(
+                                                color: theme.colorScheme
+                                                    .onSurfaceVariant
+                                                    .withOpacity(0.9))),
+                                  ],
+                                )
+                              ],
+                            ),
+                          );
                   },
                   separatorBuilder: (context, index) {
                     return const SizedBox(height: 16);
                   },
                   itemCount: state.allUserReviews.length)
-              : const Center(child: CircularProgressIndicator()),
+              : ListView.builder(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  itemBuilder: (context, index) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(texts["empty-comment-title"]!,
+                            style: theme.textTheme.labelLarge,
+                            textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        TextButton(
+                            onPressed: () => seeRaitingMenu(),
+                            child: Text(texts["add-comment-button"]!)),
+                      ],
+                    );
+                  },
+                  itemCount: 1,
+                ),
         );
       },
     );

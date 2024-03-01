@@ -128,10 +128,11 @@ class FavoritesView extends StatelessWidget {
             delegate: SliverChildBuilderDelegate(
             (context, index) {
               return HorizontalCard(
-                isOnGrid: true,
+                isOnGrid: false,
                 image: businesses[index].featuredImage,
                 title: businesses[index].name,
                 id: businesses[index].id,
+                category: businesses[index].category,
                 callback: () {
                   AutoRouter.of(context).push(
                     BusinessDetailsView(

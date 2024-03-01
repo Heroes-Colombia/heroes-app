@@ -315,7 +315,7 @@ class SearchView extends StatelessWidget {
   Widget horizontalList(List<ListableBusiness> featuredBusinesses) {
     return SliverToBoxAdapter(
       child: Container(
-        height: 174,
+        height: 194,
         margin: const EdgeInsets.symmetric(horizontal: 12),
         child: ListView.separated(
           padding: const EdgeInsets.all(0.0),
@@ -325,6 +325,8 @@ class SearchView extends StatelessWidget {
               image: featuredBusinesses[index].featuredImage,
               title: featuredBusinesses[index].name,
               id: featuredBusinesses[index].id,
+              isOnGrid: true,
+              category: featuredBusinesses[index].category,
               callback: () {
                 AutoRouter.of(context).push(BusinessDetailsView(
                     businessId: featuredBusinesses[index].id));
@@ -347,6 +349,7 @@ class SearchView extends StatelessWidget {
           image: businesses[index].featuredImage,
           title: businesses[index].name,
           id: businesses[index].id,
+          category: businesses[index].category,
           callback: () {
             AutoRouter.of(context).push(
               BusinessDetailsView(businessId: businesses[index].id),

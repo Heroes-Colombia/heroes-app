@@ -62,6 +62,17 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
           .map((e) => BusinessCategory.fromJson(e))
           .toList();
 
+      //Then we add the first category data to the list of business categories
+      for (var business in normalBusiness) {
+        business.category = businessCategories.firstWhere(
+            (category) => category.id == business.categoryIds.first);
+      }
+
+      for (var business in featuredBusiness) {
+        business.category = businessCategories.firstWhere(
+            (category) => category.id == business.categoryIds.first);
+      }
+
       emit(
         state.copyWith(
           businessHomeViewState: BusinessViewCubitStatus.success,

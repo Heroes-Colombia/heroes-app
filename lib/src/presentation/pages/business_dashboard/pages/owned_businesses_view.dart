@@ -134,6 +134,7 @@ class OwnedBusinessesView extends StatelessWidget {
               image: businesses[index].featuredImage,
               title: businesses[index].name,
               id: businesses[index].id,
+              category: null,
               callback: () => AutoRouter.of(context).push(
                   OwnedBusinessDetailsView(businessId: businesses[index].id)),
             );

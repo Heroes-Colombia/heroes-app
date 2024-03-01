@@ -73,6 +73,11 @@ class AppRouter extends $AppRouter {
           transitionsBuilder: TransitionsBuilders.slideLeft,
         ),
         CustomRoute(
+          page: DetailsProfileView.page,
+          path: '/seeProfile',
+          transitionsBuilder: TransitionsBuilders.slideLeft,
+        ),
+        CustomRoute(
           page: UnverifiedUserView.page,
           path: '/unverifiedUser',
           transitionsBuilder: TransitionsBuilders.slideLeft,

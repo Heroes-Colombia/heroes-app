@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:heroes_app/src/domain/models/business_category.dart';
 
 class VerticalCard extends StatelessWidget {
-  const VerticalCard({
-    super.key,
-    required this.image,
-    required this.title,
-    required this.id,
-    this.description,
-    required this.callback,
-  });
+  const VerticalCard(
+      {super.key,
+      required this.image,
+      required this.title,
+      required this.id,
+      this.description,
+      required this.callback,
+      required this.category});
 
   final String id;
   final String image;
   final String title;
   final String? description;
   final Function callback;
+  final BusinessCategory? category;
 
   @override
   Widget build(BuildContext context) {
@@ -32,37 +35,7 @@ class VerticalCard extends StatelessWidget {
           padding: const EdgeInsets.only(left: 12),
           height: 80,
           child: Row(children: [
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurfaceVariant,
-                      fontSize: theme.textTheme.labelLarge!.fontSize,
-                      fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                    ),
-                  ),
-                  description != null
-                      ? Text(
-                          description!,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: TextStyle(
-                            color: theme.colorScheme.onSurfaceVariant
-                                .withOpacity(0.8),
-                            fontSize: theme.textTheme.labelMedium!.fontSize,
-                            fontWeight: theme.textTheme.bodySmall!.fontWeight,
-                          ),
-                        )
-                      : const SizedBox(),
-                ],
-              ),
-            ),
+            content(theme, category),
             const SizedBox(width: 12),
             SizedBox(
               height: 80,
@@ -101,6 +74,63 @@ class VerticalCard extends StatelessWidget {
             ),
           ]),
         ),
+      ),
+    );
+  }
+
+  Widget content(ThemeData theme, BusinessCategory? category) {
+    return Expanded(
+      child: Row(
+        children: [
+          if (category != null)
+            SvgPicture.network(
+              category.imageUrl,
+              width: 24,
+              height: 24,
+            ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurfaceVariant,
+                    fontSize: theme.textTheme.labelLarge!.fontSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                category != null
+                    ? Text(
+                        category.name,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant
+                              .withOpacity(0.8),
+                          fontSize: theme.textTheme.labelMedium!.fontSize,
+                          fontWeight: theme.textTheme.bodySmall!.fontWeight,
+                        ),
+                      )
+                    : Text(
+                        description ?? "",
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant
+                              .withOpacity(0.8),
+                          fontSize: theme.textTheme.labelMedium!.fontSize,
+                          fontWeight: theme.textTheme.bodySmall!.fontWeight,
+                        ),
+                      ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
