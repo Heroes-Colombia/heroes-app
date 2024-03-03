@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/domain/models/business_category.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
@@ -60,10 +61,28 @@ class OwnedBusinessesCubit extends Cubit<OwnedBusinessesState> {
       businesses.addAll(managedBusinesses
           .where((element) => !ownerBusinesses.contains(element)));
 
+      //Then we get the business categories from firestore
+      final businessCategoriesRaw = await locator
+          .get<FirestoreService>()
+          .readAllActiveDocuments(
+              locator.get<AppConstants>().businessCategoryCollection);
+
+      //We convert the raw data to a list of business categories
+      final businessCategories = businessCategoriesRaw
+          .map((e) => BusinessCategory.fromJson(e))
+          .toList();
+
+      //Then we add the first category data to the list of business categories
+      for (var business in businesses) {
+        business.category = businessCategories.firstWhere(
+            (category) => category.id == business.categoryIds.first);
+      }
+
       //We emit the state with the businesses
       emit(state.copyWith(
         status: BusinessViewCubitStatus.success,
         businesses: businesses,
+        businessCategories: businessCategories,
       ));
     } catch (e) {
       emit(state.copyWith(status: BusinessViewCubitStatus.error));

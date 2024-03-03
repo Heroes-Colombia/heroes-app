@@ -80,7 +80,15 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
   CustomScrollView loadingView(ThemeData theme, texts) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(texts["loading-title"])),
+        SliverAppBar.large(
+            title: Text(
+          texts["loading-title"],
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w900,
+            fontSize: theme.textTheme.headlineSmall!.fontSize,
+          ),
+        )),
         SliverFillRemaining(
           child: Center(
             child: CircularProgressIndicator(
@@ -95,7 +103,15 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
   CustomScrollView errorView(ThemeData theme, texts) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(texts["error-title"])),
+        SliverAppBar.large(
+            title: Text(
+          texts["error-title"],
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w900,
+            fontSize: theme.textTheme.headlineSmall!.fontSize,
+          ),
+        )),
         SliverFillRemaining(
           child: Center(
               child: Column(
@@ -127,7 +143,14 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     return CustomScrollView(
       slivers: [
         SliverAppBar.large(
-          title: Text(state.business!.name),
+          title: Text(
+            state.business!.name,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w900,
+              fontSize: theme.textTheme.headlineSmall!.fontSize,
+            ),
+          ),
           actions: [
             IconButton(
               onPressed: () => seeAllBusinessManagers(theme, texts),

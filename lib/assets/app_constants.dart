@@ -449,7 +449,7 @@ class AppConstants {
   };
   final businessDashboardTexts = {
     "ownedBusinessesView": {
-      "title": "Mis comercios",
+      "title": "Sucursales adheridas",
       "loading-title": "Cargando",
       "error-title": "Error",
       "error-content": "Ocurrió un error al cargar los comercios",
