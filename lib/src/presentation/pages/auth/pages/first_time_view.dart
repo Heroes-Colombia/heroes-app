@@ -32,6 +32,8 @@ class FirstTimeView extends StatelessWidget {
                         : 'assets/images/heroes_white_logo.svg',
                     height: 100,
                     width: double.infinity,
+                    colorFilter: ColorFilter.mode(
+                        theme.colorScheme.primary, BlendMode.srcIn),
                   ),
                 ),
                 const SizedBox(height: 12),

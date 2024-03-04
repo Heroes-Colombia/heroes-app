@@ -124,9 +124,9 @@ class FavoritesView extends StatelessWidget {
   Widget businessGrid(
       List<ListableBusiness> businesses, ThemeData theme, texts) {
     return businesses.isNotEmpty
-        ? SliverList(
-            delegate: SliverChildBuilderDelegate(
-            (context, index) {
+        ? SliverList.separated(
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
               return HorizontalCard(
                 isOnGrid: false,
                 image: businesses[index].featuredImage,
@@ -142,8 +142,8 @@ class FavoritesView extends StatelessWidget {
                 },
               );
             },
-            childCount: businesses.length,
-          ))
+            itemCount: businesses.length,
+          )
         : SliverFillRemaining(
             child: Center(
               child: Text(

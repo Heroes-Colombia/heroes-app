@@ -65,7 +65,15 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
       Map<String, String> texts, ThemeData theme, Promotion promotion) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(promotion.title)),
+        SliverAppBar.large(
+            title: Text(
+          promotion.title,
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w900,
+            fontSize: theme.textTheme.headlineSmall!.fontSize,
+          ),
+        )),
         SliverToBoxAdapter(
           child: Container(
             padding:
