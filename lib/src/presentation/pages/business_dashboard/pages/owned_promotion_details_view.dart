@@ -22,13 +22,22 @@ class OwnedPromotionDetailsView extends StatelessWidget {
     var locator = GetIt.instance;
     var texts =
         locator.get<AppConstants>().dashBoardTexts['promotionDetailsView']!;
+    var theme = Theme.of(context);
 
     return Scaffold(
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: CustomScrollView(
           slivers: [
-            SliverAppBar.large(title: Text(promotion.title)),
+            SliverAppBar.large(
+                title: Text(
+              promotion.title,
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w900,
+                fontSize: theme.textTheme.headlineSmall!.fontSize,
+              ),
+            )),
             SliverToBoxAdapter(
               child: Container(
                 padding: const EdgeInsets.only(

@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:flutter/material.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
+import 'package:flutter_svg/svg.dart';
 
 @RoutePage()
 class BusinessDashBoardView extends StatelessWidget {
@@ -19,15 +19,27 @@ class BusinessDashBoardView extends StatelessWidget {
           animationDuration: const Duration(milliseconds: 500),
           selectedIndex: tabsRouter.activeIndex,
           onDestinationSelected: tabsRouter.setActiveIndex,
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Ionicons.business_outline),
-              selectedIcon: Icon(Ionicons.business),
+              icon: SvgPicture.asset(
+                'assets/icon/home.svg',
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
               label: 'Comercios',
             ),
             NavigationDestination(
-              icon: Icon(Ionicons.person_outline),
-              selectedIcon: Icon(Ionicons.person),
+              icon: SvgPicture.asset(
+                'assets/icon/profile.svg',
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
               label: 'Perfil',
             ),
           ],

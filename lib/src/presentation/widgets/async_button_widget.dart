@@ -32,7 +32,10 @@ class _AsyncButtonWidgetState extends State<AsyncButtonWidget> {
                 strokeWidth: 2.0,
               ),
             )
-          : Text(widget.buttonText),
+          : Text(
+              widget.buttonText,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
     );
   }
 

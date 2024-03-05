@@ -30,7 +30,7 @@ class FavoritesView extends StatelessWidget {
             switch (state.status) {
               case BusinessViewCubitStatus.loading:
                 getFavouriteBusinesses(context);
-                return loadingView(texts);
+                return loadingView(texts, theme);
               case BusinessViewCubitStatus.success:
                 return succesView(texts, theme, state.businesses);
               default:
@@ -43,11 +43,18 @@ class FavoritesView extends StatelessWidget {
   }
 
   //View state methods
-  Widget loadingView(texts) {
+  Widget loadingView(texts, theme) {
     return CustomScrollView(
       slivers: [
         SliverAppBar.large(
-          title: Text(texts["title"]!),
+          title: Text(
+            texts["title"]!,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w900,
+              fontSize: theme.textTheme.headlineSmall!.fontSize,
+            ),
+          ),
         ),
         const SliverFillRemaining(
           child: Center(
@@ -61,7 +68,15 @@ class FavoritesView extends StatelessWidget {
   Widget errorView(texts, theme, context) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(texts["error-title"])),
+        SliverAppBar.large(
+            title: Text(
+          texts["error-title"],
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w900,
+            fontSize: theme.textTheme.headlineSmall!.fontSize,
+          ),
+        )),
         SliverFillRemaining(
           child: Center(
               child: Column(
@@ -88,7 +103,15 @@ class FavoritesView extends StatelessWidget {
   Widget succesView(texts, theme, List<ListableBusiness> businesses) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(title: Text(texts["title"]!)),
+        SliverAppBar.large(
+            title: Text(
+          texts["title"]!,
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w900,
+            fontSize: theme.textTheme.headlineSmall!.fontSize,
+          ),
+        )),
         SliverPadding(
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
           sliver: businessGrid(businesses, theme, texts),
@@ -101,21 +124,15 @@ class FavoritesView extends StatelessWidget {
   Widget businessGrid(
       List<ListableBusiness> businesses, ThemeData theme, texts) {
     return businesses.isNotEmpty
-        ? SliverGrid.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              mainAxisExtent: 174,
-            ),
-            itemCount: businesses.length,
+        ? SliverList.separated(
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               return HorizontalCard(
-                isOnGrid: true,
+                isOnGrid: false,
                 image: businesses[index].featuredImage,
                 title: businesses[index].name,
                 id: businesses[index].id,
+                category: businesses[index].category,
                 callback: () {
                   AutoRouter.of(context).push(
                     BusinessDetailsView(
@@ -125,6 +142,7 @@ class FavoritesView extends StatelessWidget {
                 },
               );
             },
+            itemCount: businesses.length,
           )
         : SliverFillRemaining(
             child: Center(

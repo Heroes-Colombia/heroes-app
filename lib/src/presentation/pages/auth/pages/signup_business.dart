@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
@@ -35,6 +36,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
   @override
   Widget build(BuildContext context) {
     final texts = locator.get<AppConstants>().authTexts['signupBusinessView']!;
+    var theme = Theme.of(context);
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: FormBuilder(
@@ -42,10 +44,33 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
         child: CustomScrollView(
           slivers: [
             SliverAppBar.large(
-              title: Text(texts['title']!),
-              pinned: true,
-              floating: true,
-              snap: true,
+              title: Text(
+                texts['title']!,
+                style: TextStyle(
+                  color: theme.colorScheme.onBackground,
+                  fontSize: theme.textTheme.bodyLarge!.fontSize,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Hero(
+                tag: "logo",
+                child: SvgPicture.asset(
+                  theme.brightness == Brightness.dark
+                      ? 'assets/images/heroes_black_logo.svg'
+                      : 'assets/images/heroes_white_logo.svg',
+                  height: 50,
+                  width: double.infinity,
+                  colorFilter: ColorFilter.mode(
+                    Theme.of(context).colorScheme.primary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 40),
             ),
             userSwitch(texts),
             _isCreatingANewBusiness

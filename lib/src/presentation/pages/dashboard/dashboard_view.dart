@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:flutter/material.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:get_it/get_it.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_svg/svg.dart';
 
 @RoutePage()
 class DashBoardView extends StatelessWidget {
@@ -22,23 +22,43 @@ class DashBoardView extends StatelessWidget {
       ],
       bottomNavigationBuilder: (context, tabsRouter) {
         return NavigationBar(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          elevation: 0,
           animationDuration: const Duration(milliseconds: 500),
           selectedIndex: tabsRouter.activeIndex,
           onDestinationSelected: tabsRouter.setActiveIndex,
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Ionicons.search_outline),
-              selectedIcon: Icon(Ionicons.search),
-              label: 'Buscar',
+              icon: SvgPicture.asset(
+                'assets/icon/home.svg',
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
+              label: 'Inicio',
             ),
             NavigationDestination(
-              icon: Icon(Ionicons.heart_outline),
-              selectedIcon: Icon(Ionicons.heart),
+              icon: SvgPicture.asset(
+                'assets/icon/favourite.svg',
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
               label: 'Favoritos',
             ),
             NavigationDestination(
-              icon: Icon(Ionicons.person_outline),
-              selectedIcon: Icon(Ionicons.person),
+              icon: SvgPicture.asset(
+                'assets/icon/profile.svg',
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
               label: 'Perfil',
             ),
           ],

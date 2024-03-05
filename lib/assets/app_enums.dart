@@ -1,9 +1,3 @@
-enum BusinessCategories {
-  beauty,
-  clothing,
-  food,
-}
-
 enum UserPermissions {
   admin, //Can do everything
   beneficiary, //Can only see the promotions

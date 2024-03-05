@@ -23,7 +23,12 @@ class RestorePassword extends StatelessWidget {
       child: CustomScrollView(
         slivers: [
           SliverAppBar.large(
-            title: Text(texts['title']!),
+            title: Text(texts['title']!,
+                style: TextStyle(
+                  color: theme.colorScheme.onBackground,
+                  fontSize: theme.textTheme.bodyLarge!.fontSize,
+                  fontWeight: FontWeight.bold,
+                )),
             pinned: true,
             floating: true,
             snap: true,
@@ -35,9 +40,18 @@ class RestorePassword extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Text(
+                      texts['sub-title']!,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                          fontSize: theme.textTheme.labelLarge?.fontSize,
+                          fontWeight: FontWeight.w500,
+                          color: theme.colorScheme.onBackground),
+                    ),
+                    const SizedBox(height: 12),
                     EmailInputWidget(
                         keyName: 'restore_password_email',
                         name: 'email',

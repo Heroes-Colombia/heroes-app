@@ -6,6 +6,7 @@ class AppConstants {
   final String advertisementCollection = 'advertisements';
   final String paymentMethodsCollection = 'payment_methods';
   final String transactionsCollection = 'business_transactions';
+  final String businessCategoryCollection = 'business_categories';
 
   //Firebase Storage
   final String userIdentifications = "identifications";
@@ -202,13 +203,15 @@ class AppConstants {
   };
   final authTexts = {
     'welcomeView': {
-      'welcome': '¡Bienvenido, Héroe!',
+      'welcome':
+          'La aplicación que pretende reconocer, apreciar y acompañar a nuestros heroes de todos los días.',
       'login': 'Iniciar sesión',
       'register': 'Registrarse',
       'registerAsBusiness': 'Registrarse como comerciante',
     },
     'loginView': {
       'title': 'Iniciar sesión',
+      "sub-title": "¡Qué bueno tenerte denuevo Héroe!",
       'forgotPassword': 'Olvidé mi contraseña',
       'email-label': 'Correo electrónico',
       'email-hint': 'Ingresa tu correo electrónico',
@@ -243,7 +246,7 @@ class AppConstants {
       'first-lastname-hint': 'Ingresa tu primer apellido',
       'second-lastname-label': 'Segundo apellido',
       'second-lastname-hint': 'Ingresa tu segundo apellido',
-      'rank-label': 'Rango',
+      'rank-label': 'Fuerza a la que pertenece',
       'rank-hint': 'Ingresa tu rango',
       'password-label': 'Contraseña',
       'password-hint': 'Ingresa tu contraseña',
@@ -300,7 +303,8 @@ class AppConstants {
       "registerSuccess-button": "Aceptar",
     },
     'restorePasswordView': {
-      'title': '¿Olvidaste tu contraseña?',
+      'title': 'Recuperar contraseña',
+      "sub-title": "Por favor ingresa el correo electrónico de tu cuenta.",
       'email-label': 'Correo electrónico',
       'email-hint': 'Ingresa tu correo electrónico',
       'email-validator': 'Por favor ingresa un correo electrónico válido',
@@ -316,6 +320,7 @@ class AppConstants {
       "search-title": "¿Qué comercio buscas?",
       "nearPromotions": "Comercios cercanos",
       "featuredBusiness": "Comercios destacados",
+      "categories": "Categorías",
       "business": "Comercios",
       "seeAll": "Ver todos",
       "search-business": "Buscar comercio",
@@ -326,7 +331,9 @@ class AppConstants {
       "loading-title": "Cargando",
       "error-title": "Error",
       "error-content": "Ocurrió un error al cargar los comercios",
-      "error-button": "Reintentar"
+      "error-button": "Reintentar",
+      "all-categories": "Todas las categorías",
+      "empty-content": "No se encontraron comercios",
     },
     "favouriteView": {
       "title": "Favoritos",
@@ -341,10 +348,12 @@ class AppConstants {
       "loading-content": "Cargando información del comercio",
       "promotions-title": "Promociones",
       "comments-title": "Comentarios",
+      "information-title": "Información",
+      "address-title": "Dirección",
       "comments-button": "Ver todos",
       "add-comment-title":
-          "Te gustaría compartir tu experiencia con este negocio?",
-      "add-comment-button": "Agregar review",
+          "¿Te gustaría compartir tu experiencia con este negocio?",
+      "add-comment-button": "Deja tu comentario",
       "empty-comment-title":
           "Este comercio aún no cuenta con comentarios activas, ¿Has visitado este comercio, te gustaría compartir tu experiencia con este negocio?",
       "navigation-title": "Navegar al comercio",
@@ -370,9 +379,9 @@ class AppConstants {
     'profileView': {
       'title': 'Ajustes',
       'account': 'Cuenta',
-      'edit-profile': 'Editar perfil',
+      'edit-profile': 'Ver perfil',
       'logout': 'Cerrar sesión',
-      'settings': 'Ajustes',
+      'settings': 'Aplicación',
       'dark-mode': 'Tema oscuro',
       'light-mode': 'Tema claro',
       'system-mode': 'Tema del sistema',
@@ -395,7 +404,31 @@ class AppConstants {
       'first-lastname-hint': 'Ingresa tu primer apellido',
       'second-lastname-label': 'Segundo apellido',
       'second-lastname-hint': 'Ingresa tu segundo apellido',
-      'rank-label': 'Rango',
+      'rank-label': 'Fuerza a la que pertenece',
+      'rank-hint': 'Ingresa tu rango',
+      'savechanges-button': 'Guardar cambios',
+      'error-content': 'Hubo un error al guardar los cambios',
+      'success-content': 'Información actualizada',
+      'empty-string': 'Este campo no puede estar vacío',
+    },
+    'detailsProfileView': {
+      'title': 'Detalles del perfil',
+      'edit-profile': 'Editar',
+      'error-title': 'Error',
+      'email-label': 'Correo electrónico',
+      'email-hint': 'Ingresa tu correo electrónico',
+      'email-validator': 'Por favor ingresa un correo electrónico válido',
+      'fullname-label': 'Nombre Completo',
+      'firstname-hint': 'Ingresa tu nombre',
+      'secondname-label': 'Segundo nombre',
+      'secondname-hint': 'Ingresa tu segundo nombre',
+      'first-lastname-label': 'Primer apellido',
+      'first-lastname-hint': 'Ingresa tu primer apellido',
+      'second-lastname-label': 'Segundo apellido',
+      'second-lastname-hint': 'Ingresa tu segundo apellido',
+      'rank-label': 'Fuerza a la que pertenece',
+      'identification-label': 'Número de identificación',
+      'licence-label': 'Carnet',
       'rank-hint': 'Ingresa tu rango',
       'savechanges-button': 'Guardar cambios',
       'error-content': 'Hubo un error al guardar los cambios',
@@ -416,7 +449,7 @@ class AppConstants {
   };
   final businessDashboardTexts = {
     "ownedBusinessesView": {
-      "title": "Mis comercios",
+      "title": "Sucursales adheridas",
       "loading-title": "Cargando",
       "error-title": "Error",
       "error-content": "Ocurrió un error al cargar los comercios",

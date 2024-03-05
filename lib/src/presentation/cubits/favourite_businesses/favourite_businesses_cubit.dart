@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/domain/models/business_category.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
@@ -22,6 +23,9 @@ class FavouriteBusinessesCubit extends Cubit<FavouriteBusinessesState> {
   Future<void> getFavouriteBusinesses() async {
     try {
       final collectionName = locator.get<AppConstants>().businessCollection;
+      final categoriesCollectionName =
+          locator.get<AppConstants>().businessCategoryCollection;
+
       final user = await locator.get<AuthService>().getUser();
 
       final favouriteBusinesses = user!.favouriteBusinesses;
@@ -34,6 +38,9 @@ class FavouriteBusinessesCubit extends Cubit<FavouriteBusinessesState> {
         return;
       }
 
+      final rawBusinessCategories = await locator<FirestoreService>()
+          .readAllActiveDocuments(categoriesCollectionName);
+
       final rawBusinesses = await locator<FirestoreService>()
           .readActiveDocumentsByDocumentIDs(
               collectionName, favouriteBusinesses);
@@ -41,9 +48,20 @@ class FavouriteBusinessesCubit extends Cubit<FavouriteBusinessesState> {
       final businesses =
           rawBusinesses.map((e) => ListableBusiness.fromJson(e)).toList();
 
+      final categories = rawBusinessCategories
+          .map((e) => BusinessCategory.fromJson(e))
+          .toList();
+
+      for (var business in businesses) {
+        business.category = categories.firstWhere(
+          (element) => element.id == business.categoryIds.first,
+        );
+      }
+
       emit(state.copyWith(
         status: BusinessViewCubitStatus.success,
         businesses: businesses,
+        categories: categories,
       ));
     } catch (e) {
       emit(state.copyWith(status: BusinessViewCubitStatus.error));

@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/domain/models/business_category.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 
@@ -50,10 +51,36 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       final normalBusiness =
           normalBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
 
-      emit(state.copyWith(
+      //Then we get the business categories from firestore
+      final businessCategoriesRaw = await locator
+          .get<FirestoreService>()
+          .readAllActiveDocuments(
+              locator.get<AppConstants>().businessCategoryCollection);
+
+      //We convert the raw data to a list of business categories
+      final businessCategories = businessCategoriesRaw
+          .map((e) => BusinessCategory.fromJson(e))
+          .toList();
+
+      //Then we add the first category data to the list of business categories
+      for (var business in normalBusiness) {
+        business.category = businessCategories.firstWhere(
+            (category) => category.id == business.categoryIds.first);
+      }
+
+      for (var business in featuredBusiness) {
+        business.category = businessCategories.firstWhere(
+            (category) => category.id == business.categoryIds.first);
+      }
+
+      emit(
+        state.copyWith(
           businessHomeViewState: BusinessViewCubitStatus.success,
           featuredBusinesses: featuredBusiness,
-          normalBusinesses: normalBusiness));
+          normalBusinesses: normalBusiness,
+          businessCategories: businessCategories,
+        ),
+      );
     } catch (e) {
       log('Error: $e, Function: getRequiredData, File: business_home_view_cubit.dart');
       emit(

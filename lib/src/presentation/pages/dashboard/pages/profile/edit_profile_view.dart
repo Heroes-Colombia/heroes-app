@@ -52,7 +52,14 @@ class EditProfileView extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         SliverAppBar.large(
-          title: Text(texts['title']!),
+          title: Text(
+            texts['title']!,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w900,
+              fontSize: theme.textTheme.headlineSmall!.fontSize,
+            ),
+          ),
         ),
         SliverToBoxAdapter(
           child: Container(
@@ -158,7 +165,14 @@ class EditProfileView extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         SliverAppBar.large(
-          title: Text(texts['title']!),
+          title: Text(
+            texts['title']!,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w900,
+              fontSize: theme.textTheme.headlineSmall!.fontSize,
+            ),
+          ),
         ),
         const SliverFillRemaining(
           child: Center(child: CircularProgressIndicator()),
@@ -172,7 +186,14 @@ class EditProfileView extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         SliverAppBar.large(
-          title: Text(texts['title']!),
+          title: Text(
+            texts['title']!,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w900,
+              fontSize: theme.textTheme.headlineSmall!.fontSize,
+            ),
+          ),
         ),
       ],
     );
@@ -183,7 +204,14 @@ class EditProfileView extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         SliverAppBar.large(
-          title: Text(texts['error-title']!),
+          title: Text(
+            texts['error-title']!,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w900,
+              fontSize: theme.textTheme.headlineSmall!.fontSize,
+            ),
+          ),
         ),
         const SliverFillRemaining(
           child: Center(child: CircularProgressIndicator()),
