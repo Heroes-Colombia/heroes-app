@@ -372,8 +372,10 @@ class AppConstants {
           "¡Reseña creada! Espera a que sea aprobada para que sea visible",
     },
     "promotionDetailsView": {
+      "title": "Detalles de la promoción",
       "description-title": "Descripción",
       "instructions-title": "Instrucciones",
+      "discount-title": "Descuento disponible",
       "expiration-title": "Fecha de expiración",
     },
     'profileView': {

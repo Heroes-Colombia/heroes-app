@@ -162,7 +162,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                 Expanded(
                   child: TabBarView(
                     children: [
-                      promotionsList(state.promotions, texts),
+                      promotionsList(state.promotions, texts, theme),
                       informationList(state.business, theme, texts),
                       allCommentsBottomModalBody()
                     ],
@@ -281,26 +281,16 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     );
   }
 
-  Widget promotionsList(List<Promotion> promotions, texts) {
+  Widget promotionsList(List<Promotion> promotions, texts, theme) {
     return promotions.isNotEmpty
-        ? ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            separatorBuilder: (context, index) {
-              return const SizedBox(height: 16);
-            },
-            itemBuilder: (context, index) {
-              return VerticalCard(
-                  image: promotions[index].featuredImage,
-                  title: promotions[index].title,
-                  id: promotions[index].businessId,
-                  description: promotions[index].description,
-                  category: null,
-                  callback: () {
-                    AutoRouter.of(context).push(PromotionDetailsView(
-                        promotion: promotions[index], promotionId: null));
-                  });
-            },
-            itemCount: promotions.length,
+        ? GridView.count(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            children: promotions
+                .map((promotion) => promotionCard(promotion, theme))
+                .toList(),
           )
         : ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -314,6 +304,91 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
             ),
             itemCount: 1,
           );
+  }
+
+  GestureDetector promotionCard(Promotion promotion, theme) {
+    return GestureDetector(
+      onTap: () => AutoRouter.of(context).push(
+        PromotionDetailsView(
+          promotion: promotion,
+          promotionId: null,
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Image.network(
+              promotion.featuredImage,
+              height: 108,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return SizedBox(
+                  height: 108,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  height: 108,
+                  "assets/images/file-not-found.png",
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(
+                  promotion.title,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: theme.textTheme.labelLarge!.fontSize,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                "${promotion.percentage}%",
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: theme.textTheme.labelLarge!.fontSize,
+                    fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Expanded(
+            child: Text(
+              promotion.description,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: theme.textTheme.labelLarge!.fontSize,
+                  fontWeight: FontWeight.normal),
+            ),
+          ),
+        ]),
+      ),
+    );
   }
 
   Widget informationList(Business? business, ThemeData theme, texts) {
