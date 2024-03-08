@@ -252,7 +252,8 @@ class AppConstants {
       'password-hint': 'Ingresa tu contraseña',
       'password-validator': 'Por favor ingresa tu contraseña',
       'signupButton': 'Registrarse',
-      'signupErrorTitle': 'Error al registrarse',
+      'signupErrorTitle':
+          'Error. Asegúrate de llenar todos los campos y no utilizar un correo electrónico ya registrado',
       "genericValidator": "Este campo no puede estar vacío",
       "registerSuccess-title": "¡Registro exitoso!",
       "registerSuccess-body":
@@ -294,6 +295,7 @@ class AppConstants {
       'password-validator': 'Por favor ingresa tu contraseña',
       'signupButton': 'Registrarse',
       'signupErrorTitle': 'Error al registrarse',
+      'badLocation': 'Asegurate de ingresar una ubicación válida',
       "registerAsBusiness": "¿Registrar un nuevo comercio?",
       "personalInfo": "Información del administrador o responsable",
       "genericValidator": "Este campo no puede estar vacío",

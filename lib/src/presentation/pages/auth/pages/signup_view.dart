@@ -213,7 +213,9 @@ class SignUpView extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: theme.colorScheme.primary),
+              border: Border.all(
+                  color:
+                      field.hasError ? Colors.red : theme.colorScheme.primary),
             ),
             padding: const EdgeInsets.symmetric(
               horizontal: 12.0,
@@ -236,7 +238,8 @@ class SignUpView extends StatelessWidget {
                     field.isValid
                         ? Ionicons.camera_reverse_outline
                         : Ionicons.camera_outline,
-                    color: theme.colorScheme.primary,
+                    color:
+                        field.hasError ? Colors.red : theme.colorScheme.primary,
                   )
                 ]),
           ),

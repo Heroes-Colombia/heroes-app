@@ -332,7 +332,9 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: theme.colorScheme.primary),
+              border: Border.all(
+                  color:
+                      field.hasError ? Colors.red : theme.colorScheme.primary),
             ),
             padding: const EdgeInsets.symmetric(
               horizontal: 12.0,
@@ -355,7 +357,8 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
                     field.value != null
                         ? Ionicons.camera_reverse_outline
                         : Ionicons.camera_outline,
-                    color: theme.colorScheme.primary,
+                    color:
+                        field.hasError ? Colors.red : theme.colorScheme.primary,
                   )
                 ]),
           ),
@@ -397,7 +400,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
       if (location == null) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
+            .showSnackBar(SnackBar(content: Text(texts['badLocation']!)));
         return;
       }
 
