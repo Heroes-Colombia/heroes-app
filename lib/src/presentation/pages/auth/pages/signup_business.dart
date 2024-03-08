@@ -154,8 +154,6 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
                     child: FormBuilderTextField(
                   name: 'second_name',
                   key: const Key('_register_business_second_name'),
-                  validator: (value) => validateEmptyString(value, texts),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: InputDecoration(
                     labelText: texts['secondname-label']!,
                     hintText: texts['secondname-hint']!,
@@ -184,8 +182,6 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
                 Expanded(
                     child: FormBuilderTextField(
                   name: 'second_last_name',
-                  validator: (value) => validateEmptyString(value, texts),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: InputDecoration(
                     labelText: texts['second-lastname-label']!,
                     hintText: texts['second-lastname-hint']!,
