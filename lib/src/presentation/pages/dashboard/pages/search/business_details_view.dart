@@ -325,13 +325,13 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
             borderRadius: BorderRadius.circular(4),
             child: Image.network(
               promotion.featuredImage,
-              height: 108,
+              height: 96,
               width: double.infinity,
               fit: BoxFit.cover,
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child;
                 return SizedBox(
-                  height: 108,
+                  height: 96,
                   child: Center(
                     child: CircularProgressIndicator(
                       value: loadingProgress.expectedTotalBytes != null
