@@ -357,7 +357,7 @@ class AppConstants {
           "¿Te gustaría compartir tu experiencia con este negocio?",
       "add-comment-button": "Deja tu comentario",
       "empty-comment-title":
-          "Este comercio aún no cuenta con comentarios activas, ¿Has visitado este comercio, te gustaría compartir tu experiencia con este negocio?",
+          "Este comercio aún no cuenta con comentarios activos, ¿Has visitado este comercio, te gustaría compartir tu experiencia con este negocio?",
       "navigation-title": "Navegar al comercio",
       "error-title": "Error",
       "error-content": "Ocurrió un error al cargar la información del comercio",
@@ -464,7 +464,14 @@ class AppConstants {
       "loading-title": "Cargando",
       "loading-content": "Cargando información del comercio",
       "promotions-title": "Promociones",
+      "comments-title": "Comentarios",
+      "information-title": "Información",
       "add-promotion-title": "Agregar promoción",
+      "empty-comment-title":
+          "Este comercio aún no cuenta con comentarios activos, cuando los usuarios agreguen comentarios aquí podrás verlos.",
+      "raiting": "Calificación",
+      "address-title": "Dirección",
+      "no-managers": "No hay administradores asignados",
       "error-title": "Error",
       "error-content": "Ocurrió un error al cargar la información del comercio",
       "error-button": "Reintentar",

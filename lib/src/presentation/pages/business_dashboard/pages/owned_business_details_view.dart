@@ -141,6 +141,7 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     OwnedBusinessDetailsState state,
   ) {
     return CustomScrollView(
+      physics: const NeverScrollableScrollPhysics(),
       slivers: [
         SliverAppBar.large(
           title: Text(
@@ -157,14 +158,6 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               icon: const Icon(Ionicons.people_outline),
             ),
             IconButton(
-              onPressed: () => seeAllComments(theme, texts),
-              icon: const Icon(Ionicons.chatbubbles_outline),
-            ),
-            IconButton(
-              onPressed: () => seeAddLocationToBusiness(theme, texts),
-              icon: const Icon(Ionicons.location_outline),
-            ),
-            IconButton(
               onPressed: () => seeAllPaymenthMethods(theme, texts),
               icon: const Icon(
                 Ionicons.card_outline,
@@ -177,9 +170,32 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
           theme,
           texts,
         ),
-        sectionTitle(texts, theme),
-        promotionsList(state.promotions, texts),
-        const SliverToBoxAdapter(child: SizedBox(height: 16))
+        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+        SliverFillRemaining(
+          child: DefaultTabController(
+            length: 3,
+            child: Column(
+              children: [
+                TabBar(
+                  tabs: [
+                    Tab(text: texts["promotions-title"] ?? ""),
+                    Tab(text: texts["information-title"] ?? ""),
+                    Tab(text: texts["comments-title"] ?? ""),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      promotionsList(state.promotions, texts, theme),
+                      informationList(state.business, theme, texts),
+                      allCommentsBottomModalBody(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -304,37 +320,29 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         title: Text(
-          texts["comments-title"],
+          texts["comments-title"] ?? "",
           style: theme.textTheme.labelLarge,
         ),
         onTap: () => seeAllComments(theme, texts),
-        trailing: Text(texts["comments-button"]!),
+        trailing: Text(texts["comments-button"] ?? ""),
       ),
     );
   }
 
-  Widget promotionsList(List<Promotion> promotions, texts) {
+  Widget promotionsList(List<Promotion> promotions, texts, ThemeData theme) {
     return promotions.isNotEmpty
-        ? SliverList.separated(
-            separatorBuilder: (context, index) {
-              return const SizedBox(height: 16);
-            },
-            itemBuilder: (context, index) {
-              return VerticalCard(
-                  image: promotions[index].featuredImage,
-                  title: promotions[index].title,
-                  id: promotions[index].businessId,
-                  description: promotions[index].description,
-                  category: null,
-                  callback: () {
-                    AutoRouter.of(context).push(OwnedPromotionDetailsView(
-                        promotion: promotions[index]));
-                  });
-            },
-            itemCount: promotions.length,
+        ? GridView.count(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            children: promotions
+                .map((promotion) => promotionCard(promotion, theme))
+                .toList(),
           )
-        : SliverToBoxAdapter(
-            child: VerticalCard(
+        : ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            itemBuilder: (context, index) => VerticalCard(
               image: "",
               title: texts["empty-promotions-title"]!,
               description: texts["empty-promotions"]!,
@@ -342,13 +350,136 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               category: null,
               callback: () {},
             ),
+            itemCount: 1,
           );
+  }
+
+  GestureDetector promotionCard(Promotion promotion, theme) {
+    return GestureDetector(
+      onTap: () => AutoRouter.of(context)
+          .push(OwnedPromotionDetailsView(promotion: promotion)),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Image.network(
+              promotion.featuredImage,
+              height: 90,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return SizedBox(
+                  height: 90,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  height: 108,
+                  "assets/images/file-not-found.png",
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(
+                  promotion.title,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: theme.textTheme.labelLarge!.fontSize,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                "${promotion.percentage}%",
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: theme.textTheme.labelLarge!.fontSize,
+                    fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Expanded(
+            child: Text(
+              promotion.description,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: theme.textTheme.labelLarge!.fontSize,
+                  fontWeight: FontWeight.normal),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget informationList(Business? business, ThemeData theme, texts) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      itemCount: 1,
+      itemBuilder: (context, index) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              texts["address-title"]!,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: theme.textTheme.labelLarge!.fontSize),
+            ),
+            const SizedBox(height: 4),
+            Text(business!.address),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+              ),
+              height: 200,
+              child: InkWell(
+                onTap: () {
+                  seeAddLocationToBusiness(theme, texts);
+                },
+                child: MapPreviewWidget(
+                  borderRadius: 20,
+                  latitude: business.location.latitude,
+                  longitude: business.location.longitude,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget allCommentsBottomModalBody() {
     var theme = Theme.of(context);
     var locator = GetIt.instance;
-    var texts = locator<AppConstants>().dashBoardTexts["businessDetailsView"]!;
+    var texts = locator<AppConstants>()
+        .businessDashboardTexts["ownedBusinessDetailsView"]!;
 
     return BlocBuilder<OwnedBusinessDetailsCubit, OwnedBusinessDetailsState>(
       builder: (context, state) {
@@ -402,7 +533,23 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                     return const SizedBox(height: 16);
                   },
                   itemCount: state.allUserReviews.length)
-              : const Center(child: CircularProgressIndicator()),
+              : ListView.builder(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                  itemBuilder: (context, index) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(texts["empty-comment-title"]!,
+                            style: theme.textTheme.labelLarge,
+                            textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                      ],
+                    );
+                  },
+                  itemCount: 1,
+                ),
         );
       },
     );
@@ -497,7 +644,7 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                           return const SizedBox(height: 16);
                         },
                         itemCount: state.allManagers.length)
-                    : const Center(child: CircularProgressIndicator()),
+                    : Center(child: Text(texts["no-managers"]!)),
               ),
               const SizedBox(height: 4),
               AsyncButtonWidget(
@@ -1119,117 +1266,125 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
             title: Text(texts["add-payment-button"]!),
             content: FormBuilder(
               key: newPaymentMethodFormKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FormBuilderTextField(
-                    name: "card_holder",
-                    //MIn 5 max 128
-                    validator: (value) => GetIt.instance<AppMethods>()
-                        .cardHolderNameValidator(value, texts["empty-value"]!),
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    maxLength: 128,
-                    decoration: InputDecoration(
-                      labelText: texts["card-holder-label"]!,
-                      hintText: texts["card-holder-hint"]!,
-                      border: const OutlineInputBorder(),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FormBuilderTextField(
+                      name: "card_holder",
+                      //MIn 5 max 128
+                      validator: (value) => GetIt.instance<AppMethods>()
+                          .cardHolderNameValidator(
+                              value, texts["empty-value"]!),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      maxLength: 128,
+                      decoration: InputDecoration(
+                        labelText: texts["card-holder-label"]!,
+                        hintText: texts["card-holder-hint"]!,
+                        border: const OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  FormBuilderTextField(
-                    name: "number",
-                    maxLength: 16,
-                    keyboardType: TextInputType.number,
-                    validator: (value) => GetIt.instance<AppMethods>()
-                        .emptyStringValidator(value, texts["empty-value"]!),
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    decoration: InputDecoration(
-                      labelText: texts["card-number-label"]!,
-                      hintText: texts["card-number-hint"]!,
-                      border: const OutlineInputBorder(),
+                    const SizedBox(height: 4),
+                    FormBuilderTextField(
+                      name: "number",
+                      maxLength: 16,
+                      keyboardType: TextInputType.number,
+                      validator: (value) => GetIt.instance<AppMethods>()
+                          .emptyStringValidator(value, texts["empty-value"]!),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      decoration: InputDecoration(
+                        labelText: texts["card-number-label"]!,
+                        hintText: texts["card-number-hint"]!,
+                        border: const OutlineInputBorder(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FormBuilderTextField(
-                          name: "exp_year",
-                          maxLength: 2,
-                          keyboardType: TextInputType.datetime,
-                          validator: (value) => GetIt.instance<AppMethods>()
-                              .cardYearValidator(value, texts["empty-value"]!),
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          decoration: InputDecoration(
-                            labelText: texts["card-expiration-year-label"]!,
-                            hintText: texts["card-expiration-year-hint"]!,
-                            border: const OutlineInputBorder(),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FormBuilderTextField(
+                            maxLength: 2,
+                            name: "exp_month",
+                            keyboardType: TextInputType.datetime,
+                            validator: (value) => GetIt.instance<AppMethods>()
+                                .cardMonthValidator(
+                                    value, texts["empty-value"]!),
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            decoration: InputDecoration(
+                              labelText: texts["card-expiration-month-label"]!,
+                              hintText: texts["card-expiration-month-hint"]!,
+                              border: const OutlineInputBorder(),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: FormBuilderTextField(
-                          maxLength: 2,
-                          name: "exp_month",
-                          keyboardType: TextInputType.datetime,
-                          validator: (value) => GetIt.instance<AppMethods>()
-                              .cardMonthValidator(value, texts["empty-value"]!),
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          decoration: InputDecoration(
-                            labelText: texts["card-expiration-month-label"]!,
-                            hintText: texts["card-expiration-month-hint"]!,
-                            border: const OutlineInputBorder(),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FormBuilderTextField(
+                            name: "exp_year",
+                            maxLength: 2,
+                            keyboardType: TextInputType.datetime,
+                            validator: (value) => GetIt.instance<AppMethods>()
+                                .cardYearValidator(
+                                    value, texts["empty-value"]!),
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            decoration: InputDecoration(
+                              labelText: texts["card-expiration-year-label"]!,
+                              hintText: texts["card-expiration-year-hint"]!,
+                              border: const OutlineInputBorder(),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  FormBuilderTextField(
-                    name: "cvc",
-                    maxLength: 3,
-                    keyboardType: TextInputType.number,
-                    validator: (value) => GetIt.instance<AppMethods>()
-                        .cvvValidator(value, texts["empty-value"]!),
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
-                    decoration: InputDecoration(
-                      labelText: texts["card-cvv-label"]!,
-                      hintText: texts["card-cvv-hint"]!,
-                      border: const OutlineInputBorder(),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Checkbox(
-                        value: context
-                            .read<OwnedBusinessDetailsCubit>()
-                            .state
-                            .userAcceptedTerms,
-                        onChanged: (value) => context
-                            .read<OwnedBusinessDetailsCubit>()
-                            .changeUserAcceptedTerms(value!),
+                    const SizedBox(height: 4),
+                    FormBuilderTextField(
+                      name: "cvc",
+                      maxLength: 3,
+                      keyboardType: TextInputType.number,
+                      validator: (value) => GetIt.instance<AppMethods>()
+                          .cvvValidator(value, texts["empty-value"]!),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      decoration: InputDecoration(
+                        labelText: texts["card-cvv-label"]!,
+                        hintText: texts["card-cvv-hint"]!,
+                        border: const OutlineInputBorder(),
                       ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => launchUrl(Uri.parse(context
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Checkbox(
+                          value: context
                               .read<OwnedBusinessDetailsCubit>()
                               .state
-                              .acceptanceData["permalink"])),
-                          child: Text(
-                            texts["accept-terms"]!,
-                            style: TextStyle(
-                                fontSize: theme.textTheme.labelSmall!.fontSize),
+                              .userAcceptedTerms,
+                          onChanged: (value) => context
+                              .read<OwnedBusinessDetailsCubit>()
+                              .changeUserAcceptedTerms(value!),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => launchUrl(Uri.parse(context
+                                .read<OwnedBusinessDetailsCubit>()
+                                .state
+                                .acceptanceData["permalink"])),
+                            child: Text(
+                              texts["accept-terms"]!,
+                              style: TextStyle(
+                                  fontSize:
+                                      theme.textTheme.labelSmall!.fontSize),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  )
-                ],
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
             actions: [
@@ -1362,6 +1517,15 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                             Center(child: Text(texts["no-payment-methods"]!)),
                       ),
                 actions: [
+                  state.allPaymentMethods.isEmpty
+                      ? TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            seeAllPaymenthMethods(Theme.of(context), texts);
+                          },
+                          child: Text(texts["add-payment-button"]!),
+                        )
+                      : const SizedBox.shrink(),
                   state.selectedPaymentMethod != ""
                       ? AsyncButtonWidget(
                           buttonText: texts["create-subscription"]!,

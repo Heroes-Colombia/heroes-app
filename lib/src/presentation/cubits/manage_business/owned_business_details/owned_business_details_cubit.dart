@@ -663,6 +663,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       return true;
     } catch (e) {
+      log('Error: $e, Function: addManagerToBusiness, File: owned_business_details_cubit.dart');
       return false;
     }
   }
