@@ -216,7 +216,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 OutlinedButton(
-                  onPressed: () => navigateToBusiness(),
+                  onPressed: () => navigateToBusiness(context, texts),
                   child: Text(texts["navigation-title"]),
                 ),
                 const SizedBox(width: 8),
@@ -288,8 +288,10 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
             crossAxisCount: 2,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
+            childAspectRatio: 0.77,
             children: promotions
-                .map((promotion) => promotionCard(promotion, theme))
+                .where((element) => element.expiredAt.isAfter(DateTime.now()))
+                .map((promotion) => promotionCard(promotion, theme, texts))
                 .toList(),
           )
         : ListView.builder(
@@ -306,7 +308,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
           );
   }
 
-  GestureDetector promotionCard(Promotion promotion, theme) {
+  GestureDetector promotionCard(Promotion promotion, ThemeData theme, texts) {
     return GestureDetector(
       onTap: () => AutoRouter.of(context).push(
         PromotionDetailsView(
@@ -368,7 +370,6 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
               const SizedBox(width: 12),
               Text(
                 "${promotion.percentage}%",
-                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                     fontSize: theme.textTheme.labelLarge!.fontSize,
@@ -376,16 +377,25 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
               ),
             ],
           ),
-          const SizedBox(height: 2),
-          Expanded(
-            child: Text(
-              promotion.description,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: theme.textTheme.labelLarge!.fontSize,
-                  fontWeight: FontWeight.normal),
-            ),
+          const SizedBox(height: 8),
+          Text(
+            promotion.description,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: theme.textTheme.labelLarge!.fontSize,
+                fontWeight: FontWeight.normal),
           ),
+          const SizedBox(height: 16),
+          Text(
+              promotion.expiredAt.difference(DateTime.now()).inDays < 2
+                  ? texts["expires-today"]
+                  : "${texts["days-remaining"]}${promotion.expiredAt.difference(DateTime.now()).inDays} ${texts["days-remaining-end"]}",
+              style: TextStyle(
+                fontSize: theme.textTheme.labelSmall!.fontSize,
+                fontWeight: theme.textTheme.labelSmall!.fontWeight,
+                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+              )),
         ]),
       ),
     );
@@ -879,7 +889,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     context.read<BusinessDetailsCubit>().resetReviewState();
   }
 
-  void navigateToBusiness() {
-    context.read<BusinessDetailsCubit>().openUrl();
+  void navigateToBusiness(BuildContext context, texts) {
+    context.read<BusinessDetailsCubit>().openUrl(context, texts);
   }
 }

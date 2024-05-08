@@ -32,6 +32,12 @@ class AppConstants {
   final String googleMapsStaticApi =
       "https://maps.googleapis.com/maps/api/staticmap";
 
+  //URL Intents
+  final String appleIntent = 'https://maps.apple.com/?q=';
+  final String googleMapsIntent =
+      'https://www.google.com/maps/search/?api=1&query=';
+  final String wazeIntent = 'https://ul.waze.com/ul?ll=';
+
   //Woompi urls
   final String woompiBaseSandboxUrl = "https://sandbox.wompi.co/v1";
   final String woompiBaseProductionUrl = "https://production.wompi.co/v1";
@@ -349,6 +355,13 @@ class AppConstants {
       "loading-title": "Cargando",
       "loading-content": "Cargando información del comercio",
       "promotions-title": "Promociones",
+      "days-remaining": "Quedan ",
+      "days-remaining-end": "días",
+      "expires-today": "Expira hoy",
+      "google-maps": "Google Maps",
+      "apple-maps": "Apple Maps",
+      "waze": "Waze",
+      "open-with": "Abrir con",
       "comments-title": "Comentarios",
       "information-title": "Información",
       "address-title": "Dirección",
@@ -469,6 +482,8 @@ class AppConstants {
       "add-promotion-title": "Agregar promoción",
       "empty-comment-title":
           "Este comercio aún no cuenta con comentarios activos, cuando los usuarios agreguen comentarios aquí podrás verlos.",
+      "active-promotions": "Promociones activas",
+      "inactive-promotions": "Promociones inactivas",
       "raiting": "Calificación",
       "address-title": "Dirección",
       "no-managers": "No hay administradores asignados",

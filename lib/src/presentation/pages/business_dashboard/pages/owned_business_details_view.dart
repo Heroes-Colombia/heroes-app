@@ -331,14 +331,81 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
 
   Widget promotionsList(List<Promotion> promotions, texts, ThemeData theme) {
     return promotions.isNotEmpty
-        ? GridView.count(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            children: promotions
-                .map((promotion) => promotionCard(promotion, theme))
-                .toList(),
+        ? SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                promotions
+                        .where((element) =>
+                            element.expiredAt.isAfter(DateTime.now()))
+                        .isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+                        child: Text(
+                          texts["active-promotions"],
+                          style: theme.textTheme.labelSmall,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: (promotions
+                                  .where((element) =>
+                                      element.expiredAt.isAfter(DateTime.now()))
+                                  .length /
+                              2)
+                          .ceil() *
+                      186,
+                  child: GridView.count(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    children: promotions
+                        .where((element) =>
+                            element.expiredAt.isAfter(DateTime.now()))
+                        .map((promotion) => promotionCard(promotion, theme))
+                        .toList(),
+                  ),
+                ),
+                promotions
+                        .where((element) =>
+                            element.expiredAt.isBefore(DateTime.now()))
+                        .isNotEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: Text(
+                          texts["inactive-promotions"],
+                          style: theme.textTheme.labelSmall,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+                SizedBox(
+                  height: (promotions
+                                  .where((element) => element.expiredAt
+                                      .isBefore(DateTime.now()))
+                                  .length /
+                              2)
+                          .ceil() *
+                      196,
+                  child: GridView.count(
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    children: promotions
+                        .where((element) =>
+                            element.expiredAt.isBefore(DateTime.now()))
+                        .map((promotion) => promotionCard(promotion, theme))
+                        .toList(),
+                  ),
+                ),
+              ],
+            ),
           )
         : ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 16),

@@ -30,7 +30,7 @@ class UserReview extends Equatable {
     return UserReview(
       userId: json['user_id'] as String,
       comment: json['comment'] as String,
-      rate: json['rate'] as double,
+      rate: json['rate'] != null ? double.parse(json['rate'].toString()) : 0.0,
       businessId: json['business_id'] as String,
       createdAt: createdAt.toDate(),
     );
