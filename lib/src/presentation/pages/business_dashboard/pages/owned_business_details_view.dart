@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
@@ -9,11 +10,13 @@ import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
-import 'package:heroes_app/src/domain/models/review_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
+import 'package:heroes_app/src/locator.dart';
 import 'package:heroes_app/src/presentation/cubits/manage_business/owned_business_details/owned_business_details_cubit.dart';
+import 'package:heroes_app/src/presentation/cubits/manage_business/owned_businesses/owned_businesses_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/map_picker_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/map_preview_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 import 'package:ionicons/ionicons.dart';
@@ -163,6 +166,10 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                 Ionicons.card_outline,
               ),
             ),
+            IconButton(
+              onPressed: () => seeEditBusinessInformation(theme, texts),
+              icon: const Icon(Ionicons.settings_outline),
+            )
           ],
         ),
         mainCard(
@@ -213,13 +220,33 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (business.featuredImage.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  business.featuredImage,
-                  height: 220,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+              GestureDetector(
+                onTap: () async {
+                  final newPicture =
+                      await locator.get<AppMethods>().selectPicture();
+                  if (newPicture != null) {
+                    if (!mounted) return;
+                    await context
+                        .read<OwnedBusinessDetailsCubit>()
+                        .handleEditFeaturedImage(newPicture);
+                  }
+                  if (!mounted) return;
+                  context.read<OwnedBusinessesCubit>().getOwnedBusinesses();
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      business.featuredImage,
+                      height: 220,
+                      width: double.infinity,
+                      fit: BoxFit.fitWidth,
+                    ),
+                  ),
                 ),
               )
             else
@@ -314,21 +341,6 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     );
   }
 
-  SliverToBoxAdapter sectionDoubleTitle(
-      texts, ThemeData theme, List<UserReview> reviews) {
-    return SliverToBoxAdapter(
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        title: Text(
-          texts["comments-title"] ?? "",
-          style: theme.textTheme.labelLarge,
-        ),
-        onTap: () => seeAllComments(theme, texts),
-        trailing: Text(texts["comments-button"] ?? ""),
-      ),
-    );
-  }
-
   Widget promotionsList(List<Promotion> promotions, texts, ThemeData theme) {
     return promotions.isNotEmpty
         ? SingleChildScrollView(
@@ -375,7 +387,7 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                             element.expiredAt.isBefore(DateTime.now()))
                         .isNotEmpty
                     ? Padding(
-                        padding: const EdgeInsets.only(left: 16.0),
+                        padding: const EdgeInsets.only(left: 16.0, top: 16.0),
                         child: Text(
                           texts["inactive-promotions"],
                           style: theme.textTheme.labelSmall,
@@ -404,6 +416,7 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                         .toList(),
                   ),
                 ),
+                const SizedBox(height: 16.0)
               ],
             ),
           )
@@ -508,7 +521,7 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
       itemCount: 1,
       itemBuilder: (context, index) {
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               texts["address-title"]!,
@@ -536,6 +549,10 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                 ),
               ),
             ),
+            const SizedBox(height: 4),
+            TextButton(
+                onPressed: () => seeAddLocationToBusiness(theme, texts),
+                child: Text(texts["edit-address-button"]!)),
           ],
         );
       },
@@ -617,6 +634,189 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                   },
                   itemCount: 1,
                 ),
+        );
+      },
+    );
+  }
+
+  Widget editBusinessInformationModalBody(
+      GlobalKey<FormBuilderState> editInfoKey) {
+    var theme = Theme.of(context);
+    var locator = GetIt.instance;
+    var texts = locator<AppConstants>()
+        .businessDashboardTexts["ownedBusinessDetailsView"]!;
+    return BlocBuilder<OwnedBusinessDetailsCubit, OwnedBusinessDetailsState>(
+      builder: (context, state) {
+        final business = state.business!;
+        return GestureDetector(
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: Container(
+            color: theme.colorScheme.background,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: FormBuilder(
+                  key: editInfoKey,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        FormBuilderTextField(
+                          name: "name",
+                          initialValue: business.name,
+                          validator: (value) => locator<AppMethods>()
+                              .emptyStringValidator(
+                                  value, texts["empty-value"]!),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: InputDecoration(
+                            labelText: texts['business-name-label']!,
+                            hintText: texts['business-name-hint']!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FormBuilderTextField(
+                          name: "owner_name",
+                          initialValue: business.ownerName,
+                          validator: (value) => locator<AppMethods>()
+                              .emptyStringValidator(
+                                  value, texts["empty-value"]!),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: InputDecoration(
+                            labelText: texts['business-ownerName-label']!,
+                            hintText: texts['business-ownerName-hint']!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FormBuilderTextField(
+                          name: "email",
+                          initialValue: business.email,
+                          validator: (value) => locator<AppMethods>()
+                              .emptyStringValidator(
+                                  value, texts["empty-value"]!),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: InputDecoration(
+                            labelText: texts['business-email-label']!,
+                            hintText: texts['business-email-hint']!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FormBuilderTextField(
+                          name: "phone_number",
+                          initialValue: business.phoneNumber,
+                          keyboardType: TextInputType.phone,
+                          validator: (value) => locator<AppMethods>()
+                              .emptyStringValidator(
+                                  value, texts["empty-value"]!),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: InputDecoration(
+                            labelText: texts['business-phoneNumber-label']!,
+                            hintText: texts['business-phoneNumber-hint']!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FormBuilderTextField(
+                          name: "identification",
+                          initialValue: business.identification,
+                          keyboardType: TextInputType.phone,
+                          validator: (value) => locator<AppMethods>()
+                              .emptyStringValidator(
+                                  value, texts["empty-value"]!),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: InputDecoration(
+                            labelText: texts['business-identification-label']!,
+                            hintText: texts['business-identification-hint']!,
+                            border: const OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        FormBuilderField(
+                            initialValue: business.categories,
+                            validator: (value) => value == null || value.isEmpty
+                                ? texts["empty-value"]!
+                                : null,
+                            builder: (field) => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      texts["business-category-label"]!,
+                                      style: theme.textTheme.labelLarge,
+                                      textAlign: TextAlign.start,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: field.value!
+                                          .map((e) => ChoiceChip(
+                                                selected: false,
+                                                onSelected: (value) => context
+                                                    .read<
+                                                        OwnedBusinessDetailsCubit>()
+                                                    .handleRemoveSelectedCategory(
+                                                        e, field),
+                                                padding:
+                                                    const EdgeInsets.all(12),
+                                                label: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(state.allCategories
+                                                        .firstWhere((element) =>
+                                                            element.id == e)
+                                                        .name),
+                                                    const SizedBox(width: 8),
+                                                    const Text("x")
+                                                  ],
+                                                ),
+                                              ))
+                                          .toList(),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    FormBuilderDropdown(
+                                      name: "",
+                                      onChanged: (value) => context
+                                          .read<OwnedBusinessDetailsCubit>()
+                                          .handleSetSelectedCategory(
+                                              value!, field),
+                                      items:
+                                          state.allCategories.map((category) {
+                                        return DropdownMenuItem(
+                                          value: category.id,
+                                          child: Row(
+                                            children: [
+                                              SvgPicture.network(
+                                                category.imageUrl,
+                                                width: 24,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Text(category.name),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                      decoration: InputDecoration(
+                                        border: const OutlineInputBorder(),
+                                        hintText:
+                                            texts["business-category-hint"]!,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            name: "categories"),
+                        const SizedBox(height: 16),
+                        AsyncButtonWidget(
+                            onPressed: () async => await context
+                                .read<OwnedBusinessDetailsCubit>()
+                                .handleEditBusinessInformation(editInfoKey),
+                            buttonText: texts["edit-button"]!),
+                        TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: Text(texts["cancel-button"]!))
+                      ])),
+            ),
+          ),
         );
       },
     );
@@ -897,10 +1097,12 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               const SizedBox(height: 16),
               SizedBox(
                 height: 200,
-                child: MapPreviewWidget(
+                child: MapPickerWidget(
                   borderRadius: 12,
                   latitude: business.location.latitude,
                   longitude: business.location.longitude,
+                  onLocationChanged: (double? latitude, double? longitude) =>
+                      locationToAddress(key, latitude, longitude),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1077,13 +1279,11 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
         .getBusinessDetails(widget.businessId);
   }
 
-  void seeAllComments(ThemeData theme, texts) {
-    context
-        .read<OwnedBusinessDetailsCubit>()
-        .getAllBusinessReviews(widget.businessId);
+  void seeEditBusinessInformation(ThemeData theme, texts) {
+    final editInfoKey = GlobalKey<FormBuilderState>();
 
     //We create the body of the modal
-    Widget body = allCommentsBottomModalBody();
+    Widget body = editBusinessInformationModalBody(editInfoKey);
 
     //We show the modal
     showBottomModal(
@@ -1126,6 +1326,7 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     showBottomModal(
       body,
       BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 8),
+      enableDrag: false,
     );
   }
 
@@ -1144,12 +1345,13 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     );
   }
 
-  void showBottomModal(Widget body, BoxConstraints constraints) async {
+  void showBottomModal(Widget body, BoxConstraints constraints,
+      {bool enableDrag = true}) async {
     var theme = Theme.of(context);
 
     await showModalBottomSheet(
       context: context,
-      enableDrag: true,
+      enableDrag: enableDrag,
       showDragHandle: true,
       isScrollControlled: true,
       useSafeArea: true,
@@ -1261,51 +1463,18 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                   return;
                 }
 
-                //Then add the manager
-                final managerAdded = await context
+                await context
                     .read<OwnedBusinessDetailsCubit>()
                     .addManagerToBusiness(
-                        newManagerEmailFormKey
-                            .currentState!.fields["email"]!.value,
-                        context
-                            .read<OwnedBusinessDetailsCubit>()
-                            .state
-                            .businessId!);
-
-                if (!context.mounted) return;
-
-                //Check if the manager was added successfully
-                if (managerAdded) {
-                  //Close the AlertDialog
-                  Navigator.of(context).pop();
-
-                  //Close the bottom modal
-                  Navigator.of(context).pop();
-
-                  //Show the snackbar
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(texts["manager-added"]!),
-                      duration: const Duration(seconds: 4),
-                    ),
-                  );
-
-                  return;
-                } else {
-                  //Close the AlertDialog
-                  Navigator.of(context).pop();
-
-                  //Close the bottom modal
-                  Navigator.of(context).pop();
-
-                  //Show the snackbar
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(texts["email-error"]!),
-                      duration: const Duration(seconds: 4),
-                    ),
-                  );
-                }
+                      newManagerEmailFormKey
+                          .currentState!.fields["email"]!.value,
+                      context
+                          .read<OwnedBusinessDetailsCubit>()
+                          .state
+                          .businessId!,
+                      context,
+                      texts,
+                    );
               },
               buttonText: texts["add-button"]!,
             ),
@@ -1485,6 +1654,14 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
         });
       },
     );
+  }
+
+  Future<void> locationToAddress(GlobalKey<FormBuilderState> key,
+      double? latitude, double? longitude) async {
+    final newAddress = await locator<AppMethods>()
+        .getAddressFromCoordinates(latitude!, longitude!);
+
+    key.currentState!.fields["address"]!.didChange(newAddress);
   }
 
   Future<void> handleEditAddressAndLocation(

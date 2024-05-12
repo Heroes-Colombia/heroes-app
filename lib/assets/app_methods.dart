@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:auto_route/auto_route.dart';
@@ -11,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
+import 'package:http/http.dart' as http;
 
 class AppMethods {
   //Validate email input field
@@ -130,7 +132,12 @@ class AppMethods {
   Future<XFile?> takePicture() async {
     final ImagePicker picker = ImagePicker();
     // Capture a photo.
-    final XFile? photo = await picker.pickImage(source: ImageSource.camera);
+    final XFile? photo = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 30,
+      maxWidth: 1280,
+      maxHeight: 1280,
+    );
     return photo;
   }
 
@@ -138,7 +145,12 @@ class AppMethods {
   Future<XFile?> selectPicture() async {
     final ImagePicker picker = ImagePicker();
     // Capture a photo.
-    final XFile? photo = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? photo = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 30,
+      maxWidth: 1280,
+      maxHeight: 1280,
+    );
     return photo;
   }
 
@@ -201,6 +213,13 @@ class AppMethods {
     return locations.first;
   }
 
+  //This method is used to convert from coordinates to address
+  Future<String?> getAddressFromCoordinates(
+      double latitude, double longitude) async {
+    final locationString = await reverseGeocodeCoordinates(latitude, longitude);
+    return locationString;
+  }
+
   //This method is used to open app from url
   Future<void> openAppFromUri(Uri url) async {
     if (!await launchUrl(
@@ -230,6 +249,26 @@ class AppMethods {
     final staticMapApi = locator.get<AppConstants>().googleMapsStaticApi;
 
     return '$staticMapApi?center=$latitude,$longitude&zoom=$zoom&size=$size&maptype=$mapType&markers=$markers&key=$mapKey&map_id=$mapThemeId';
+  }
+
+  //This method is used to reverse geocode coordinates
+  Future<String?> reverseGeocodeCoordinates(
+    double latitude,
+    double longitude,
+  ) async {
+    final locator = GetIt.instance;
+    final mapKey = dotenv.env["GOOGLE_MAPS_API_KEY_WEB"];
+
+    final reverseGeocodeApi =
+        locator.get<AppConstants>().googleMapsGeoCodingApi;
+
+    final url = '$reverseGeocodeApi$latitude,$longitude&key=$mapKey';
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      return json["results"][0]["formatted_address"];
+    }
+    return null;
   }
 
   //This method is used to handle RemoteMessage

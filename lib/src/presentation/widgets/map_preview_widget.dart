@@ -1,6 +1,9 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_methods.dart';
+import 'package:heroes_app/src/config/router/app_router.gr.dart';
+import 'package:location/location.dart';
 
 class MapPreviewWidget extends StatefulWidget {
   final double borderRadius;
@@ -63,12 +66,23 @@ class _MapPreviewWidgetState extends State<MapPreviewWidget> {
   @override
   Widget build(BuildContext context) {
     return latitude != null && longitude != null
-        ? ClipRRect(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-            child: Image.network(
-              mapUrl ?? '',
-              fit: BoxFit.cover,
-              width: double.infinity,
+        ? InkWell(
+            onTap: () {
+              LocationData userLocationData = LocationData.fromMap({
+                'latitude': latitude,
+                'longitude': longitude,
+              });
+              AutoRouter.of(context).push(
+                MapView(initialCameraLocation: userLocationData),
+              );
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+              child: Image.network(
+                mapUrl ?? '',
+                fit: BoxFit.cover,
+                width: double.infinity,
+              ),
             ),
           )
         : const Center(

@@ -31,6 +31,8 @@ class AppConstants {
   //Google maps static api
   final String googleMapsStaticApi =
       "https://maps.googleapis.com/maps/api/staticmap";
+  final String googleMapsGeoCodingApi =
+      "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
 
   //URL Intents
   final String appleIntent = 'https://maps.apple.com/?q=';
@@ -474,6 +476,20 @@ class AppConstants {
       "empty-content": "No tienes comercios asignados",
     },
     "ownedBusinessDetailsView": {
+      "business-name-label": "Nombre del comercio",
+      "business-name-hint": "Ingresa el nombre del comercio",
+      "business-ownerName-label": "Nombre del dueño",
+      "business-ownerName-hint": "Ingresa el nombre del dueño",
+      "business-phoneNumber-label": "Número telefónico del comercio",
+      "business-phoneNumber-hint": "Ingresa el número telefónico del comercio",
+      "business-identification-label": "NIT del comercio",
+      "business-identification-hint": "Ingresa el NIT del comercio",
+      "business-email-label": "Email del comercio",
+      "business-email-hint": "Ingresa el Email del comercio",
+      "business-category-label": "Categorías del comercio",
+      "business-category-hint": "Agrega categorías al comercio",
+      "user-already-mange-error":
+          "Este usuario ya es administrador del comercio",
       "loading-title": "Cargando",
       "loading-content": "Cargando información del comercio",
       "promotions-title": "Promociones",
@@ -520,6 +536,7 @@ class AppConstants {
       "promotion-deleted": "Promoción eliminada",
       "create-button": "Crear",
       "edit-button": "Editar",
+      "edit-address-button": "Editar dirección",
       "delete-button": "Eliminar",
       "add-manager-button": "Agregar administrador",
       "add-payment-button": "Agregar método de pago",

@@ -47,7 +47,7 @@ class VerticalCard extends StatelessWidget {
                 child: image.isNotEmpty
                     ? Image.network(
                         image,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.fitWidth,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Center(

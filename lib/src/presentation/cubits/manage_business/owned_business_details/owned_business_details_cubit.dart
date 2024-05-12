@@ -1,15 +1,19 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
+import 'package:heroes_app/src/domain/models/business_category.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/business_payment_method.dart';
 import 'package:heroes_app/src/domain/models/business_transaction.dart';
@@ -48,11 +52,22 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       //We fetch the promotions from the database
       final promotions = await getBusinessPromotions(businessId);
 
+      final categoriesCollection =
+          locator.get<AppConstants>().businessCategoryCollection;
+
+      //We fetch the categories from the database
+      final rawCategories =
+          await firestoreService.readAllActiveDocuments(categoriesCollection);
+
+      final categories =
+          rawCategories.map((e) => BusinessCategory.fromJson(e)).toList();
+
       //We update the state with the new business details
       emit(state.copyWith(
         businessId: businessId,
         business: business,
         promotions: promotions,
+        allCategories: categories,
         status: BusinessViewCubitStatus.success,
       ));
     } catch (e) {
@@ -614,7 +629,8 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
   }
 
   //This method is used to add a manager to the business
-  Future<bool> addManagerToBusiness(String userEmail, String businessId) async {
+  Future<void> addManagerToBusiness(
+      String userEmail, String businessId, BuildContext context, texts) async {
     try {
       //First, we get the firestore service and the users collection
       final firestoreService = locator.get<FirestoreService>();
@@ -628,16 +644,33 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
         1,
       );
 
-      //If the user does not exist, we return false
+      //If the user does not exist
       if (rawUser.isEmpty) {
-        return false;
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(texts["email-error"]!),
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
 
       final user = ListableUserModel.fromJson(rawUser.first);
 
-      //If the user already manages the business, we return false
+      //If the user already manages the business
       if (user.managedBusinesses.contains(businessId)) {
-        return false;
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+
+        //Show the snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(texts["user-already-mange-error"]!),
+            duration: const Duration(seconds: 4),
+          ),
+        );
       }
 
       //Then, we add the business id to the user owned_businesses array in the database
@@ -661,10 +694,27 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
         ),
       );
 
-      return true;
+      Navigator.of(context).pop();
+      Navigator.of(context).pop();
+
+      //Show the snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(texts["manager-added"]!),
+          duration: const Duration(seconds: 4),
+        ),
+      );
     } catch (e) {
       log('Error: $e, Function: addManagerToBusiness, File: owned_business_details_cubit.dart');
-      return false;
+      Navigator.of(context).pop();
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(texts["email-error"]!),
+          duration: const Duration(seconds: 4),
+        ),
+      );
     }
   }
 
@@ -730,6 +780,94 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     } catch (e) {
       log('Error: $e, Function: transformToLatLng, File: owned_business_details_cubit.dart');
       return null;
+    }
+  }
+
+  void handleSetSelectedCategory(
+      String categoryId, FormFieldState<dynamic> field) {
+    if (field.value == null || field.value!.contains(categoryId)) {
+      return;
+    } else {
+      field.didChange(field.value!..add(categoryId));
+    }
+  }
+
+  void handleRemoveSelectedCategory(
+      String categoryId, FormFieldState<dynamic> field) {
+    if (field.value == null || !field.value!.contains(categoryId)) {
+      return;
+    } else {
+      field.didChange(field.value!..remove(categoryId));
+    }
+  }
+
+  Future<void> handleEditBusinessInformation(
+      GlobalKey<FormBuilderState> editInfoKey) async {
+    try {
+      if (editInfoKey.currentState!.saveAndValidate()) {
+        final newBusinessMap = editInfoKey.currentState!.fields;
+        final business = state.business!.copyWith(
+          name: newBusinessMap["name"]!.value,
+          ownerName: newBusinessMap["owner_name"]!.value,
+          email: newBusinessMap["email"]!.value,
+          phoneNumber: newBusinessMap["phone_number"]!.value,
+          identification: newBusinessMap["identification"]!.value,
+          categories: (newBusinessMap["categories"]!.value as List)
+              .map((e) => e.toString())
+              .toList(),
+        );
+
+        final firestoreService = locator.get<FirestoreService>();
+        final businessCollection =
+            locator.get<AppConstants>().businessCollection;
+
+        await firestoreService.editDocumentByDocumentId(
+          businessCollection,
+          state.businessId!,
+          business.toJson(),
+        );
+
+        final rawBusiness = await firestoreService.readDocumentByDocId(
+          businessCollection,
+          state.businessId!,
+        );
+
+        final updatedBusiness = Business.fromJson(rawBusiness!);
+
+        emit(state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          business: updatedBusiness,
+        ));
+      }
+    } catch (e) {
+      log('Error: $e, Function: handleEditBusinessInformation, File: owned_business_details_cubit.dart');
+    }
+  }
+
+  Future<void> handleEditFeaturedImage(XFile newImage) async {
+    try {
+      emit(state.copyWith(status: BusinessViewCubitStatus.loading));
+      final fireStorage = locator.get<FireStorageService>();
+      final imagePath = await fireStorage.uploadPromotionFeaturedImage(
+          newImage, state.businessId!);
+
+      final firestoreService = locator.get<FirestoreService>();
+      final businessCollection = locator.get<AppConstants>().businessCollection;
+
+      await firestoreService.editDocumentByDocumentId(
+        businessCollection,
+        state.businessId!,
+        {
+          "featured_image": imagePath,
+        },
+      );
+
+      emit(state.copyWith(
+        status: BusinessViewCubitStatus.success,
+        business: state.business!.copyWith(featuredImage: imagePath),
+      ));
+    } catch (e) {
+      log('Error: $e, Function: handleEditFeaturedImage, File: owned_business_details_cubit.dart');
     }
   }
 

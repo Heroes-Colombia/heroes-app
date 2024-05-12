@@ -10,7 +10,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:auto_route/auto_route.dart' as _i24;
 import 'package:flutter/material.dart' as _i25;
-import 'package:heroes_app/src/domain/models/promotion_model.dart' as _i26;
+import 'package:heroes_app/src/domain/models/promotion_model.dart' as _i27;
 import 'package:heroes_app/src/presentation/pages/auth/auth_view.dart' as _i2;
 import 'package:heroes_app/src/presentation/pages/auth/pages/first_time_view.dart'
     as _i10;
@@ -56,6 +56,7 @@ import 'package:heroes_app/src/presentation/pages/entryPoint/entrypoint_view.dar
     as _i8;
 import 'package:heroes_app/src/presentation/pages/entryPoint/pages/unverified_user_view.dart'
     as _i23;
+import 'package:location/location.dart' as _i26;
 
 abstract class $AppRouter extends _i24.RootStackRouter {
   $AppRouter({super.navigatorKey});
@@ -156,9 +157,13 @@ abstract class $AppRouter extends _i24.RootStackRouter {
       );
     },
     MapView.name: (routeData) {
+      final args = routeData.argsAs<MapViewArgs>();
       return _i24.AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const _i13.MapView(),
+        child: _i13.MapView(
+          key: args.key,
+          initialCameraLocation: args.initialCameraLocation,
+        ),
       );
     },
     OwnedBusinessDetailsView.name: (routeData) {
@@ -551,16 +556,40 @@ class LoginViewArgs {
 
 /// generated route for
 /// [_i13.MapView]
-class MapView extends _i24.PageRouteInfo<void> {
-  const MapView({List<_i24.PageRouteInfo>? children})
-      : super(
+class MapView extends _i24.PageRouteInfo<MapViewArgs> {
+  MapView({
+    _i25.Key? key,
+    required _i26.LocationData? initialCameraLocation,
+    List<_i24.PageRouteInfo>? children,
+  }) : super(
           MapView.name,
+          args: MapViewArgs(
+            key: key,
+            initialCameraLocation: initialCameraLocation,
+          ),
           initialChildren: children,
         );
 
   static const String name = 'MapView';
 
-  static const _i24.PageInfo<void> page = _i24.PageInfo<void>(name);
+  static const _i24.PageInfo<MapViewArgs> page =
+      _i24.PageInfo<MapViewArgs>(name);
+}
+
+class MapViewArgs {
+  const MapViewArgs({
+    this.key,
+    required this.initialCameraLocation,
+  });
+
+  final _i25.Key? key;
+
+  final _i26.LocationData? initialCameraLocation;
+
+  @override
+  String toString() {
+    return 'MapViewArgs{key: $key, initialCameraLocation: $initialCameraLocation}';
+  }
 }
 
 /// generated route for
@@ -637,7 +666,7 @@ class OwnedPromotionDetailsView
     extends _i24.PageRouteInfo<OwnedPromotionDetailsViewArgs> {
   OwnedPromotionDetailsView({
     _i25.Key? key,
-    required _i26.Promotion promotion,
+    required _i27.Promotion promotion,
     List<_i24.PageRouteInfo>? children,
   }) : super(
           OwnedPromotionDetailsView.name,
@@ -662,7 +691,7 @@ class OwnedPromotionDetailsViewArgs {
 
   final _i25.Key? key;
 
-  final _i26.Promotion promotion;
+  final _i27.Promotion promotion;
 
   @override
   String toString() {
@@ -690,7 +719,7 @@ class PromotionDetailsView
     extends _i24.PageRouteInfo<PromotionDetailsViewArgs> {
   PromotionDetailsView({
     _i25.Key? key,
-    required _i26.Promotion? promotion,
+    required _i27.Promotion? promotion,
     required String? promotionId,
     List<_i24.PageRouteInfo>? children,
   }) : super(
@@ -718,7 +747,7 @@ class PromotionDetailsViewArgs {
 
   final _i25.Key? key;
 
-  final _i26.Promotion? promotion;
+  final _i27.Promotion? promotion;
 
   final String? promotionId;
 

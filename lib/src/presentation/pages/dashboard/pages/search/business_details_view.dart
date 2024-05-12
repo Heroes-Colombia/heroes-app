@@ -191,13 +191,19 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (business.featuredImage.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  business.featuredImage,
-                  height: 220,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    business.featuredImage,
+                    height: 220,
+                    width: double.infinity,
+                    fit: BoxFit.fitWidth,
+                  ),
                 ),
               )
             else
@@ -424,15 +430,10 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                 color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
               ),
               height: 200,
-              child: InkWell(
-                onTap: () {
-                  AutoRouter.of(context).push(const MapView());
-                },
-                child: MapPreviewWidget(
-                  borderRadius: 20,
-                  latitude: business.location.latitude,
-                  longitude: business.location.longitude,
-                ),
+              child: MapPreviewWidget(
+                borderRadius: 20,
+                latitude: business.location.latitude,
+                longitude: business.location.longitude,
               ),
             ),
           ],
