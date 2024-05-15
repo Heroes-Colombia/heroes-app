@@ -94,6 +94,7 @@ class AppMethods {
     return null;
   }
 
+  //Validate year input field
   String? cardYearValidator(String? value, String invalidYear) {
     if (value == null || value.isEmpty) {
       return invalidYear;
@@ -106,6 +107,7 @@ class AppMethods {
     return null;
   }
 
+  //Validate card Holder Name input field
   String? cardHolderNameValidator(String? value, String invalidName) {
     if (value == null || value.isEmpty) {
       return invalidName;
@@ -117,6 +119,7 @@ class AppMethods {
     return null;
   }
 
+  //Validate cvv input field
   String? cvvValidator(String? value, String invalidCvv) {
     if (value == null || value.isEmpty) {
       return invalidCvv;

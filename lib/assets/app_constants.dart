@@ -29,10 +29,10 @@ class AppConstants {
   final String discoverTopic = "discoverNearbyBusiness";
 
   //Google maps static api
-  final String googleMapsStaticApi =
-      "https://maps.googleapis.com/maps/api/staticmap";
   final String googleMapsGeoCodingApi =
       "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
+  final String googleMapsStaticApi =
+      "https://maps.googleapis.com/maps/api/staticmap";
 
   //URL Intents
   final String appleIntent = 'https://maps.apple.com/?q=';

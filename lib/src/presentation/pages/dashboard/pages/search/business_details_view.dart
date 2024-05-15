@@ -703,17 +703,20 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
   }
 
   //Methods
+  //This method is used to get the business details
   void getBusinessDetails() {
     checkIfBusinessIsMarkedAsFavourite();
     context.read<BusinessDetailsCubit>().getBusinessDetails(widget.businessId);
   }
 
+  //This method is used to set a business as favourite
   void setBusinessAsFavourite() {
     context
         .read<BusinessDetailsCubit>()
         .setBusinessAsFavourite(widget.businessId);
   }
 
+  //This method is used to check if a business is marked as favourite
   void checkIfBusinessIsMarkedAsFavourite() {
     context
         .read<BusinessDetailsCubit>()
@@ -736,6 +739,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     );
   }
 
+  //This method is used to see the raiting menu
   void seeRaitingMenu() {
     var locator = GetIt.instance;
     var texts = locator<AppConstants>().dashBoardTexts["businessDetailsView"]!;
@@ -744,6 +748,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     var formKey = GlobalKey<FormBuilderState>();
     var theme = Theme.of(context);
 
+    //We create the form
     Widget body = FormBuilder(
       key: formKey,
       child: Container(
@@ -867,6 +872,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     Navigator.pop(context);
   }
 
+  //This method is used to show a bottom modal
   void showBottomModal(Widget body, BoxConstraints constraints) async {
     var theme = Theme.of(context);
 
@@ -890,6 +896,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     context.read<BusinessDetailsCubit>().resetReviewState();
   }
 
+  //This method is used to create a intent to open any navigation app
   void navigateToBusiness(BuildContext context, texts) {
     context.read<BusinessDetailsCubit>().openUrl(context, texts);
   }

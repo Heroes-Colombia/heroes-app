@@ -119,6 +119,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     }
   }
 
+  //This method is used to get all business managers
   Future<void> getAllBusinessManagers(String businessId) async {
     emit(state.copyWith(allUserReviews: []));
     try {
@@ -141,6 +142,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     }
   }
 
+  //This method is used to get the latest transaction of the business
   Future<void> getLatestTransaction() async {
     try {
       //First we get the collection and the firestore service
@@ -783,6 +785,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     }
   }
 
+  //This method is used to handle the selected categories in the edit business form
   void handleSetSelectedCategory(
       String categoryId, FormFieldState<dynamic> field) {
     if (field.value == null || field.value!.contains(categoryId)) {
@@ -792,6 +795,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     }
   }
 
+  //This method is used to handle the removed categories in the edit business form
   void handleRemoveSelectedCategory(
       String categoryId, FormFieldState<dynamic> field) {
     if (field.value == null || !field.value!.contains(categoryId)) {
@@ -801,6 +805,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     }
   }
 
+  //This method is used to update the business information
   Future<void> handleEditBusinessInformation(
       GlobalKey<FormBuilderState> editInfoKey) async {
     try {
@@ -844,6 +849,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     }
   }
 
+  //This method is used to update a new featured image for the business
   Future<void> handleEditFeaturedImage(XFile newImage) async {
     try {
       emit(state.copyWith(status: BusinessViewCubitStatus.loading));
@@ -871,6 +877,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     }
   }
 
+  //This method is used to clean the state on dispose
   void clearState() async {
     emit(const OwnedBusinessDetailsState());
   }
