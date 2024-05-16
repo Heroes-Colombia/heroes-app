@@ -41,7 +41,7 @@ class HorizontalCard extends StatelessWidget {
               image.isNotEmpty
                   ? Image.network(
                       image,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.fitWidth,
                       width: double.infinity,
                       height: !isOnGrid ? 180 : 130,
                     )

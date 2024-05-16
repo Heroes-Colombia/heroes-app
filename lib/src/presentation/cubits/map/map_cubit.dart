@@ -25,8 +25,10 @@ class MapCubit extends Cubit<MapState> {
     emit(state.copyWith(status: BusinessViewCubitStatus.loading));
   }
 
-  Future<void> getMapInitialInformation(BuildContext context) async {
+  Future<void> getMapInitialInformation(
+      BuildContext context, LocationData? initialCameraPosition) async {
     try {
+      emit(state.copyWith(isMapLoading: true));
       //First we get the business collection from Firestore
       final businessCollection = locator.get<AppConstants>().businessCollection;
 
@@ -42,9 +44,15 @@ class MapCubit extends Cubit<MapState> {
         isMapLoading: true,
       ));
       //Then we get the business info from the firestore collection
+
       final businessRawInfoStream =
           locator.get<FirestoreService>().getDocumentsNearPosition(
-                userGeoPoint,
+                initialCameraPosition != null
+                    ? GeoPoint(
+                        initialCameraPosition.latitude!,
+                        initialCameraPosition.longitude!,
+                      )
+                    : userGeoPoint,
                 1.2,
                 businessCollection,
               );

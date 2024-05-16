@@ -162,7 +162,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                 Expanded(
                   child: TabBarView(
                     children: [
-                      promotionsList(state.promotions, texts),
+                      promotionsList(state.promotions, texts, theme),
                       informationList(state.business, theme, texts),
                       allCommentsBottomModalBody()
                     ],
@@ -191,13 +191,19 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (business.featuredImage.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  business.featuredImage,
-                  height: 220,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    business.featuredImage,
+                    height: 220,
+                    width: double.infinity,
+                    fit: BoxFit.fitWidth,
+                  ),
                 ),
               )
             else
@@ -216,7 +222,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 OutlinedButton(
-                  onPressed: () => navigateToBusiness(),
+                  onPressed: () => navigateToBusiness(context, texts),
                   child: Text(texts["navigation-title"]),
                 ),
                 const SizedBox(width: 8),
@@ -281,26 +287,18 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     );
   }
 
-  Widget promotionsList(List<Promotion> promotions, texts) {
+  Widget promotionsList(List<Promotion> promotions, texts, theme) {
     return promotions.isNotEmpty
-        ? ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            separatorBuilder: (context, index) {
-              return const SizedBox(height: 16);
-            },
-            itemBuilder: (context, index) {
-              return VerticalCard(
-                  image: promotions[index].featuredImage,
-                  title: promotions[index].title,
-                  id: promotions[index].businessId,
-                  description: promotions[index].description,
-                  category: null,
-                  callback: () {
-                    AutoRouter.of(context).push(PromotionDetailsView(
-                        promotion: promotions[index], promotionId: null));
-                  });
-            },
-            itemCount: promotions.length,
+        ? GridView.count(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.77,
+            children: promotions
+                .where((element) => element.expiredAt.isAfter(DateTime.now()))
+                .map((promotion) => promotionCard(promotion, theme, texts))
+                .toList(),
           )
         : ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -314,6 +312,99 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
             ),
             itemCount: 1,
           );
+  }
+
+  GestureDetector promotionCard(Promotion promotion, ThemeData theme, texts) {
+    return GestureDetector(
+      onTap: () => AutoRouter.of(context).push(
+        PromotionDetailsView(
+          promotion: promotion,
+          promotionId: null,
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Image.network(
+              promotion.featuredImage,
+              height: 90,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return SizedBox(
+                  height: 90,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  height: 108,
+                  "assets/images/file-not-found.png",
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Text(
+                  promotion.title,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: theme.textTheme.labelLarge!.fontSize,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                "${promotion.percentage}%",
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: theme.textTheme.labelLarge!.fontSize,
+                    fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            promotion.description,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: theme.textTheme.labelLarge!.fontSize,
+                fontWeight: FontWeight.normal),
+          ),
+          const SizedBox(height: 16),
+          Text(
+              promotion.expiredAt.difference(DateTime.now()).inDays < 2
+                  ? texts["expires-today"]
+                  : "${texts["days-remaining"]}${promotion.expiredAt.difference(DateTime.now()).inDays} ${texts["days-remaining-end"]}",
+              style: TextStyle(
+                fontSize: theme.textTheme.labelSmall!.fontSize,
+                fontWeight: theme.textTheme.labelSmall!.fontWeight,
+                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+              )),
+        ]),
+      ),
+    );
   }
 
   Widget informationList(Business? business, ThemeData theme, texts) {
@@ -339,15 +430,10 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                 color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
               ),
               height: 200,
-              child: InkWell(
-                onTap: () {
-                  AutoRouter.of(context).push(const MapView());
-                },
-                child: MapPreviewWidget(
-                  borderRadius: 20,
-                  latitude: business.location.latitude,
-                  longitude: business.location.longitude,
-                ),
+              child: MapPreviewWidget(
+                borderRadius: 20,
+                latitude: business.location.latitude,
+                longitude: business.location.longitude,
               ),
             ),
           ],
@@ -617,17 +703,20 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
   }
 
   //Methods
+  //This method is used to get the business details
   void getBusinessDetails() {
     checkIfBusinessIsMarkedAsFavourite();
     context.read<BusinessDetailsCubit>().getBusinessDetails(widget.businessId);
   }
 
+  //This method is used to set a business as favourite
   void setBusinessAsFavourite() {
     context
         .read<BusinessDetailsCubit>()
         .setBusinessAsFavourite(widget.businessId);
   }
 
+  //This method is used to check if a business is marked as favourite
   void checkIfBusinessIsMarkedAsFavourite() {
     context
         .read<BusinessDetailsCubit>()
@@ -650,6 +739,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     );
   }
 
+  //This method is used to see the raiting menu
   void seeRaitingMenu() {
     var locator = GetIt.instance;
     var texts = locator<AppConstants>().dashBoardTexts["businessDetailsView"]!;
@@ -658,6 +748,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     var formKey = GlobalKey<FormBuilderState>();
     var theme = Theme.of(context);
 
+    //We create the form
     Widget body = FormBuilder(
       key: formKey,
       child: Container(
@@ -781,6 +872,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     Navigator.pop(context);
   }
 
+  //This method is used to show a bottom modal
   void showBottomModal(Widget body, BoxConstraints constraints) async {
     var theme = Theme.of(context);
 
@@ -804,7 +896,8 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     context.read<BusinessDetailsCubit>().resetReviewState();
   }
 
-  void navigateToBusiness() {
-    context.read<BusinessDetailsCubit>().openUrl();
+  //This method is used to create a intent to open any navigation app
+  void navigateToBusiness(BuildContext context, texts) {
+    context.read<BusinessDetailsCubit>().openUrl(context, texts);
   }
 }

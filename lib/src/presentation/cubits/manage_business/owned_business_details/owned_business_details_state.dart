@@ -14,6 +14,7 @@ final class OwnedBusinessDetailsState extends Equatable {
   final bool userAcceptedTerms;
   final Map<String, dynamic> acceptanceData;
   final BusinessTransaction? latestTransaction;
+  final List<BusinessCategory> allCategories;
 
   const OwnedBusinessDetailsState({
     this.businessId,
@@ -29,6 +30,7 @@ final class OwnedBusinessDetailsState extends Equatable {
     this.userAcceptedTerms = false,
     this.acceptanceData = const {},
     this.latestTransaction,
+    this.allCategories = const [],
   });
 
   OwnedBusinessDetailsState copyWith({
@@ -46,6 +48,7 @@ final class OwnedBusinessDetailsState extends Equatable {
     bool userAcceptedTerms = false,
     Map<String, dynamic>? acceptanceData,
     BusinessTransaction? latestTransaction,
+    List<BusinessCategory>? allCategories,
   }) {
     return OwnedBusinessDetailsState(
       businessId: businessId ?? this.businessId,
@@ -61,6 +64,7 @@ final class OwnedBusinessDetailsState extends Equatable {
       userAcceptedTerms: userAcceptedTerms,
       acceptanceData: acceptanceData ?? this.acceptanceData,
       latestTransaction: latestTransaction ?? this.latestTransaction,
+      allCategories: allCategories ?? this.allCategories,
     );
   }
 
@@ -79,5 +83,6 @@ final class OwnedBusinessDetailsState extends Equatable {
         userAcceptedTerms,
         acceptanceData,
         latestTransaction,
+        allCategories,
       ];
 }

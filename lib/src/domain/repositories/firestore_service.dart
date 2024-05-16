@@ -56,7 +56,10 @@ class FirestoreService {
         .get();
     final docId = docSnapshot.docs.first.id;
     await _firestore.collection(collectionName).doc(docId).update(data);
-    return data;
+    final documentId = docSnapshot.docs.first.id;
+    Map<String, dynamic> copyOfData = Map.from(data);
+    copyOfData["id"] = documentId;
+    return copyOfData;
   }
 
   /*

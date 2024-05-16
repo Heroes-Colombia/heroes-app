@@ -8,11 +8,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/presentation/cubits/map/map_cubit.dart';
+import 'package:location/location.dart';
 import 'package:material_floating_search_bar_2/material_floating_search_bar_2.dart';
 
 @RoutePage()
 class MapView extends StatefulWidget {
-  const MapView({super.key});
+  final LocationData? initialCameraLocation;
+  const MapView({super.key, required this.initialCameraLocation});
 
   @override
   State<MapView> createState() => MapViewState();
@@ -33,7 +35,9 @@ class MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
-    context.read<MapCubit>().getMapInitialInformation(context);
+    context
+        .read<MapCubit>()
+        .getMapInitialInformation(context, widget.initialCameraLocation);
   }
 
   @override
@@ -147,10 +151,15 @@ class MapViewState extends State<MapView> {
       buildingsEnabled: false,
       mapType: MapType.normal,
       initialCameraPosition: CameraPosition(
-        target: LatLng(
-          state.userLocation!.latitude!,
-          state.userLocation!.longitude!,
-        ),
+        target: widget.initialCameraLocation != null
+            ? LatLng(
+                widget.initialCameraLocation!.latitude!,
+                widget.initialCameraLocation!.longitude!,
+              )
+            : LatLng(
+                state.userLocation!.latitude!,
+                state.userLocation!.longitude!,
+              ),
         zoom: zoomFactor,
       ),
       onMapCreated: (GoogleMapController controller) {

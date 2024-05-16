@@ -38,9 +38,11 @@ class ListableUserModel extends Equatable {
       secondName: json['second_name'] as String,
       firstLastName: json['first_last_name'] as String,
       secondLastName: json['second_last_name'] as String,
-      managedBusinesses: (json['owned_businesses'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
+      managedBusinesses: json["owned_businesses"] != null
+          ? (json['owned_businesses'] as List<dynamic>)
+              .map((e) => e as String)
+              .toList()
+          : List<String>.empty(),
     );
   }
 }

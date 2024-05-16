@@ -67,7 +67,7 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
       slivers: [
         SliverAppBar.large(
             title: Text(
-          promotion.title,
+          texts['title']!,
           style: TextStyle(
             color: theme.colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w900,
@@ -77,14 +77,11 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
         SliverToBoxAdapter(
           child: Container(
             padding:
-                const EdgeInsets.only(left: 16, right: 16, bottom: 24, top: 12),
+                const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 12),
             child: SizedBox(
               height: 300,
               child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
+                borderRadius: const BorderRadius.all(Radius.circular(16)),
                 child: promotion.featuredImage.isNotEmpty
                     ? Image.network(
                         promotion.featuredImage,
@@ -98,12 +95,32 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
             ),
           ),
         ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 24),
+            child: Text(
+              promotion.title,
+              style: TextStyle(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w900,
+                fontSize: theme.textTheme.bodyLarge!.fontSize,
+              ),
+              textAlign: TextAlign.start,
+            ),
+          ),
+        ),
+        divider(theme),
         sectionTitle(texts['description-title']!, theme),
         sectionBody(theme, promotion.description),
         sectionTitle(texts['instructions-title']!, theme),
         sectionBody(theme, promotion.instructions),
-        sectionTitle(texts['expiration-title']!, theme),
-        sectionBody(theme, getExpirationDate(promotion.expiredAt))
+        divider(theme),
+        sectionDouble(
+            theme, texts['discount-title']!, "${promotion.percentage}%"),
+        sectionDouble(theme, texts['expiration-title']!,
+            getExpirationDate(promotion.expiredAt)),
+        const SliverToBoxAdapter(child: SizedBox(height: 12))
       ],
     );
   }
@@ -116,7 +133,7 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
           text,
           style: TextStyle(
             fontSize: theme.textTheme.labelLarge!.fontSize,
-            fontWeight: theme.textTheme.labelLarge!.fontWeight,
+            fontWeight: FontWeight.bold,
             color: theme.colorScheme.onBackground,
           ),
         ),
@@ -135,6 +152,47 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
             fontWeight: theme.textTheme.bodySmall!.fontWeight,
             color: theme.colorScheme.onBackground.withOpacity(0.8),
           ),
+        ),
+      ),
+    );
+  }
+
+  SliverToBoxAdapter sectionDouble(ThemeData theme, title, text) {
+    return SliverToBoxAdapter(
+      child: Container(
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+        child: Row(
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: theme.textTheme.labelLarge!.fontSize,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onBackground,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              text,
+              style: TextStyle(
+                fontSize: theme.textTheme.labelLarge!.fontSize,
+                fontWeight: theme.textTheme.bodySmall!.fontWeight,
+                color: theme.colorScheme.onBackground.withOpacity(0.8),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  SliverToBoxAdapter divider(ThemeData theme) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 8),
+        child: Divider(
+          height: 1,
+          color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
         ),
       ),
     );

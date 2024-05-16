@@ -29,8 +29,16 @@ class AppConstants {
   final String discoverTopic = "discoverNearbyBusiness";
 
   //Google maps static api
+  final String googleMapsGeoCodingApi =
+      "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
   final String googleMapsStaticApi =
       "https://maps.googleapis.com/maps/api/staticmap";
+
+  //URL Intents
+  final String appleIntent = 'https://maps.apple.com/?q=';
+  final String googleMapsIntent =
+      'https://www.google.com/maps/search/?api=1&query=';
+  final String wazeIntent = 'https://ul.waze.com/ul?ll=';
 
   //Woompi urls
   final String woompiBaseSandboxUrl = "https://sandbox.wompi.co/v1";
@@ -252,7 +260,8 @@ class AppConstants {
       'password-hint': 'Ingresa tu contraseña',
       'password-validator': 'Por favor ingresa tu contraseña',
       'signupButton': 'Registrarse',
-      'signupErrorTitle': 'Error al registrarse',
+      'signupErrorTitle':
+          'Error. Asegúrate de llenar todos los campos y no utilizar un correo electrónico ya registrado',
       "genericValidator": "Este campo no puede estar vacío",
       "registerSuccess-title": "¡Registro exitoso!",
       "registerSuccess-body":
@@ -294,6 +303,7 @@ class AppConstants {
       'password-validator': 'Por favor ingresa tu contraseña',
       'signupButton': 'Registrarse',
       'signupErrorTitle': 'Error al registrarse',
+      'badLocation': 'Asegurate de ingresar una ubicación válida',
       "registerAsBusiness": "¿Registrar un nuevo comercio?",
       "personalInfo": "Información del administrador o responsable",
       "genericValidator": "Este campo no puede estar vacío",
@@ -347,6 +357,13 @@ class AppConstants {
       "loading-title": "Cargando",
       "loading-content": "Cargando información del comercio",
       "promotions-title": "Promociones",
+      "days-remaining": "Quedan ",
+      "days-remaining-end": "días",
+      "expires-today": "Expira hoy",
+      "google-maps": "Google Maps",
+      "apple-maps": "Apple Maps",
+      "waze": "Waze",
+      "open-with": "Abrir con",
       "comments-title": "Comentarios",
       "information-title": "Información",
       "address-title": "Dirección",
@@ -355,7 +372,7 @@ class AppConstants {
           "¿Te gustaría compartir tu experiencia con este negocio?",
       "add-comment-button": "Deja tu comentario",
       "empty-comment-title":
-          "Este comercio aún no cuenta con comentarios activas, ¿Has visitado este comercio, te gustaría compartir tu experiencia con este negocio?",
+          "Este comercio aún no cuenta con comentarios activos, ¿Has visitado este comercio, te gustaría compartir tu experiencia con este negocio?",
       "navigation-title": "Navegar al comercio",
       "error-title": "Error",
       "error-content": "Ocurrió un error al cargar la información del comercio",
@@ -372,8 +389,10 @@ class AppConstants {
           "¡Reseña creada! Espera a que sea aprobada para que sea visible",
     },
     "promotionDetailsView": {
+      "title": "Detalles de la promoción",
       "description-title": "Descripción",
       "instructions-title": "Instrucciones",
+      "discount-title": "Descuento disponible",
       "expiration-title": "Fecha de expiración",
     },
     'profileView': {
@@ -457,10 +476,33 @@ class AppConstants {
       "empty-content": "No tienes comercios asignados",
     },
     "ownedBusinessDetailsView": {
+      "business-name-label": "Nombre del comercio",
+      "business-name-hint": "Ingresa el nombre del comercio",
+      "business-ownerName-label": "Nombre del dueño",
+      "business-ownerName-hint": "Ingresa el nombre del dueño",
+      "business-phoneNumber-label": "Número telefónico del comercio",
+      "business-phoneNumber-hint": "Ingresa el número telefónico del comercio",
+      "business-identification-label": "NIT del comercio",
+      "business-identification-hint": "Ingresa el NIT del comercio",
+      "business-email-label": "Email del comercio",
+      "business-email-hint": "Ingresa el Email del comercio",
+      "business-category-label": "Categorías del comercio",
+      "business-category-hint": "Agrega categorías al comercio",
+      "user-already-mange-error":
+          "Este usuario ya es administrador del comercio",
       "loading-title": "Cargando",
       "loading-content": "Cargando información del comercio",
       "promotions-title": "Promociones",
+      "comments-title": "Comentarios",
+      "information-title": "Información",
       "add-promotion-title": "Agregar promoción",
+      "empty-comment-title":
+          "Este comercio aún no cuenta con comentarios activos, cuando los usuarios agreguen comentarios aquí podrás verlos.",
+      "active-promotions": "Promociones activas",
+      "inactive-promotions": "Promociones inactivas",
+      "raiting": "Calificación",
+      "address-title": "Dirección",
+      "no-managers": "No hay administradores asignados",
       "error-title": "Error",
       "error-content": "Ocurrió un error al cargar la información del comercio",
       "error-button": "Reintentar",
@@ -494,6 +536,7 @@ class AppConstants {
       "promotion-deleted": "Promoción eliminada",
       "create-button": "Crear",
       "edit-button": "Editar",
+      "edit-address-button": "Editar dirección",
       "delete-button": "Eliminar",
       "add-manager-button": "Agregar administrador",
       "add-payment-button": "Agregar método de pago",

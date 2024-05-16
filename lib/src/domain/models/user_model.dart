@@ -52,9 +52,9 @@ class User extends Equatable {
       email: json['email'] as String,
       license: json['license'] as String,
       firstName: json['first_name'] as String,
-      secondName: json['second_name'] as String,
+      secondName: json['second_name'] ?? "",
       firstLastName: json['first_last_name'] as String,
-      secondLastName: json['second_last_name'] as String,
+      secondLastName: json['second_last_name'] ?? "",
       rank: json['rank'] as String,
       permission: UserPermissions.values.firstWhere((element) =>
           element.toString().split('.').last == json['permission']),

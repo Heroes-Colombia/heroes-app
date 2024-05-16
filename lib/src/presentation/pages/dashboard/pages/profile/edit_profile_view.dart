@@ -134,18 +134,19 @@ class EditProfileView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    FormBuilderTextField(
+                    FormBuilderDropdown(
                       name: 'rank',
+                      key: const Key('_register_rank'),
                       initialValue: user.rank,
-                      validator: (value) => locator
-                          .get<AppMethods>()
-                          .emptyStringValidator(value!, texts['empty-string']!),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      dropdownColor: theme.colorScheme.background,
                       decoration: InputDecoration(
-                        hintText: texts['rank-hint']!,
                         labelText: texts['rank-label']!,
+                        hintText: texts['rank-hint']!,
                         border: const OutlineInputBorder(),
                       ),
+                      items: getRanks(context),
+                      validator: (value) => validateInputs(context, value),
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
                     ),
                     const SizedBox(height: 12),
                     AsyncButtonWidget(
@@ -240,5 +241,92 @@ class EditProfileView extends StatelessWidget {
         SnackBar(content: Text(texts['error-content']!)),
       );
     }
+  }
+
+  //This method is used to get the ranks from the constants file
+  List<DropdownMenuItem<String>> getRanks(BuildContext context) {
+    List<DropdownMenuItem<String>> dropdownItems = [];
+    var theme = Theme.of(context);
+    var locator = GetIt.instance;
+    var ranksMap = locator.get<AppConstants>().ranks;
+
+    ranksMap.forEach((category, subCategories) {
+      String categoryValue = "Category_$category";
+      dropdownItems.add(
+        DropdownMenuItem(
+          enabled: false,
+          value: categoryValue,
+          child: Text(
+            locator.get<AppMethods>().capitalize(category),
+            style: TextStyle(
+                fontSize: theme.textTheme.bodyLarge!.fontSize,
+                fontWeight: theme.textTheme.labelLarge!.fontWeight,
+                color: theme.colorScheme.primary),
+          ),
+        ),
+      );
+
+      subCategories.forEach((subCategory, options) {
+        String subCategoryValue = "SubCategory_$subCategory";
+        dropdownItems.add(
+          DropdownMenuItem(
+            enabled: false,
+            value: subCategoryValue,
+            child: Container(
+              padding: const EdgeInsets.only(left: 0),
+              child: Text(
+                locator.get<AppMethods>().capitalize(subCategory),
+                style: TextStyle(
+                    fontSize: theme.textTheme.labelMedium!.fontSize,
+                    fontWeight: theme.textTheme.labelLarge!.fontWeight,
+                    color: theme.colorScheme.primary.withOpacity(0.6)),
+              ),
+            ),
+          ),
+        );
+
+        for (var option in options) {
+          String optionValue = option;
+          dropdownItems.add(
+            DropdownMenuItem(
+              value: "${category}_${subCategory}_$optionValue",
+              child: Container(
+                padding: const EdgeInsets.only(left: 12),
+                child: Text(
+                  locator.get<AppMethods>().capitalize(option),
+                  style: TextStyle(
+                      fontSize: theme.textTheme.labelMedium!.fontSize,
+                      fontWeight: theme.textTheme.labelLarge!.fontWeight,
+                      color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ),
+            ),
+          );
+        }
+      });
+
+      dropdownItems.add(
+        DropdownMenuItem(
+          value: "",
+          enabled: false,
+          child: Container(
+            width: double.infinity,
+            height: 1,
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      );
+    });
+
+    return dropdownItems;
+  }
+
+  //This method is used to validate empty inputs
+  String? validateInputs(BuildContext context, String? value) {
+    final texts = locator.get<AppConstants>().authTexts['signupView']!;
+    final message = locator
+        .get<AppMethods>()
+        .emptyStringValidator(value, texts['genericValidator']!);
+    return message;
   }
 }

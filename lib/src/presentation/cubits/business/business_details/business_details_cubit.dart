@@ -1,7 +1,9 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
@@ -11,6 +13,7 @@ import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
+import 'package:ionicons/ionicons.dart';
 
 part 'business_details_state.dart';
 
@@ -95,7 +98,7 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
     }
   }
 
-//This method is used to get the first 5 business reviews
+//This method is used to get business reviews
   Future<List<UserReview>> getBusinessReviews(String businessId) async {
     try {
       final firestoreService = locator.get<FirestoreService>();
@@ -103,7 +106,7 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
 
       //We fetch the reviews from the database
       final rawReviews = await firestoreService.readActiveDocumentsByCondition(
-          reviewsCollection, 'business_id', businessId, 5);
+          reviewsCollection, 'business_id', businessId, 999);
 
       final reviews = rawReviews.map((e) => UserReview.fromJson(e)).toList();
 
@@ -213,15 +216,77 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
     emit(state.copyWith(isReviewLoading: false));
   }
 
-  //This method is used to navigate to the business in google maps
-  void openUrl() async {
+  //This method is used to navigate to the business in any map application compatible with the geo intent
+  void openUrl(BuildContext context, texts) async {
     try {
-      var googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=';
       if (state.business!.address == "") return;
 
-      var finalUrl = googleMapsUrl + state.business!.address;
-      Uri encodedUri = Uri.parse(finalUrl);
-      await locator.get<AppMethods>().openAppFromUri(encodedUri);
+      if (Platform.isAndroid) {
+        var intent = 'geo:';
+
+        var finalUrl =
+            '$intent${state.business!.location.latitude},${state.business!.location.longitude}?q=${state.business!.address}';
+        Uri encodedUri = Uri.parse(finalUrl);
+        await locator.get<AppMethods>().openAppFromUri(encodedUri);
+      } else {
+        //We are doing GEO intent equivalent for iOS
+        var appleIntent = locator.get<AppConstants>().appleIntent;
+        var googleMapsIntent = locator.get<AppConstants>().googleMapsIntent;
+        var wazeIntent = locator.get<AppConstants>().wazeIntent;
+
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(
+                texts["open-with"]!,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    title: Text(texts["apple-maps"]!),
+                    trailing: const Icon(Ionicons.logo_apple),
+                    onTap: () async {
+                      var finalUrl =
+                          '$appleIntent${state.business!.location.latitude},${state.business!.location.longitude}';
+                      Uri encodedUri = Uri.parse(finalUrl);
+                      await locator
+                          .get<AppMethods>()
+                          .openAppFromUri(encodedUri);
+                    },
+                  ),
+                  ListTile(
+                    title: Text(texts["google-maps"]!),
+                    trailing: const Icon(Ionicons.logo_google),
+                    onTap: () async {
+                      var finalUrl =
+                          '$googleMapsIntent${state.business!.location.latitude},${state.business!.location.longitude}&q=${state.business!.address}';
+                      Uri encodedUri = Uri.parse(finalUrl);
+                      await locator
+                          .get<AppMethods>()
+                          .openAppFromUri(encodedUri);
+                    },
+                  ),
+                  ListTile(
+                    title: Text(texts["waze"]!),
+                    trailing: const Icon(Ionicons.map),
+                    onTap: () async {
+                      var finalUrl =
+                          '$wazeIntent${state.business!.location.latitude},${state.business!.location.longitude}';
+                      Uri encodedUri = Uri.parse(finalUrl);
+                      await locator
+                          .get<AppMethods>()
+                          .openAppFromUri(encodedUri);
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      }
     } catch (e) {
       log('Error: $e, Function: openUrl, File: business_details_cubit.dart');
     }
