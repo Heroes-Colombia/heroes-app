@@ -33,7 +33,7 @@ class OwnedBusinessesCubit extends Cubit<OwnedBusinessesState> {
 
       //We get the business that the user owns
       final rawOwnerBusinesses = await locator<FirestoreService>()
-          .readActiveDocumentsByCondition(
+          .readAllDocumentsByCondition(
               collectionName, "owner_uid", user.uid, 1);
       final ownerBusinesses =
           rawOwnerBusinesses.map((e) => ListableBusiness.fromJson(e)).toList();
@@ -50,7 +50,7 @@ class OwnedBusinessesCubit extends Cubit<OwnedBusinessesState> {
 
       //We get the businesses that the user manages
       final rawManagedBusinesses = await locator<FirestoreService>()
-          .readActiveDocumentsByDocumentIDs(collectionName, ownedBusinessesIds);
+          .readAllDocumentsByDocumentIDs(collectionName, ownedBusinessesIds);
 
       final managedBusinesses = rawManagedBusinesses
           .map((e) => ListableBusiness.fromJson(e))

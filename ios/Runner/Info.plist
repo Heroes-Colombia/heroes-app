@@ -28,7 +28,7 @@
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
-	<string>8</string>
+	<string>9</string>
 	<key>CFBundleName</key>
 	<string>heroes_app</string>
 	<key>CFBundlePackageType</key>
@@ -56,6 +56,8 @@
 		<string>MKDirectionsModeTaxi</string>
 		<string>MKDirectionsModeTrain</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Para subir fotografías públicas que verán los otros Usuarios.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Para poder mostrar las promociones cercanas a los Usuarios.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

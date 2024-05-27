@@ -556,43 +556,6 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     }
   }
 
-  //This method is used to cancel a subscription only from the business subscription status in database
-  Future<void> cancelSubscription() async {
-    try {
-      //First, we get the firestore service and the business collection
-      final firestoreService = locator.get<FirestoreService>();
-      final businessCollection = locator.get<AppConstants>().businessCollection;
-
-      //Then, we cancel the subscription in the database
-      await firestoreService.editDocumentByDocumentId(
-        businessCollection,
-        state.businessId!,
-        {
-          "subscription_status":
-              BusinessSubscriptionStatus.canceled.toString().split('.').last,
-        },
-      );
-
-      //Then, we get the updated business
-      final rawBusiness = await firestoreService.readDocumentByDocId(
-        businessCollection,
-        state.businessId!,
-      );
-
-      final business = Business.fromJson(rawBusiness!);
-
-      //Finally, we update the state
-      emit(
-        state.copyWith(
-          status: BusinessViewCubitStatus.success,
-          business: business,
-        ),
-      );
-    } catch (e) {
-      log('Error: $e, Function: cancelSubscription, File: owned_business_details_cubit.dart');
-    }
-  }
-
   //This method is used to refresh the subscription status
   Future<void> refreshSubscriptionStatus() async {
     try {
@@ -657,6 +620,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
             duration: const Duration(seconds: 4),
           ),
         );
+        return;
       }
 
       final user = ListableUserModel.fromJson(rawUser.first);
@@ -673,6 +637,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
             duration: const Duration(seconds: 4),
           ),
         );
+        return;
       }
 
       //Then, we add the business id to the user owned_businesses array in the database
@@ -874,6 +839,46 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       ));
     } catch (e) {
       log('Error: $e, Function: handleEditFeaturedImage, File: owned_business_details_cubit.dart');
+    }
+  }
+
+  //This method is used to mark the subscription status to automatic renewal
+  Future<void> markSubscriptionToAutomaticRenewal(bool newValue) async {
+    try {
+      emit(state.copyWith(isSubscriptionLoading: true));
+      final firestoreService = locator.get<FirestoreService>();
+      final businessCollection = locator.get<AppConstants>().businessCollection;
+
+      if (newValue) {
+        await firestoreService.editDocumentByDocumentId(
+          businessCollection,
+          state.businessId!,
+          {
+            "subscription_status": BusinessSubscriptionStatus.markToRenew
+                .toString()
+                .split('.')
+                .last,
+          },
+        );
+        emit(state.copyWith(
+            status: BusinessViewCubitStatus.success,
+            business: state.business!.copyWith(
+                subscriptionStatus: BusinessSubscriptionStatus.markToRenew)));
+      } else {
+        await firestoreService.editDocumentByDocumentId(
+          businessCollection,
+          state.businessId!,
+          {
+            "subscription_status":
+                BusinessSubscriptionStatus.active.toString().split('.').last,
+          },
+        );
+        emit(state.copyWith(
+            business: state.business!.copyWith(
+                subscriptionStatus: BusinessSubscriptionStatus.active)));
+      }
+    } catch (e) {
+      log('Error: $e, Function: markSubscriptionToAutomaticRenewal, File: owned_business_details_cubit.dart');
     }
   }
 

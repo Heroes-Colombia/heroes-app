@@ -130,6 +130,30 @@ class FirestoreService {
    where the condition of the property is equal to the propertyValue 
    passed as parameter
   */
+  Future<List<Map<String, dynamic>>> readAllDocumentsByCondition(
+    String collectionName,
+    String property,
+    Object propertyValue,
+    int limit,
+  ) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .limit(limit)
+        .where(property, isEqualTo: propertyValue)
+        .get();
+    final data = docSnapshot.docs.map((e) {
+      final data = e.data();
+      data["id"] = e.id;
+      return data;
+    }).toList();
+    return data;
+  }
+
+  /*
+   This method is used to read all documents inside a collection,
+   where the condition of the property is equal to the propertyValue 
+   passed as parameter
+  */
   Future<Map<String, dynamic>> readDocumentByCondition(
     String collectionName,
     String property,
@@ -247,6 +271,28 @@ class FirestoreService {
     final docSnapshot = await _firestore
         .collection(collectionName)
         .where("status", isEqualTo: "active")
+        .where(FieldPath.documentId, whereIn: ids)
+        .get();
+
+    final data = docSnapshot.docs.map((e) {
+      final data = e.data();
+      data["id"] = e.id;
+      return data;
+    }).toList();
+
+    return data;
+  }
+
+  /*
+   This method is used to read all documents inside a collection,
+   where the passed ids are contained in the document ids
+  */
+  Future<List<Map<String, dynamic>>> readAllDocumentsByDocumentIDs(
+    String collectionName,
+    List<String> ids,
+  ) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
         .where(FieldPath.documentId, whereIn: ids)
         .get();
 

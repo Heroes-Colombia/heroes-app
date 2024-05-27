@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -41,7 +42,25 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     context.read<OwnedBusinessDetailsCubit>().getInitial();
     context
         .read<OwnedBusinessDetailsCubit>()
-        .getBusinessDetails(widget.businessId);
+        .getBusinessDetails(widget.businessId)
+        .then((value) {
+      final currentBusiness =
+          context.read<OwnedBusinessDetailsCubit>().state.business!;
+      final texts = GetIt.instance<AppConstants>()
+          .businessDashboardTexts["ownedBusinessDetailsView"];
+
+      //On the first load we check if the subscription status is pending to refresh the status
+      if (currentBusiness.subscriptionStatus ==
+          BusinessSubscriptionStatus.pending) {
+        context.read<OwnedBusinessDetailsCubit>().refreshSubscriptionStatus();
+      }
+
+      //On the first load we check if the user has a free trial to show the dialog
+      if (currentBusiness.subscriptionStatus ==
+          BusinessSubscriptionStatus.freeTrial) {
+        showFreeTrialDialog(context, currentBusiness, texts);
+      }
+    });
   }
 
   @override
@@ -306,16 +325,16 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
           );
         case BusinessSubscriptionStatus.freeTrial:
           return Expanded(
-            child: TextButton(
-              onPressed: null,
+            child: FilledButton(
+              onPressed: () => handleAddPaymentMethod(),
               child: Text(texts["subscription-free-trial"]!),
             ),
           );
         case BusinessSubscriptionStatus.markToRenew:
           return Expanded(
-            child: OutlinedButton(
-              onPressed: () => handleCreateSubscription(texts),
-              child: Text(texts["subscription-mark-to-renew"]!),
+            child: TextButton(
+              onPressed: () => handleSeeSubscriptionDetails(texts),
+              child: Text(texts["subscription-active"]!),
             ),
           );
         case BusinessSubscriptionStatus.canceled:
@@ -1364,6 +1383,29 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     );
   }
 
+  void showFreeTrialDialog(BuildContext context, Business business, texts) {
+    //After we build the widget we show the dialog if the is on free trial
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      business.subscriptionStatus == BusinessSubscriptionStatus.freeTrial
+          ? showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text(texts["free-trial-title"]!),
+                  content: Text(texts["free-trial-description"]!),
+                  actions: [
+                    FilledButton(
+                      onPressed: () => handleAddPaymentMethod(),
+                      child: Text(texts["add-payment-button"]!),
+                    ),
+                  ],
+                );
+              },
+            )
+          : null;
+    });
+  }
+
   Future<void> handleCreatePromotion(
       GlobalKey<FormBuilderState> key, texts) async {
     if (!key.currentState!.saveAndValidate()) return;
@@ -1812,6 +1854,33 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                                 ": ${DateFormat("dd/MM/yyyy").format(state.latestTransaction!.createdAt)}"),
                             Text(texts["subscription-expiration-date"]! +
                                 ": ${DateFormat("dd/MM/yyyy").format(state.latestTransaction!.expirationDate)}"),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(texts["renew-subscription"]!),
+                                !state.isSubscriptionLoading
+                                    ? Switch(
+                                        value: state.business!
+                                                    .subscriptionStatus ==
+                                                BusinessSubscriptionStatus
+                                                    .markToRenew
+                                            ? true
+                                            : false,
+                                        onChanged: ((value) {
+                                          context
+                                              .read<OwnedBusinessDetailsCubit>()
+                                              .markSubscriptionToAutomaticRenewal(
+                                                  value);
+                                        }))
+                                    : Switch(
+                                        value: !(state
+                                                .business!.subscriptionStatus ==
+                                            BusinessSubscriptionStatus
+                                                .markToRenew),
+                                        onChanged: null),
+                              ],
+                            ),
                           ],
                         )
                       : SizedBox(
@@ -1821,10 +1890,6 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                           ),
                         ),
                   actions: [
-                    TextButton(
-                      onPressed: () => cancelSubscription(texts),
-                      child: Text(texts["cancel-subscription"]!),
-                    ),
                     FilledButton(
                       onPressed: () => Navigator.of(context).pop(),
                       child: Text(texts["cancel-button"]!),
@@ -1866,11 +1931,5 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
       Navigator.of(context).pop();
       createScaffoldMessage(texts["create-subscription-error"]!);
     }
-  }
-
-  Future<void> cancelSubscription(texts) async {
-    await context.read<OwnedBusinessDetailsCubit>().cancelSubscription();
-    if (!context.mounted) return;
-    Navigator.of(context).pop();
   }
 }
