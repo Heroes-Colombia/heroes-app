@@ -34,7 +34,7 @@ class OwnedBusinessesCubit extends Cubit<OwnedBusinessesState> {
       //We get the business that the user owns
       final rawOwnerBusinesses = await locator<FirestoreService>()
           .readAllDocumentsByCondition(
-              collectionName, "owner_uid", user.uid, 1);
+              collectionName, "owner_uid", user.uid, 99);
       final ownerBusinesses =
           rawOwnerBusinesses.map((e) => ListableBusiness.fromJson(e)).toList();
 

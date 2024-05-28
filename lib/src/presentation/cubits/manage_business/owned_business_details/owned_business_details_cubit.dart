@@ -62,12 +62,24 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       final categories =
           rawCategories.map((e) => BusinessCategory.fromJson(e)).toList();
 
+      //We fetch the payment methods from the database
+      final paymentMethodsCollection =
+          locator.get<AppConstants>().paymentMethodsCollection;
+
+      //We fetch all the payment methods
+      final rawPaymentMethods =
+          await firestoreService.readCreatedDocumentsByCondition(
+              paymentMethodsCollection, "business_id", businessId, 99);
+      final paymentMethods =
+          rawPaymentMethods.map((e) => PaymentMethod.fromJson(e)).toList();
+
       //We update the state with the new business details
       emit(state.copyWith(
         businessId: businessId,
         business: business,
         promotions: promotions,
         allCategories: categories,
+        allPaymentMethods: paymentMethods,
         status: BusinessViewCubitStatus.success,
       ));
     } catch (e) {

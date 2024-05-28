@@ -48,6 +48,8 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
           context.read<OwnedBusinessDetailsCubit>().state.business!;
       final texts = GetIt.instance<AppConstants>()
           .businessDashboardTexts["ownedBusinessDetailsView"];
+      final paymentMethods =
+          context.read<OwnedBusinessDetailsCubit>().state.allPaymentMethods;
 
       //On the first load we check if the subscription status is pending to refresh the status
       if (currentBusiness.subscriptionStatus ==
@@ -57,7 +59,8 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
 
       //On the first load we check if the user has a free trial to show the dialog
       if (currentBusiness.subscriptionStatus ==
-          BusinessSubscriptionStatus.freeTrial) {
+              BusinessSubscriptionStatus.freeTrial &&
+          paymentMethods.isEmpty) {
         showFreeTrialDialog(context, currentBusiness, texts);
       }
     });
