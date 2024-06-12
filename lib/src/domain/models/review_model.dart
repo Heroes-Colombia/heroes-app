@@ -43,7 +43,7 @@ class UserReview extends Equatable {
       'rate': rate,
       'business_id': businessId,
       'created_at': createdAt,
-      'status': 'inactive',
+      'status': 'pending',
     };
   }
 

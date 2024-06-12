@@ -177,6 +177,21 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       //First we log out the user from firebase auth
       await getIt<AuthService>().signOut();
+
+      //Then we unsubscribe the user from all topics
+      locator
+          .get<CloudMessageService>()
+          .unsubscribeFromTopic(locator.get<AppConstants>().normalUserTopic);
+      locator
+          .get<CloudMessageService>()
+          .unsubscribeFromTopic(locator.get<AppConstants>().favoriteTopic);
+      locator
+          .get<CloudMessageService>()
+          .unsubscribeFromTopic(locator.get<AppConstants>().discoverTopic);
+      locator
+          .get<CloudMessageService>()
+          .unsubscribeFromTopic(locator.get<AppConstants>().businessUserTopic);
+
       //Then we return true or false in case of error
       return true;
     } catch (e) {
@@ -271,10 +286,11 @@ class AuthCubit extends Cubit<AuthState> {
         .get<SharedPreferencesService>()
         .containsKey(favoritesTopic);
 
-    //If the user doesn't have a device notification preferences, we save it
-    if (!containsDiscoverTopicKey && !containsFavoritesTopicKey) {
-      await locator.get<CloudMessageService>().subscribeToTopic(normalTopic);
+    //We always subscribe the user to the normal topic
+    await locator.get<CloudMessageService>().subscribeToTopic(normalTopic);
 
+    //If the user doesn't have a device notification preferences, we create the default topics
+    if (!containsDiscoverTopicKey && !containsFavoritesTopicKey) {
       await locator
           .get<SharedPreferencesService>()
           .setBool(favoritesTopic, true);

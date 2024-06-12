@@ -499,7 +499,11 @@ class AppConstants {
       "empty-comment-title":
           "Este comercio aún no cuenta con comentarios activos, cuando los usuarios agreguen comentarios aquí podrás verlos.",
       "active-promotions": "Promociones activas",
-      "inactive-promotions": "Promociones inactivas",
+      "inactive-promotions": "Promociones caducadas",
+      "renew-subscription": "Renovar automáticamente",
+      "free-trial-title": "Prueba gratuita",
+      "free-trial-description":
+          "Actualmente tu comercio cuenta con una prueba gratuita. Si desas continuar con la suscripción, por favor agrega un método de pago.",
       "raiting": "Calificación",
       "address-title": "Dirección",
       "no-managers": "No hay administradores asignados",
