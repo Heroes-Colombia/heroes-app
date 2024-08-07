@@ -10,6 +10,7 @@ import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/repositories/cloud_message_service.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
+import 'package:heroes_app/src/presentation/widgets/async_text_button_widget.dart';
 import 'package:ionicons/ionicons.dart';
 
 @RoutePage()
@@ -83,6 +84,14 @@ class _ProfileViewState extends State<ProfileView> {
                     ),
                     title: Text(texts['logout']!),
                     onTap: () => doLogOut(context, texts)),
+                ListTile(
+                  leading: Icon(
+                    Ionicons.trash_outline,
+                    color: theme.colorScheme.primary,
+                  ),
+                  title: Text(texts['delete-account-title']!),
+                  onTap: () => deleteAccount(context, texts),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   texts['settings']!,
@@ -242,6 +251,40 @@ class _ProfileViewState extends State<ProfileView> {
       favoriteTopic = favoriteTopicNewValue;
       discoverTopic = discoverTopicNewValue;
     });
+  }
+
+  void deleteAccount(BuildContext context, dynamic texts) async {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text(texts['delete-account-title']!),
+              content: Text(texts["delete-account-confirmation"]!),
+              actions: [
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(texts["cancel"]!),
+                ),
+                AsyncTextButtonWidget(
+                  onPressed: () async {
+                    final accountDeleted = await context
+                        .read<AuthCubit>()
+                        .deleteAccount(context, texts);
+                    if (!context.mounted) return;
+
+                    if (!accountDeleted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(texts["delete-account-error"]!),
+                        ),
+                      );
+                      return;
+                    }
+                    context.router.replaceAll([const AuthView()]);
+                  },
+                  buttonText: texts["delete"]!,
+                ),
+              ],
+            ));
   }
 
   void handleSetNotificationPreference(String topic, bool newValue) async {

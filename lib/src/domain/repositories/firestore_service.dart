@@ -91,6 +91,23 @@ class FirestoreService {
   }
 
   /*
+   This method is used to set inactive a document inside a collection 
+   where the UNIQUE property is equal to the property value passed as parameter
+  */
+  Future<void> makeDocumentInactive(
+      String collectionName, String property, String valueOfProperty) async {
+    final docSnapshot = await _firestore
+        .collection(collectionName)
+        .where(property, isEqualTo: valueOfProperty)
+        .get();
+    final docId = docSnapshot.docs.first.id;
+    await _firestore
+        .collection(collectionName)
+        .doc(docId)
+        .update({"status": "inactive"});
+  }
+
+  /*
   This method is used to get a document by the document id
   */
   Future<Map<String, dynamic>?> readDocumentByDocId(

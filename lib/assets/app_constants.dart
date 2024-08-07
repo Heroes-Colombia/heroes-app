@@ -408,6 +408,17 @@ class AppConstants {
       "notifications": "Notificaciones",
       "favorites-topic": "Promociones de comercos favoritos",
       "discover-topic": "Promociones cercanas",
+      "delete-account-title": "Eliminar cuenta",
+      "delete-account-confirmation":
+          "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es permanente y no se puede deshacer.",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "delete": "Eliminar",
+      "refresh-account-title": "Actualizar cuenta",
+      "refresh-account-confirmation":
+          "Se necesita un token actualizado para eliminar la cuenta, inicie sesión nuevamente para obtener un token actualizado.",
+      "delete-account-error":
+          "Ocurrió un error al eliminar la cuenta, intente de nuevo más tarde",
     },
     'editprofileView': {
       'title': 'Editar perfil',

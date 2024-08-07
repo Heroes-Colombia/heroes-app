@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -196,6 +197,43 @@ class AuthCubit extends Cubit<AuthState> {
       return true;
     } catch (e) {
       log('Error: $e, Function: logOut, File: auth_cubit.dart');
+      return false;
+    }
+  }
+
+  Future<bool> deleteAccount(BuildContext context, dynamic texts) async {
+    try {
+      final userUid = getIt.get<AuthService>().getUserId();
+      //First we mark the user as inactive
+      await getIt.get<FirestoreService>().makeDocumentInactive(
+          getIt.get<AppConstants>().usersCollection, "uid", userUid);
+
+      //then we delete the user from firebase auth
+      final requiredRefreshLogin = await getIt<AuthService>().deleteAccount();
+
+      if (!requiredRefreshLogin) {
+        //In case that the token is expired, we show a dialog to the user
+        if (!context.mounted) return false;
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  title: Text(texts["refresh-account-title"]!),
+                  content: Text(texts["refresh-account-confirmation"]!),
+                  actions: [
+                    FilledButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(texts["confirm"]!),
+                    ),
+                  ],
+                ));
+      }
+
+      //Then we return true or false in case of error
+      return true;
+    } catch (e) {
+      log('Error: $e, Function: deleteAccount, File: auth_cubit.dart');
       return false;
     }
   }
