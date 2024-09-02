@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -65,33 +67,48 @@ class SignUpView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 40),
-                    FormBuilderTextField(
-                      name: 'license',
-                      key: const Key('license'),
-                      decoration: InputDecoration(
-                        labelText: texts['license-label']!,
-                        hintText: texts['license-hint']!,
-                        border: const OutlineInputBorder(),
-                      ),
-                      validator: (value) => validateInputs(context, value),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                    ),
-                    const SizedBox(height: 12),
-                    FormBuilderTextField(
-                      name: 'identification_card',
-                      key: const Key('identification_card'),
-                      decoration: InputDecoration(
-                        labelText: texts['identification-card-label']!,
-                        hintText: texts['identification-card-hint']!,
-                        border: const OutlineInputBorder(),
-                      ),
-                      validator: (value) => validateInputs(context, value),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 12),
-                    pictureField(texts, theme),
-                    const SizedBox(height: 12),
+                    //Removed in iOS for App Store approval
+                    Builder(builder: (context) {
+                      if (!Platform.isIOS) {
+                        return Column(
+                          children: [
+                            FormBuilderTextField(
+                              name: 'license',
+                              key: const Key('license'),
+                              decoration: InputDecoration(
+                                labelText: texts['license-label']!,
+                                hintText: texts['license-hint']!,
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (value) =>
+                                  validateInputs(context, value),
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                            ),
+                            const SizedBox(height: 12),
+                            FormBuilderTextField(
+                              name: 'identification_card',
+                              key: const Key('identification_card'),
+                              decoration: InputDecoration(
+                                labelText: texts['identification-card-label']!,
+                                hintText: texts['identification-card-hint']!,
+                                border: const OutlineInputBorder(),
+                              ),
+                              validator: (value) =>
+                                  validateInputs(context, value),
+                              autovalidateMode:
+                                  AutovalidateMode.onUserInteraction,
+                              keyboardType: TextInputType.number,
+                            ),
+                            const SizedBox(height: 12),
+                            pictureField(texts, theme),
+                            const SizedBox(height: 12),
+                          ],
+                        );
+                      } else {
+                        return const SizedBox(height: 12);
+                      }
+                    }),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
