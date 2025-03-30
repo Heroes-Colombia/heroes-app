@@ -29,13 +29,13 @@ dependencies:
   flutter_map: ^6.1.0
   equatable: ^2.0.0
   provider: ^6.0.5
-  firebase_core: ^2.16.0
-  firebase_auth: ^4.10.0
-  cloud_firestore: ^4.14.0
+  firebase_core: ^2.27.0
+  firebase_auth: ^4.17.8
+  cloud_firestore: ^4.15.8
   bloc: ^8.1.2
   adaptive_theme: ^3.4.1
   image_picker: ^1.0.4
-  firebase_storage: ^11.4.0
+  firebase_storage: ^11.6.9
   intl: ^0.18.0
   form_builder_extra_fields: ^10.1.0
   flutter_slidable: ^3.0.1
@@ -48,7 +48,7 @@ dependencies:
   dart_geohash: ^2.0.2
   geoflutterfire2: ^2.3.15
   flutter_dotenv: ^5.1.0
-  firebase_messaging: ^14.7.9
+  firebase_messaging: ^14.7.19
   flutter_local_notifications: ^16.3.0
   flutter_svg: ^2.0.10+1
   google_fonts: ^6.1.0
