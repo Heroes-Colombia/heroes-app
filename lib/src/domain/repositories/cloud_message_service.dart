@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -87,14 +88,25 @@ class CloudMessageService {
 
   //This method is used to get the notification token for the current user device
   Future<String?> getNotificationToken() async {
-    final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-    return await firebaseMessaging.getToken();
+    try {
+      final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+      return await firebaseMessaging.getToken();
+    } catch (e) {
+      // Handle the error
+      log("Error getting notification token: $e");
+      return null;
+    }
   }
 
   //This method is used to subscribe the user to bussines or user channel
   Future<void> subscribeToTopic(String topic) async {
-    final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-    await firebaseMessaging.subscribeToTopic(topic);
+    try {
+      final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+      await firebaseMessaging.subscribeToTopic(topic);
+    } catch (e) {
+      // Handle the error
+      log("Error subscribing to topic: $e");
+    }
   }
 
   //This method is used to unsubscribe the user to bussines or user channel
