@@ -8,7 +8,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:geoflutterfire2/geoflutterfire2.dart';
+import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
@@ -56,8 +56,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
           locator.get<AppConstants>().businessCategoryCollection;
 
       //We fetch the categories from the database
-      final rawCategories =
-          await firestoreService.readAllActiveDocuments(categoriesCollection);
+      final rawCategories = await firestoreService.readAllActiveDocuments(
+        categoriesCollection,
+      );
 
       final categories =
           rawCategories.map((e) => BusinessCategory.fromJson(e)).toList();
@@ -67,24 +68,32 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
           locator.get<AppConstants>().paymentMethodsCollection;
 
       //We fetch all the payment methods
-      final rawPaymentMethods =
-          await firestoreService.readCreatedDocumentsByCondition(
-              paymentMethodsCollection, "business_id", businessId, 99);
+      final rawPaymentMethods = await firestoreService
+          .readCreatedDocumentsByCondition(
+            paymentMethodsCollection,
+            "business_id",
+            businessId,
+            99,
+          );
       final paymentMethods =
           rawPaymentMethods.map((e) => PaymentMethod.fromJson(e)).toList();
 
       //We update the state with the new business details
-      emit(state.copyWith(
-        businessId: businessId,
-        business: business,
-        promotions: promotions,
-        allCategories: categories,
-        allPaymentMethods: paymentMethods,
-        status: BusinessViewCubitStatus.success,
-      ));
+      emit(
+        state.copyWith(
+          businessId: businessId,
+          business: business,
+          promotions: promotions,
+          allCategories: categories,
+          allPaymentMethods: paymentMethods,
+          status: BusinessViewCubitStatus.success,
+        ),
+      );
     } catch (e) {
-      log('Error: $e, Function: getBusinessDetails, File: owned_owned_business_details_cubit.dart',
-          stackTrace: StackTrace.current);
+      log(
+        'Error: $e, Function: getBusinessDetails, File: owned_owned_business_details_cubit.dart',
+        stackTrace: StackTrace.current,
+      );
       emit(state.copyWith(status: BusinessViewCubitStatus.error));
     }
   }
@@ -98,7 +107,10 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       //We fetch the promotions from the database
       final rawPromotions = await firestoreService.readAllDocumentsInCollection(
-          promotionsCollection, 'business_id', businessId);
+        promotionsCollection,
+        'business_id',
+        businessId,
+      );
 
       final promotions =
           rawPromotions.map((e) => Promotion.fromJson(e)).toList();
@@ -106,7 +118,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       //Then return the promotions
       return promotions;
     } catch (e) {
-      log('Error: $e, Function: getBusinessPromotions, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: getBusinessPromotions, File: owned_business_details_cubit.dart',
+      );
       return [];
     }
   }
@@ -120,14 +134,20 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       //We fetch the reviews from the database
       final rawReviews = await firestoreService.readActiveDocumentsByCondition(
-          reviewsCollection, 'business_id', businessId, 999);
+        reviewsCollection,
+        'business_id',
+        businessId,
+        999,
+      );
 
       final reviews = rawReviews.map((e) => UserReview.fromJson(e)).toList();
 
       //Then return the reviews
       emit(state.copyWith(allUserReviews: reviews));
     } catch (e) {
-      log('Error: $e, Function: getAllBusinessReviews, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: getAllBusinessReviews, File: owned_business_details_cubit.dart',
+      );
     }
   }
 
@@ -139,18 +159,24 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       final usersCollection = locator.get<AppConstants>().usersCollection;
 
       //We fetch all the users that contains the business id in their owned_businesses array
-      final rawBusinessManagers =
-          await firestoreService.readDocumentsWhereArrayContainsId(
-              usersCollection, "owned_businesses", businessId);
+      final rawBusinessManagers = await firestoreService
+          .readDocumentsWhereArrayContainsId(
+            usersCollection,
+            "owned_businesses",
+            businessId,
+          );
 
-      final managers = rawBusinessManagers
-          .map((e) => ListableUserModel.fromJson(e))
-          .toList();
+      final managers =
+          rawBusinessManagers
+              .map((e) => ListableUserModel.fromJson(e))
+              .toList();
 
       //Then return the reviews
       emit(state.copyWith(allManagers: managers));
     } catch (e) {
-      log('Error: $e, Function: getAllBusinessManagers, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: getAllBusinessManagers, File: owned_business_details_cubit.dart',
+      );
     }
   }
 
@@ -171,11 +197,11 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       final transaction = BusinessTransaction.fromJson(rawTransaction!);
 
       //Then we update the state
-      emit(state.copyWith(
-        latestTransaction: transaction,
-      ));
+      emit(state.copyWith(latestTransaction: transaction));
     } catch (e) {
-      log('Error: $e, Function: getLatestTransaction, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: getLatestTransaction, File: owned_business_details_cubit.dart',
+      );
     }
   }
 
@@ -187,22 +213,30 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
           locator.get<AppConstants>().paymentMethodsCollection;
 
       //We fetch all the payment methods
-      final rawPaymentMethods =
-          await firestoreService.readCreatedDocumentsByCondition(
-              paymentMethodsCollection, "business_id", businessId, 999);
+      final rawPaymentMethods = await firestoreService
+          .readCreatedDocumentsByCondition(
+            paymentMethodsCollection,
+            "business_id",
+            businessId,
+            999,
+          );
       final paymentMethods =
           rawPaymentMethods.map((e) => PaymentMethod.fromJson(e)).toList();
 
       //Then set the payment methods in the state
       emit(state.copyWith(allPaymentMethods: paymentMethods));
     } catch (e) {
-      log('Error: $e, Function: getAllCardTokens, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: getAllCardTokens, File: owned_business_details_cubit.dart',
+      );
     }
   }
 
   //This method is used to create a card token with payment method Id
   Future<void> createCardToken(
-      Map<String, dynamic> cardData, BuildContext context) async {
+    Map<String, dynamic> cardData,
+    BuildContext context,
+  ) async {
     try {
       //First, we get the business id
       final businessId = state.businessId!;
@@ -212,8 +246,8 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
           locator.get<BusinessSubscriptionService>();
 
       //Then, we create the card token
-      final newPaymentMethod =
-          await businessSubscriptionService.createCardToken(cardData);
+      final newPaymentMethod = await businessSubscriptionService
+          .createCardToken(cardData);
 
       //Then, we get the firestore service and the payment methods collection
       final firestoreService = locator.get<FirestoreService>();
@@ -231,12 +265,12 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       );
 
       //Then we create the paymentMethod id to the card token
-      final errorCreatingMethod =
-          await businessSubscriptionService.createPaymentSource(
-        newPaymentMethod.id,
-        state.acceptanceData["acceptance_token"],
-        state.business!.email,
-      );
+      final errorCreatingMethod = await businessSubscriptionService
+          .createPaymentSource(
+            newPaymentMethod.id,
+            state.acceptanceData["acceptance_token"],
+            state.business!.email,
+          );
 
       if (errorCreatingMethod == null) {
         //If there is no error, we get the payment method id and token from the database
@@ -268,7 +302,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      log('Error: $e, Function: createCardToken, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: createCardToken, File: owned_business_details_cubit.dart',
+      );
     }
   }
 
@@ -294,18 +330,20 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
           locator.get<AppConstants>().advertisementCollection;
 
       final docId = await firestoreService.createDocument(
-          promotionsCollection, promotion.toJson());
+        promotionsCollection,
+        promotion.toJson(),
+      );
 
       //Then, we save the image in the firebase storage
       XFile image = promotionMap["featured_image"]!.value;
 
       final fireStorage = locator.get<FireStorageService>();
-      final promotionFeaturedImagePath =
-          await fireStorage.uploadPromotionFeaturedImage(image, docId);
+      final promotionFeaturedImagePath = await fireStorage
+          .uploadPromotionFeaturedImage(image, docId);
 
       //Then, we update the promotion with the image path
       Map<String, dynamic> promotionImagePath = {
-        "featured_image": promotionFeaturedImagePath
+        "featured_image": promotionFeaturedImagePath,
       };
 
       //Then, we update the promotion object
@@ -322,14 +360,19 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       );
 
       //Finally, we update the state
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           status: BusinessViewCubitStatus.success,
-          promotions: [promotion, ...state.promotions]));
+          promotions: [promotion, ...state.promotions],
+        ),
+      );
 
       return true;
     } catch (e) {
-      log('Error: $e, Function: createPromotion, File: owned_business_details_cubit.dart',
-          stackTrace: StackTrace.current);
+      log(
+        'Error: $e, Function: createPromotion, File: owned_business_details_cubit.dart',
+        stackTrace: StackTrace.current,
+      );
       return false;
     }
   }
@@ -385,8 +428,10 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       return true;
     } catch (e) {
-      log('Error: $e, Function: editPromotion, File: owned_business_details_cubit.dart',
-          stackTrace: StackTrace.current);
+      log(
+        'Error: $e, Function: editPromotion, File: owned_business_details_cubit.dart',
+        stackTrace: StackTrace.current,
+      );
       return false;
     }
   }
@@ -404,7 +449,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       await fireStorageService.deletePromotionFeaturedImage(promotion);
 
       await firestoreService.deleteDocumentByDocumentId(
-          promotionsCollection, promotion.documentId!);
+        promotionsCollection,
+        promotion.documentId!,
+      );
 
       //Then, we update the promotion inside the state
       final idOfPromotion = state.promotions.indexWhere(
@@ -423,15 +470,19 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       return true;
     } catch (e) {
-      log('Error: $e, Function: deletePromotion, File: owned_business_details_cubit.dart',
-          stackTrace: StackTrace.current);
+      log(
+        'Error: $e, Function: deletePromotion, File: owned_business_details_cubit.dart',
+        stackTrace: StackTrace.current,
+      );
       return false;
     }
   }
 
   //This method is used to delete a manager from the business
   Future<bool> deleteManagerFromBusiness(
-      String businessId, String userId) async {
+    String businessId,
+    String userId,
+  ) async {
     try {
       //First, we get the firestore service and the users collection
       final firestoreService = locator.get<FirestoreService>();
@@ -463,15 +514,18 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       return true;
     } catch (e) {
-      log('Error: $e, Function: deleteManagerFromBusiness, File: owned_business_details_cubit.dart',
-          stackTrace: StackTrace.current);
+      log(
+        'Error: $e, Function: deleteManagerFromBusiness, File: owned_business_details_cubit.dart',
+        stackTrace: StackTrace.current,
+      );
       return false;
     }
   }
 
   //This method is used to delete a payment method from the business
   Future<bool> deletePaymentMethodFromBusiness(
-      PaymentMethod paymentMethod) async {
+    PaymentMethod paymentMethod,
+  ) async {
     try {
       //First, we get the firestore service and the paymentMethod collection
       final firestoreService = locator.get<FirestoreService>();
@@ -480,7 +534,10 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       //Then, we delete the paymentMethod in the database
       await firestoreService.deleteDocumentByDocumentProperty(
-          paymentMethodCollection, "id", paymentMethod.id);
+        paymentMethodCollection,
+        "id",
+        paymentMethod.id,
+      );
 
       //Then, we update the promotion inside the state
       final idOfPayment = state.allPaymentMethods.indexWhere(
@@ -499,18 +556,22 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       return true;
     } catch (e) {
-      log('Error: $e, Function: deletePaymentMethodFromBusiness, File: owned_business_details_cubit.dart',
-          stackTrace: StackTrace.current);
+      log(
+        'Error: $e, Function: deletePaymentMethodFromBusiness, File: owned_business_details_cubit.dart',
+        stackTrace: StackTrace.current,
+      );
       return false;
     }
   }
 
   //This method is used to set the selected payment method in the state
   void setSelectedPaymentMethod(String paymentMethodId) {
-    emit(state.copyWith(
-      status: BusinessViewCubitStatus.success,
-      selectedPaymentMethod: paymentMethodId,
-    ));
+    emit(
+      state.copyWith(
+        status: BusinessViewCubitStatus.success,
+        selectedPaymentMethod: paymentMethodId,
+      ),
+    );
   }
 
   //This method is used to set the selected promotion in the state
@@ -524,16 +585,20 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       final data = await businessSubscriptionService.getAcceptanceToken();
       emit(state.copyWith(acceptanceData: data));
     } catch (e) {
-      log('Error: $e, Function: getAcceptanceToken, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: getAcceptanceToken, File: owned_business_details_cubit.dart',
+      );
     }
   }
 
   //This method is used to change the user accepted terms in the state
   void changeUserAcceptedTerms(bool value) {
-    emit(state.copyWith(
-      userAcceptedTerms: value,
-      selectedPaymentMethod: state.selectedPaymentMethod,
-    ));
+    emit(
+      state.copyWith(
+        userAcceptedTerms: value,
+        selectedPaymentMethod: state.selectedPaymentMethod,
+      ),
+    );
   }
 
   //This method is used to create a subscription from the business
@@ -544,18 +609,21 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
           locator.get<BusinessSubscriptionService>();
 
       //Then, we create the subscription with the selected payment method in the cloud functions
-      final paymentMethodId = state.allPaymentMethods
-          .firstWhere((element) => element.id == state.selectedPaymentMethod)
-          .paymentMethodId;
+      final paymentMethodId =
+          state.allPaymentMethods
+              .firstWhere(
+                (element) => element.id == state.selectedPaymentMethod,
+              )
+              .paymentMethodId;
 
       //TODO: Specify the plan cost, period, etc.
-      final errorCreatingTransaction =
-          await businessSubscriptionService.createSubscription(
-        paymentMethodId!,
-        state.business!.email,
-        state.businessId!,
-        "plan_1",
-      );
+      final errorCreatingTransaction = await businessSubscriptionService
+          .createSubscription(
+            paymentMethodId!,
+            state.business!.email,
+            state.businessId!,
+            "plan_1",
+          );
 
       if (errorCreatingTransaction != null) {
         return false;
@@ -563,7 +631,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       return true;
     } catch (e) {
-      log('Error: $e, Function: createSubscription, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: createSubscription, File: owned_business_details_cubit.dart',
+      );
       return false;
     }
   }
@@ -575,21 +645,24 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       final rawTransaction = await locator
           .get<FirestoreService>()
           .readDocumentByDocId(
-              locator.get<AppConstants>().transactionsCollection,
-              state.business!.latestTransactionDocumentId!);
+            locator.get<AppConstants>().transactionsCollection,
+            state.business!.latestTransactionDocumentId!,
+          );
 
       final transactionId = rawTransaction!["id"];
 
       //Then, we get the subscription status
-      await locator
-          .get<BusinessSubscriptionService>()
-          .refreshTransactionStatus(transactionId);
+      await locator.get<BusinessSubscriptionService>().refreshTransactionStatus(
+        transactionId,
+      );
 
       //Then we get the updated business
       final rawBusiness = await locator
           .get<FirestoreService>()
-          .readDocumentByDocId(locator.get<AppConstants>().businessCollection,
-              state.businessId!);
+          .readDocumentByDocId(
+            locator.get<AppConstants>().businessCollection,
+            state.businessId!,
+          );
 
       final business = Business.fromJson(rawBusiness!);
 
@@ -601,13 +674,19 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
         ),
       );
     } catch (e) {
-      log('Error: $e, Function: refreshSubscriptionStatus, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: refreshSubscriptionStatus, File: owned_business_details_cubit.dart',
+      );
     }
   }
 
   //This method is used to add a manager to the business
   Future<void> addManagerToBusiness(
-      String userEmail, String businessId, BuildContext context, texts) async {
+    String userEmail,
+    String businessId,
+    BuildContext context,
+    texts,
+  ) async {
     try {
       //First, we get the firestore service and the users collection
       final firestoreService = locator.get<FirestoreService>();
@@ -684,7 +763,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
         ),
       );
     } catch (e) {
-      log('Error: $e, Function: addManagerToBusiness, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: addManagerToBusiness, File: owned_business_details_cubit.dart',
+      );
       Navigator.of(context).pop();
       Navigator.of(context).pop();
 
@@ -712,9 +793,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       final geoPoint = GeoPoint(coordinates.latitude, coordinates.longitude);
 
       //Then we get the geoHash from the coordinates
-      final geo = GeoFlutterFire();
-      GeoFirePoint currentPosition = geo.point(
-          latitude: coordinates.latitude, longitude: coordinates.longitude);
+      final currentPosition = GeoFirePoint(
+        GeoPoint(coordinates.latitude, coordinates.longitude),
+      );
 
       //Then, we add the address and the location to the business
       await firestoreService.editDocumentByDocumentId(
@@ -745,7 +826,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
       return true;
     } catch (e) {
-      log('Error: $e, Function: setAddressToBusiness, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: setAddressToBusiness, File: owned_business_details_cubit.dart',
+      );
       return false;
     }
   }
@@ -753,18 +836,23 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
   //This method is used to transform an address to a geoPoint
   Future<Location?> transformToLatLng(String address) async {
     try {
-      var location =
-          await locator.get<AppMethods>().getCoordinatesFromAddress(address);
+      var location = await locator.get<AppMethods>().getCoordinatesFromAddress(
+        address,
+      );
       return location;
     } catch (e) {
-      log('Error: $e, Function: transformToLatLng, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: transformToLatLng, File: owned_business_details_cubit.dart',
+      );
       return null;
     }
   }
 
   //This method is used to handle the selected categories in the edit business form
   void handleSetSelectedCategory(
-      String categoryId, FormFieldState<dynamic> field) {
+    String categoryId,
+    FormFieldState<dynamic> field,
+  ) {
     if (field.value == null || field.value!.contains(categoryId)) {
       return;
     } else {
@@ -774,7 +862,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
   //This method is used to handle the removed categories in the edit business form
   void handleRemoveSelectedCategory(
-      String categoryId, FormFieldState<dynamic> field) {
+    String categoryId,
+    FormFieldState<dynamic> field,
+  ) {
     if (field.value == null || !field.value!.contains(categoryId)) {
       return;
     } else {
@@ -784,7 +874,8 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
   //This method is used to update the business information
   Future<void> handleEditBusinessInformation(
-      GlobalKey<FormBuilderState> editInfoKey) async {
+    GlobalKey<FormBuilderState> editInfoKey,
+  ) async {
     try {
       if (editInfoKey.currentState!.saveAndValidate()) {
         final newBusinessMap = editInfoKey.currentState!.fields;
@@ -794,9 +885,10 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
           email: newBusinessMap["email"]!.value,
           phoneNumber: newBusinessMap["phone_number"]!.value,
           identification: newBusinessMap["identification"]!.value,
-          categories: (newBusinessMap["categories"]!.value as List)
-              .map((e) => e.toString())
-              .toList(),
+          categories:
+              (newBusinessMap["categories"]!.value as List)
+                  .map((e) => e.toString())
+                  .toList(),
         );
 
         final firestoreService = locator.get<FirestoreService>();
@@ -816,13 +908,17 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
 
         final updatedBusiness = Business.fromJson(rawBusiness!);
 
-        emit(state.copyWith(
-          status: BusinessViewCubitStatus.success,
-          business: updatedBusiness,
-        ));
+        emit(
+          state.copyWith(
+            status: BusinessViewCubitStatus.success,
+            business: updatedBusiness,
+          ),
+        );
       }
     } catch (e) {
-      log('Error: $e, Function: handleEditBusinessInformation, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: handleEditBusinessInformation, File: owned_business_details_cubit.dart',
+      );
     }
   }
 
@@ -832,7 +928,9 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       emit(state.copyWith(status: BusinessViewCubitStatus.loading));
       final fireStorage = locator.get<FireStorageService>();
       final imagePath = await fireStorage.uploadPromotionFeaturedImage(
-          newImage, state.businessId!);
+        newImage,
+        state.businessId!,
+      );
 
       final firestoreService = locator.get<FirestoreService>();
       final businessCollection = locator.get<AppConstants>().businessCollection;
@@ -840,17 +938,19 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       await firestoreService.editDocumentByDocumentId(
         businessCollection,
         state.businessId!,
-        {
-          "featured_image": imagePath,
-        },
+        {"featured_image": imagePath},
       );
 
-      emit(state.copyWith(
-        status: BusinessViewCubitStatus.success,
-        business: state.business!.copyWith(featuredImage: imagePath),
-      ));
+      emit(
+        state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          business: state.business!.copyWith(featuredImage: imagePath),
+        ),
+      );
     } catch (e) {
-      log('Error: $e, Function: handleEditFeaturedImage, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: handleEditFeaturedImage, File: owned_business_details_cubit.dart',
+      );
     }
   }
 
@@ -862,35 +962,40 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
       final businessCollection = locator.get<AppConstants>().businessCollection;
 
       if (newValue) {
-        await firestoreService.editDocumentByDocumentId(
-          businessCollection,
-          state.businessId!,
-          {
-            "subscription_status": BusinessSubscriptionStatus.markToRenew
-                .toString()
-                .split('.')
-                .last,
-          },
-        );
-        emit(state.copyWith(
+        await firestoreService
+            .editDocumentByDocumentId(businessCollection, state.businessId!, {
+              "subscription_status":
+                  BusinessSubscriptionStatus.markToRenew
+                      .toString()
+                      .split('.')
+                      .last,
+            });
+        emit(
+          state.copyWith(
             status: BusinessViewCubitStatus.success,
             business: state.business!.copyWith(
-                subscriptionStatus: BusinessSubscriptionStatus.markToRenew)));
-      } else {
-        await firestoreService.editDocumentByDocumentId(
-          businessCollection,
-          state.businessId!,
-          {
-            "subscription_status":
-                BusinessSubscriptionStatus.active.toString().split('.').last,
-          },
+              subscriptionStatus: BusinessSubscriptionStatus.markToRenew,
+            ),
+          ),
         );
-        emit(state.copyWith(
+      } else {
+        await firestoreService
+            .editDocumentByDocumentId(businessCollection, state.businessId!, {
+              "subscription_status":
+                  BusinessSubscriptionStatus.active.toString().split('.').last,
+            });
+        emit(
+          state.copyWith(
             business: state.business!.copyWith(
-                subscriptionStatus: BusinessSubscriptionStatus.active)));
+              subscriptionStatus: BusinessSubscriptionStatus.active,
+            ),
+          ),
+        );
       }
     } catch (e) {
-      log('Error: $e, Function: markSubscriptionToAutomaticRenewal, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: markSubscriptionToAutomaticRenewal, File: owned_business_details_cubit.dart',
+      );
     }
   }
 

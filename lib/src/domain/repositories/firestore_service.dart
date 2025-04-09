@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:geoflutterfire2/geoflutterfire2.dart';
+import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 
 //This class is a wrapper for Firestore
 class FirestoreService {
@@ -8,7 +8,9 @@ class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   //This method is used to create a document inside a collection
   Future<String> createDocument(
-      String collectionName, Map<String, dynamic> data) async {
+    String collectionName,
+    Map<String, dynamic> data,
+  ) async {
     final docRef = await _firestore.collection(collectionName).add(data);
     return docRef.id;
   }
@@ -19,11 +21,15 @@ class FirestoreService {
    example 'usersCollectionName', '123', 'uid'
   */
   Future<Map<String, dynamic>> readDocumentById(
-      String collectionName, String id, String property) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where(property, isEqualTo: id)
-        .get();
+    String collectionName,
+    String id,
+    String property,
+  ) async {
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where(property, isEqualTo: id)
+            .get();
     return docSnapshot.docs.first.data();
   }
 
@@ -32,12 +38,17 @@ class FirestoreService {
    where the id  of the property is equal to the id passed as parameter
    example 'usersCollectionName', '123', 'uid', '{name: 'John'}'
   */
-  Future<Map<String, dynamic>> editDocumentById(String collectionName,
-      String id, String property, Map<String, dynamic> data) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where(property, isEqualTo: id)
-        .get();
+  Future<Map<String, dynamic>> editDocumentById(
+    String collectionName,
+    String id,
+    String property,
+    Map<String, dynamic> data,
+  ) async {
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where(property, isEqualTo: id)
+            .get();
     final docId = docSnapshot.docs.first.id;
     await _firestore.collection(collectionName).doc(docId).update(data);
     return data;
@@ -49,11 +60,15 @@ class FirestoreService {
    example 'usersCollectionName', '123', 'uid', '{name: 'John'}'
   */
   Future<Map<String, dynamic>> editDocumentByDocumentId(
-      String collectionName, String id, Map<String, dynamic> data) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where(FieldPath.documentId, isEqualTo: id)
-        .get();
+    String collectionName,
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where(FieldPath.documentId, isEqualTo: id)
+            .get();
     final docId = docSnapshot.docs.first.id;
     await _firestore.collection(collectionName).doc(docId).update(data);
     final documentId = docSnapshot.docs.first.id;
@@ -67,11 +82,14 @@ class FirestoreService {
    where the document id is equal to the id passed as parameter
   */
   Future<void> deleteDocumentByDocumentId(
-      String collectionName, String id) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where(FieldPath.documentId, isEqualTo: id)
-        .get();
+    String collectionName,
+    String id,
+  ) async {
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where(FieldPath.documentId, isEqualTo: id)
+            .get();
     final docId = docSnapshot.docs.first.id;
     await _firestore.collection(collectionName).doc(docId).delete();
   }
@@ -81,11 +99,15 @@ class FirestoreService {
    where the UNIQUE property is equal to the property value passed as parameter
   */
   Future<void> deleteDocumentByDocumentProperty(
-      String collectionName, String property, String valueOfProperty) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where(property, isEqualTo: valueOfProperty)
-        .get();
+    String collectionName,
+    String property,
+    String valueOfProperty,
+  ) async {
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where(property, isEqualTo: valueOfProperty)
+            .get();
     final docId = docSnapshot.docs.first.id;
     await _firestore.collection(collectionName).doc(docId).delete();
   }
@@ -95,23 +117,28 @@ class FirestoreService {
    where the UNIQUE property is equal to the property value passed as parameter
   */
   Future<void> makeDocumentInactive(
-      String collectionName, String property, String valueOfProperty) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where(property, isEqualTo: valueOfProperty)
-        .get();
+    String collectionName,
+    String property,
+    String valueOfProperty,
+  ) async {
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where(property, isEqualTo: valueOfProperty)
+            .get();
     final docId = docSnapshot.docs.first.id;
-    await _firestore
-        .collection(collectionName)
-        .doc(docId)
-        .update({"status": "inactive"});
+    await _firestore.collection(collectionName).doc(docId).update({
+      "status": "inactive",
+    });
   }
 
   /*
   This method is used to get a document by the document id
   */
   Future<Map<String, dynamic>?> readDocumentByDocId(
-      String collectionName, String docId) async {
+    String collectionName,
+    String docId,
+  ) async {
     final docSnapshot =
         await _firestore.collection(collectionName).doc(docId).get();
     return docSnapshot.data();
@@ -128,17 +155,19 @@ class FirestoreService {
     Object propertyValue,
     int limit,
   ) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .limit(limit)
-        .where("status", isEqualTo: "active")
-        .where(property, isEqualTo: propertyValue)
-        .get();
-    final data = docSnapshot.docs.map((e) {
-      final data = e.data();
-      data["id"] = e.id;
-      return data;
-    }).toList();
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .limit(limit)
+            .where("status", isEqualTo: "active")
+            .where(property, isEqualTo: propertyValue)
+            .get();
+    final data =
+        docSnapshot.docs.map((e) {
+          final data = e.data();
+          data["id"] = e.id;
+          return data;
+        }).toList();
     return data;
   }
 
@@ -153,16 +182,18 @@ class FirestoreService {
     Object propertyValue,
     int limit,
   ) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .limit(limit)
-        .where(property, isEqualTo: propertyValue)
-        .get();
-    final data = docSnapshot.docs.map((e) {
-      final data = e.data();
-      data["id"] = e.id;
-      return data;
-    }).toList();
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .limit(limit)
+            .where(property, isEqualTo: propertyValue)
+            .get();
+    final data =
+        docSnapshot.docs.map((e) {
+          final data = e.data();
+          data["id"] = e.id;
+          return data;
+        }).toList();
     return data;
   }
 
@@ -176,10 +207,11 @@ class FirestoreService {
     String property,
     Object propertyValue,
   ) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where(property, isEqualTo: propertyValue)
-        .get();
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where(property, isEqualTo: propertyValue)
+            .get();
     final data = docSnapshot.docs.map((e) {
       final data = e.data();
       data["id"] = e.id;
@@ -199,16 +231,18 @@ class FirestoreService {
     Object propertyValue,
     int limit,
   ) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .limit(limit)
-        .where("status", isEqualTo: "CREATED")
-        .where(property, isEqualTo: propertyValue)
-        .get();
-    final data = docSnapshot.docs.map((e) {
-      final data = e.data();
-      return data;
-    }).toList();
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .limit(limit)
+            .where("status", isEqualTo: "CREATED")
+            .where(property, isEqualTo: propertyValue)
+            .get();
+    final data =
+        docSnapshot.docs.map((e) {
+          final data = e.data();
+          return data;
+        }).toList();
     return data;
   }
 
@@ -221,15 +255,17 @@ class FirestoreService {
     String property,
     Object propertyValue,
   ) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where(property, isEqualTo: propertyValue)
-        .get();
-    final data = docSnapshot.docs.map((e) {
-      final data = e.data();
-      data["id"] = e.id;
-      return data;
-    }).toList();
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where(property, isEqualTo: propertyValue)
+            .get();
+    final data =
+        docSnapshot.docs.map((e) {
+          final data = e.data();
+          data["id"] = e.id;
+          return data;
+        }).toList();
     return data;
   }
 
@@ -240,16 +276,18 @@ class FirestoreService {
   Future<List<Map<String, dynamic>>> readAllActiveDocuments(
     String collectionName,
   ) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where("status", isEqualTo: "active")
-        .get();
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where("status", isEqualTo: "active")
+            .get();
 
-    final data = docSnapshot.docs.map((e) {
-      final data = e.data();
-      data["id"] = e.id;
-      return data;
-    }).toList();
+    final data =
+        docSnapshot.docs.map((e) {
+          final data = e.data();
+          data["id"] = e.id;
+          return data;
+        }).toList();
     return data;
   }
 
@@ -262,17 +300,21 @@ class FirestoreService {
     String property,
     String searchQuery,
   ) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where("status", isEqualTo: "active")
-        .orderBy("name")
-        .startAt([searchQuery]).endAt(['$searchQuery\uf8ff']).get();
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where("status", isEqualTo: "active")
+            .orderBy("name")
+            .startAt([searchQuery])
+            .endAt(['$searchQuery\uf8ff'])
+            .get();
 
-    final data = docSnapshot.docs.map((e) {
-      final data = e.data();
-      data["id"] = e.id;
-      return data;
-    }).toList();
+    final data =
+        docSnapshot.docs.map((e) {
+          final data = e.data();
+          data["id"] = e.id;
+          return data;
+        }).toList();
 
     return data;
   }
@@ -285,17 +327,19 @@ class FirestoreService {
     String collectionName,
     List<String> ids,
   ) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where("status", isEqualTo: "active")
-        .where(FieldPath.documentId, whereIn: ids)
-        .get();
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where("status", isEqualTo: "active")
+            .where(FieldPath.documentId, whereIn: ids)
+            .get();
 
-    final data = docSnapshot.docs.map((e) {
-      final data = e.data();
-      data["id"] = e.id;
-      return data;
-    }).toList();
+    final data =
+        docSnapshot.docs.map((e) {
+          final data = e.data();
+          data["id"] = e.id;
+          return data;
+        }).toList();
 
     return data;
   }
@@ -308,16 +352,18 @@ class FirestoreService {
     String collectionName,
     List<String> ids,
   ) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where(FieldPath.documentId, whereIn: ids)
-        .get();
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where(FieldPath.documentId, whereIn: ids)
+            .get();
 
-    final data = docSnapshot.docs.map((e) {
-      final data = e.data();
-      data["id"] = e.id;
-      return data;
-    }).toList();
+    final data =
+        docSnapshot.docs.map((e) {
+          final data = e.data();
+          data["id"] = e.id;
+          return data;
+        }).toList();
 
     return data;
   }
@@ -331,16 +377,18 @@ class FirestoreService {
     String property,
     String id,
   ) async {
-    final docSnapshot = await _firestore
-        .collection(collectionName)
-        .where(property, arrayContains: id)
-        .get();
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .where(property, arrayContains: id)
+            .get();
 
-    final data = docSnapshot.docs.map((e) {
-      final data = e.data();
-      data["id"] = e.id;
-      return data;
-    }).toList();
+    final data =
+        docSnapshot.docs.map((e) {
+          final data = e.data();
+          data["id"] = e.id;
+          return data;
+        }).toList();
 
     return data;
   }
@@ -357,8 +405,11 @@ class FirestoreService {
     String businessId,
   ) async {
     //First we get the document to edit
-    final document =
-        await readDocumentById(collectionName, userId, propertyToSearch);
+    final document = await readDocumentById(
+      collectionName,
+      userId,
+      propertyToSearch,
+    );
 
     //Then we get the array to edit
     final array = document[propertyToEdit] as List<dynamic>;
@@ -367,12 +418,9 @@ class FirestoreService {
     array.remove(businessId);
 
     //Then we edit the document
-    await editDocumentById(
-      collectionName,
-      userId,
-      propertyToSearch,
-      {propertyToEdit: array},
-    );
+    await editDocumentById(collectionName, userId, propertyToSearch, {
+      propertyToEdit: array,
+    });
 
     return array;
   }
@@ -387,18 +435,28 @@ class FirestoreService {
     double maxDistance,
     String collection,
   ) {
-    final geofire = GeoFlutterFire();
-
-    GeoFirePoint center = geofire.point(
-        latitude: location.latitude, longitude: location.longitude);
-    var collectionReference = _firestore.collection(collection);
+    GeoFirePoint center = GeoFirePoint(
+      GeoPoint(location.latitude, location.longitude),
+    );
+    final CollectionReference<Map<String, dynamic>> collectionReference =
+        _firestore.collection(collection);
 
     double radius = maxDistance;
     String field = 'geo_hash';
 
-    Stream<List<DocumentSnapshot>> stream = geofire
-        .collection(collectionRef: collectionReference)
-        .within(center: center, radius: radius, field: field);
+    //Function to get GeoPoint instance from the location
+    GeoPoint geopointFrom(Map<String, dynamic> data) =>
+        (data['geo_hash'] as Map<String, dynamic>)['geopoint'] as GeoPoint;
+
+    final Stream<List<DocumentSnapshot<Map<String, dynamic>>>> stream =
+        GeoCollectionReference<Map<String, dynamic>>(
+          collectionReference,
+        ).subscribeWithin(
+          center: center,
+          radiusInKm: radius,
+          field: field,
+          geopointFrom: geopointFrom,
+        );
 
     return stream;
   }
