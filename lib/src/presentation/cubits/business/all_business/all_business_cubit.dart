@@ -61,17 +61,22 @@ class AllBusinessCubit extends Cubit<AllBusinessState> {
         //We get the businesses from the firestore service filtreing by category
         final rawBusinesses = await locator<FirestoreService>()
             .readDocumentsWhereArrayContainsId(
-                collectionName, 'categories', state.selectedCategoryId);
+              collectionName,
+              'categories',
+              state.selectedCategoryId,
+            );
 
         //We convert the raw businesses to a list of ListableBusiness
         businesses =
             rawBusinesses.map((e) => ListableBusiness.fromJson(e)).toList();
       }
       //We emit the state with the new businesses
-      emit(state.copyWith(
-        status: BusinessViewCubitStatus.success,
-        businesses: businesses,
-      ));
+      emit(
+        state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          businesses: businesses,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(status: BusinessViewCubitStatus.error));
       log('Error: $e, Function: getBusinesses, File: all_business_cubit.dart');
@@ -91,12 +96,12 @@ class AllBusinessCubit extends Cubit<AllBusinessState> {
           categories.map((e) => BusinessCategory.fromJson(e)).toList();
 
       //We emit the state with the new business categories
-      emit(state.copyWith(
-        categories: businessCategories,
-      ));
+      emit(state.copyWith(categories: businessCategories));
     } catch (e) {
       emit(state.copyWith(status: BusinessViewCubitStatus.error));
-      log('Error: $e, Function: getBusinessCategories, File: all_business_cubit.dart');
+      log(
+        'Error: $e, Function: getBusinessCategories, File: all_business_cubit.dart',
+      );
     }
   }
 }
