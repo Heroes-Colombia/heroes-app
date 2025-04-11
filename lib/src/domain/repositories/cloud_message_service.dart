@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -47,13 +46,14 @@ class CloudMessageService {
           notification.body,
           //All notifications will be shown in the same channel, the user in the app can change the topics to subscribe
           const NotificationDetails(
-              android: AndroidNotificationDetails(
-                'heroes_app',
-                'Todas las Notificaciones',
-                importance: Importance.defaultImportance,
-                colorized: true,
-              ),
-              iOS: DarwinNotificationDetails()),
+            android: AndroidNotificationDetails(
+              'heroes_app',
+              'Todas las Notificaciones',
+              importance: Importance.defaultImportance,
+              colorized: true,
+            ),
+            iOS: DarwinNotificationDetails(),
+          ),
         );
       }
     });
@@ -64,8 +64,11 @@ class CloudMessageService {
      We do this to ensure that the user will receive the notifications on the device that he is currently using.
      The device notification token changes when the user login from another device. Or on every reinstall of the app.
     */
-  Future<void> handleDeviceNotificationToken(String? userNotificationToken,
-      String usersCollection, String userUid) async {
+  Future<void> handleDeviceNotificationToken(
+    String? userNotificationToken,
+    String usersCollection,
+    String userUid,
+  ) async {
     final localDeviceNotificationToken = await getNotificationToken();
     if (userNotificationToken == null) {
       //If the user doesn't have a device notification token, we save it

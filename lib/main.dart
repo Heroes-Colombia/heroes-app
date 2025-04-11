@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -36,7 +38,13 @@ Future<void> main() async {
   //Splash screen
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   //Firebase dependencies
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (Platform.isIOS) {
+    await Firebase.initializeApp();
+  } else {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
   //DIO dependencies
   await initializeDependencies();
   //Cloud messaging dependencies
