@@ -46,13 +46,14 @@ class CloudMessageService {
           notification.body,
           //All notifications will be shown in the same channel, the user in the app can change the topics to subscribe
           const NotificationDetails(
-              android: AndroidNotificationDetails(
-                'heroes_app',
-                'Todas las Notificaciones',
-                importance: Importance.defaultImportance,
-                colorized: true,
-              ),
-              iOS: DarwinNotificationDetails()),
+            android: AndroidNotificationDetails(
+              'heroes_app',
+              'Todas las Notificaciones',
+              importance: Importance.defaultImportance,
+              colorized: true,
+            ),
+            iOS: DarwinNotificationDetails(),
+          ),
         );
       }
     });
@@ -63,8 +64,11 @@ class CloudMessageService {
      We do this to ensure that the user will receive the notifications on the device that he is currently using.
      The device notification token changes when the user login from another device. Or on every reinstall of the app.
     */
-  Future<void> handleDeviceNotificationToken(String? userNotificationToken,
-      String usersCollection, String userUid) async {
+  Future<void> handleDeviceNotificationToken(
+    String? userNotificationToken,
+    String usersCollection,
+    String userUid,
+  ) async {
     final localDeviceNotificationToken = await getNotificationToken();
     if (userNotificationToken == null) {
       //If the user doesn't have a device notification token, we save it
@@ -87,14 +91,25 @@ class CloudMessageService {
 
   //This method is used to get the notification token for the current user device
   Future<String?> getNotificationToken() async {
-    final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-    return await firebaseMessaging.getToken();
+    try {
+      final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+      return await firebaseMessaging.getToken();
+    } catch (e) {
+      // Handle the error
+      log("Error getting notification token: $e");
+      return null;
+    }
   }
 
   //This method is used to subscribe the user to bussines or user channel
   Future<void> subscribeToTopic(String topic) async {
-    final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-    await firebaseMessaging.subscribeToTopic(topic);
+    try {
+      final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+      await firebaseMessaging.subscribeToTopic(topic);
+    } catch (e) {
+      // Handle the error
+      log("Error subscribing to topic: $e");
+    }
   }
 
   //This method is used to unsubscribe the user to bussines or user channel

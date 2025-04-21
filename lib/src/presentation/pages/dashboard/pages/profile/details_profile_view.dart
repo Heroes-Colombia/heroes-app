@@ -24,9 +24,11 @@ class DetailsProfileView extends StatelessWidget {
         locator.get<AppConstants>().dashBoardTexts['detailsProfileView']!;
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
-        context.read<ProfileCubit>().restoreProfileState();
-        Navigator.of(context).pop();
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          context.read<ProfileCubit>().restoreProfileState();
+          Navigator.of(context).pop();
+        }
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -60,55 +62,60 @@ class DetailsProfileView extends StatelessWidget {
     return Column(
       children: [
         Container(
-            width: double.infinity,
-            height: MediaQuery.of(context).size.height * 0.38,
-            color: theme.colorScheme.primary.withOpacity(0.8),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 0,
-                  right: 49,
-                  bottom: 20,
-                  top: 0,
-                  child: SvgPicture.asset('assets/images/app_icon.svg',
-                      height: 100,
-                      width: 200,
-                      fit: BoxFit.contain,
-                      colorFilter: ColorFilter.mode(
-                          theme.colorScheme.onPrimary, BlendMode.srcIn)),
-                ),
-                Positioned(
-                  top: 140,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '${user.firstName} ${user.firstLastName}',
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: theme.textTheme.bodyLarge!.fontSize,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user.rank.contains("_")
-                            ? user.rank.split("_").last
-                            : user.rank.split(" ").last,
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimary,
-                          fontWeight: FontWeight.w400,
-                          fontSize: theme.textTheme.bodyMedium!.fontSize,
-                        ),
-                      ),
-                    ],
+          width: double.infinity,
+          height: MediaQuery.of(context).size.height * 0.38,
+          color: theme.colorScheme.primary.withOpacity(0.8),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                right: 49,
+                bottom: 20,
+                top: 0,
+                child: SvgPicture.asset(
+                  'assets/images/app_icon.svg',
+                  height: 100,
+                  width: 200,
+                  fit: BoxFit.contain,
+                  colorFilter: ColorFilter.mode(
+                    theme.colorScheme.onPrimary,
+                    BlendMode.srcIn,
                   ),
                 ),
-              ],
-            )),
+              ),
+              Positioned(
+                top: 140,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '${user.firstName} ${user.firstLastName}',
+                      style: TextStyle(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: theme.textTheme.bodyLarge!.fontSize,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      user.rank.contains("_")
+                          ? user.rank.split("_").last
+                          : user.rank.split(" ").last,
+                      style: TextStyle(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.w400,
+                        fontSize: theme.textTheme.bodyMedium!.fontSize,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
         Container(
           color: theme.colorScheme.primary.withOpacity(0.8),
           height: MediaQuery.of(context).size.height * 0.62,
@@ -122,151 +129,156 @@ class DetailsProfileView extends StatelessWidget {
               ),
             ),
             child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    TextButton.icon(
-                      onPressed: () =>
-                          AutoRouter.of(context).navigate(EditProfileView()),
-                      icon: const Icon(Ionicons.pencil_outline),
-                      label: Text(texts['edit-profile']!),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            '${user.firstName} ${user.firstLastName} ${user.secondName} ${user.secondLastName}',
-                            style: TextStyle(
-                              overflow: TextOverflow.ellipsis,
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
-                              fontSize: theme.textTheme.labelMedium!.fontSize,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          texts['fullname-label']!,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    onPressed:
+                        () =>
+                            AutoRouter.of(context).navigate(EditProfileView()),
+                    icon: const Icon(Ionicons.pencil_outline),
+                    label: Text(texts['edit-profile']!),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${user.firstName} ${user.firstLastName} ${user.secondName} ${user.secondLastName}',
                           style: TextStyle(
-                            color: theme.colorScheme.onSurfaceVariant
-                                .withOpacity(0.8),
+                            overflow: TextOverflow.ellipsis,
+                            color: theme.colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                             fontSize: theme.textTheme.labelMedium!.fontSize,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Divider(
-                      thickness: 0.5,
-                      color: theme.colorScheme.onBackground.withOpacity(0.5),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            user.email,
-                            style: TextStyle(
-                              overflow: TextOverflow.ellipsis,
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
-                              fontSize: theme.textTheme.labelMedium!.fontSize,
-                            ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        texts['fullname-label']!,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                            0.8,
                           ),
+                          fontWeight: FontWeight.w600,
+                          fontSize: theme.textTheme.labelMedium!.fontSize,
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          texts['email-label']!,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Divider(
+                    thickness: 0.5,
+                    color: theme.colorScheme.onBackground.withOpacity(0.5),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          user.email,
                           style: TextStyle(
-                            color: theme.colorScheme.onSurfaceVariant
-                                .withOpacity(0.8),
+                            overflow: TextOverflow.ellipsis,
+                            color: theme.colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                             fontSize: theme.textTheme.labelMedium!.fontSize,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Divider(
-                      thickness: 0.5,
-                      color: theme.colorScheme.onBackground.withOpacity(0.5),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            user.rank.contains("_")
-                                ? user.rank.split("_").last
-                                : user.rank.split(" ").last,
-                            style: TextStyle(
-                              overflow: TextOverflow.ellipsis,
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
-                              fontSize: theme.textTheme.labelMedium!.fontSize,
-                            ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        texts['email-label']!,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                            0.8,
                           ),
+                          fontWeight: FontWeight.w600,
+                          fontSize: theme.textTheme.labelMedium!.fontSize,
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          texts['rank-label']!,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Divider(
+                    thickness: 0.5,
+                    color: theme.colorScheme.onBackground.withOpacity(0.5),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          user.rank.contains("_")
+                              ? user.rank.split("_").last
+                              : user.rank.split(" ").last,
                           style: TextStyle(
-                            color: theme.colorScheme.onSurfaceVariant
-                                .withOpacity(0.8),
+                            overflow: TextOverflow.ellipsis,
+                            color: theme.colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                             fontSize: theme.textTheme.labelMedium!.fontSize,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Divider(
-                      thickness: 0.5,
-                      color: theme.colorScheme.onBackground.withOpacity(0.5),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            user.license,
-                            style: TextStyle(
-                              overflow: TextOverflow.ellipsis,
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
-                              fontSize: theme.textTheme.labelMedium!.fontSize,
-                            ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        texts['rank-label']!,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                            0.8,
                           ),
+                          fontWeight: FontWeight.w600,
+                          fontSize: theme.textTheme.labelMedium!.fontSize,
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          texts['identification-label']!,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Divider(
+                    thickness: 0.5,
+                    color: theme.colorScheme.onBackground.withOpacity(0.5),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          user.license,
                           style: TextStyle(
-                            color: theme.colorScheme.onSurfaceVariant
-                                .withOpacity(0.8),
+                            overflow: TextOverflow.ellipsis,
+                            color: theme.colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                             fontSize: theme.textTheme.labelMedium!.fontSize,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Divider(
-                      thickness: 0.5,
-                      color: theme.colorScheme.onBackground.withOpacity(0.5),
-                    ),
-                  ],
-                )),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        texts['identification-label']!,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                            0.8,
+                          ),
+                          fontWeight: FontWeight.w600,
+                          fontSize: theme.textTheme.labelMedium!.fontSize,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Divider(
+                    thickness: 0.5,
+                    color: theme.colorScheme.onBackground.withOpacity(0.5),
+                  ),
+                ],
+              ),
+            ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -286,12 +298,16 @@ class DetailsProfileView extends StatelessWidget {
                 right: 49,
                 bottom: 20,
                 top: 0,
-                child: SvgPicture.asset('assets/images/app_icon.svg',
-                    height: 100,
-                    width: 200,
-                    fit: BoxFit.contain,
-                    colorFilter: ColorFilter.mode(
-                        theme.colorScheme.onPrimary, BlendMode.srcIn)),
+                child: SvgPicture.asset(
+                  'assets/images/app_icon.svg',
+                  height: 100,
+                  width: 200,
+                  fit: BoxFit.contain,
+                  colorFilter: ColorFilter.mode(
+                    theme.colorScheme.onPrimary,
+                    BlendMode.srcIn,
+                  ),
+                ),
               ),
             ],
           ),
@@ -309,10 +325,11 @@ class DetailsProfileView extends StatelessWidget {
               ),
             ),
             child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                child: Center(child: CircularProgressIndicator())),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: Center(child: CircularProgressIndicator()),
+            ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -351,7 +368,7 @@ class DetailsProfileView extends StatelessWidget {
         ),
         const SliverFillRemaining(
           child: Center(child: CircularProgressIndicator()),
-        )
+        ),
       ],
     );
   }

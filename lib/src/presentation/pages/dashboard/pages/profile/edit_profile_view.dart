@@ -22,9 +22,11 @@ class EditProfileView extends StatelessWidget {
     var texts = locator.get<AppConstants>().dashBoardTexts['editprofileView']!;
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
-        context.read<ProfileCubit>().restoreProfileState();
-        Navigator.of(context).pop();
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          context.read<ProfileCubit>().restoreProfileState();
+          Navigator.of(context).pop();
+        }
       },
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -67,18 +69,22 @@ class EditProfileView extends StatelessWidget {
             child: FormBuilder(
               key: updateUserForm,
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 12),
-                    Row(children: [
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
                       Expanded(
                         child: FormBuilderTextField(
                           name: 'first_name',
                           initialValue: user.firstName,
-                          validator: (value) => locator
-                              .get<AppMethods>()
-                              .emptyStringValidator(
-                                  value!, texts['empty-string']!),
+                          validator:
+                              (value) => locator
+                                  .get<AppMethods>()
+                                  .emptyStringValidator(
+                                    value!,
+                                    texts['empty-string']!,
+                                  ),
                           autovalidateMode: AutovalidateMode.onUserInteraction,
                           decoration: InputDecoration(
                             hintText: texts['firstname-hint']!,
@@ -92,10 +98,13 @@ class EditProfileView extends StatelessWidget {
                         child: FormBuilderTextField(
                           name: 'second_name',
                           initialValue: user.secondName,
-                          validator: (value) => locator
-                              .get<AppMethods>()
-                              .emptyStringValidator(
-                                  value!, texts['empty-string']!),
+                          validator:
+                              (value) => locator
+                                  .get<AppMethods>()
+                                  .emptyStringValidator(
+                                    value!,
+                                    texts['empty-string']!,
+                                  ),
                           autovalidateMode: AutovalidateMode.onUserInteraction,
                           decoration: InputDecoration(
                             hintText: texts['secondname-hint']!,
@@ -104,59 +113,67 @@ class EditProfileView extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ]),
-                    const SizedBox(height: 12),
-                    FormBuilderTextField(
-                      name: 'first_last_name',
-                      initialValue: user.firstLastName,
-                      validator: (value) => locator
-                          .get<AppMethods>()
-                          .emptyStringValidator(value!, texts['empty-string']!),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      decoration: InputDecoration(
-                        hintText: texts['first-lastname-hint']!,
-                        labelText: texts['first-lastname-label']!,
-                        border: const OutlineInputBorder(),
-                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  FormBuilderTextField(
+                    name: 'first_last_name',
+                    initialValue: user.firstLastName,
+                    validator:
+                        (value) =>
+                            locator.get<AppMethods>().emptyStringValidator(
+                              value!,
+                              texts['empty-string']!,
+                            ),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    decoration: InputDecoration(
+                      hintText: texts['first-lastname-hint']!,
+                      labelText: texts['first-lastname-label']!,
+                      border: const OutlineInputBorder(),
                     ),
-                    const SizedBox(height: 12),
-                    FormBuilderTextField(
-                      name: 'second_last_name',
-                      initialValue: user.secondLastName,
-                      validator: (value) => locator
-                          .get<AppMethods>()
-                          .emptyStringValidator(value!, texts['empty-string']!),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                      decoration: InputDecoration(
-                        hintText: texts['second-lastname-hint']!,
-                        labelText: texts['second-lastname-label']!,
-                        border: const OutlineInputBorder(),
-                      ),
+                  ),
+                  const SizedBox(height: 12),
+                  FormBuilderTextField(
+                    name: 'second_last_name',
+                    initialValue: user.secondLastName,
+                    validator:
+                        (value) =>
+                            locator.get<AppMethods>().emptyStringValidator(
+                              value!,
+                              texts['empty-string']!,
+                            ),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    decoration: InputDecoration(
+                      hintText: texts['second-lastname-hint']!,
+                      labelText: texts['second-lastname-label']!,
+                      border: const OutlineInputBorder(),
                     ),
-                    const SizedBox(height: 12),
-                    FormBuilderDropdown(
-                      name: 'rank',
-                      key: const Key('_register_rank'),
-                      initialValue: user.rank,
-                      dropdownColor: theme.colorScheme.background,
-                      decoration: InputDecoration(
-                        labelText: texts['rank-label']!,
-                        hintText: texts['rank-hint']!,
-                        border: const OutlineInputBorder(),
-                      ),
-                      items: getRanks(context),
-                      validator: (value) => validateInputs(context, value),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                  ),
+                  const SizedBox(height: 12),
+                  FormBuilderDropdown(
+                    name: 'rank',
+                    key: const Key('_register_rank'),
+                    initialValue: user.rank,
+                    dropdownColor: theme.colorScheme.background,
+                    decoration: InputDecoration(
+                      labelText: texts['rank-label']!,
+                      hintText: texts['rank-hint']!,
+                      border: const OutlineInputBorder(),
                     ),
-                    const SizedBox(height: 12),
-                    AsyncButtonWidget(
-                      buttonText: texts['savechanges-button']!,
-                      onPressed: () => changeUserInfo(context, texts),
-                    )
-                  ]),
+                    items: getRanks(context),
+                    validator: (value) => validateInputs(context, value),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                  ),
+                  const SizedBox(height: 12),
+                  AsyncButtonWidget(
+                    buttonText: texts['savechanges-button']!,
+                    onPressed: () => changeUserInfo(context, texts),
+                  ),
+                ],
+              ),
             ),
           ),
-        )
+        ),
       ],
     );
   }
@@ -177,7 +194,7 @@ class EditProfileView extends StatelessWidget {
         ),
         const SliverFillRemaining(
           child: Center(child: CircularProgressIndicator()),
-        )
+        ),
       ],
     );
   }
@@ -216,7 +233,7 @@ class EditProfileView extends StatelessWidget {
         ),
         const SliverFillRemaining(
           child: Center(child: CircularProgressIndicator()),
-        )
+        ),
       ],
     );
   }
@@ -232,14 +249,14 @@ class EditProfileView extends StatelessWidget {
       await context.read<ProfileCubit>().updateProfileInfo(data);
       if (!context.mounted) return;
       //If the user info is updated we show a snackbar with a success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(texts['success-content']!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(texts['success-content']!)));
     } else {
       //If the form is not valid we show a snackbar with an error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(texts['error-content']!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(texts['error-content']!)));
     }
   }
 
@@ -259,9 +276,10 @@ class EditProfileView extends StatelessWidget {
           child: Text(
             locator.get<AppMethods>().capitalize(category),
             style: TextStyle(
-                fontSize: theme.textTheme.bodyLarge!.fontSize,
-                fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                color: theme.colorScheme.primary),
+              fontSize: theme.textTheme.bodyLarge!.fontSize,
+              fontWeight: theme.textTheme.labelLarge!.fontWeight,
+              color: theme.colorScheme.primary,
+            ),
           ),
         ),
       );
@@ -277,9 +295,10 @@ class EditProfileView extends StatelessWidget {
               child: Text(
                 locator.get<AppMethods>().capitalize(subCategory),
                 style: TextStyle(
-                    fontSize: theme.textTheme.labelMedium!.fontSize,
-                    fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                    color: theme.colorScheme.primary.withOpacity(0.6)),
+                  fontSize: theme.textTheme.labelMedium!.fontSize,
+                  fontWeight: theme.textTheme.labelLarge!.fontWeight,
+                  color: theme.colorScheme.primary.withOpacity(0.6),
+                ),
               ),
             ),
           ),
@@ -295,9 +314,10 @@ class EditProfileView extends StatelessWidget {
                 child: Text(
                   locator.get<AppMethods>().capitalize(option),
                   style: TextStyle(
-                      fontSize: theme.textTheme.labelMedium!.fontSize,
-                      fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                      color: theme.colorScheme.onSurfaceVariant),
+                    fontSize: theme.textTheme.labelMedium!.fontSize,
+                    fontWeight: theme.textTheme.labelLarge!.fontWeight,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),
@@ -324,9 +344,10 @@ class EditProfileView extends StatelessWidget {
   //This method is used to validate empty inputs
   String? validateInputs(BuildContext context, String? value) {
     final texts = locator.get<AppConstants>().authTexts['signupView']!;
-    final message = locator
-        .get<AppMethods>()
-        .emptyStringValidator(value, texts['genericValidator']!);
+    final message = locator.get<AppMethods>().emptyStringValidator(
+      value,
+      texts['genericValidator']!,
+    );
     return message;
   }
 }

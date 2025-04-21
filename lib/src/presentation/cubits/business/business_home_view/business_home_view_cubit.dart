@@ -1,7 +1,8 @@
 import 'dart:developer';
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
-import 'package:geoflutterfire2/geoflutterfire2.dart';
+import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
@@ -22,8 +23,11 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
 
   //This method is used to get the initial state of BusinessHomeViewCubit
   void getInitial() {
-    emit(const BusinessHomeViewState(
-        businessHomeViewState: BusinessViewCubitStatus.initial));
+    emit(
+      const BusinessHomeViewState(
+        businessHomeViewState: BusinessViewCubitStatus.initial,
+      ),
+    );
 
     updateUserLastLocation();
   }
@@ -31,8 +35,11 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
   //This method is used to get the loading state of BusinessHomeViewCubit
   void getRequiredData() async {
     //We emit the loading state
-    emit(const BusinessHomeViewState(
-        businessHomeViewState: BusinessViewCubitStatus.loading));
+    emit(
+      const BusinessHomeViewState(
+        businessHomeViewState: BusinessViewCubitStatus.loading,
+      ),
+    );
     try {
       //We get the business collection
       final businessCollection = locator.get<AppConstants>().businessCollection;
@@ -41,7 +48,11 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       final featuredBusinessRaw = await locator
           .get<FirestoreService>()
           .readActiveDocumentsByCondition(
-              businessCollection, "featured", true, 5);
+            businessCollection,
+            "featured",
+            true,
+            5,
+          );
 
       //We convert the raw data to a list of business
       final featuredBusiness =
@@ -51,7 +62,11 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       final normalBusinessRaw = await locator
           .get<FirestoreService>()
           .readActiveDocumentsByCondition(
-              businessCollection, "featured", false, 5);
+            businessCollection,
+            "featured",
+            false,
+            5,
+          );
 
       //we convert the raw data to a list of business
       final normalBusiness =
@@ -61,22 +76,26 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       final businessCategoriesRaw = await locator
           .get<FirestoreService>()
           .readAllActiveDocuments(
-              locator.get<AppConstants>().businessCategoryCollection);
+            locator.get<AppConstants>().businessCategoryCollection,
+          );
 
       //We convert the raw data to a list of business categories
-      final businessCategories = businessCategoriesRaw
-          .map((e) => BusinessCategory.fromJson(e))
-          .toList();
+      final businessCategories =
+          businessCategoriesRaw
+              .map((e) => BusinessCategory.fromJson(e))
+              .toList();
 
       //Then we add the first category data to the list of business categories
       for (var business in normalBusiness) {
         business.category = businessCategories.firstWhere(
-            (category) => category.id == business.categoryIds.first);
+          (category) => category.id == business.categoryIds.first,
+        );
       }
 
       for (var business in featuredBusiness) {
         business.category = businessCategories.firstWhere(
-            (category) => category.id == business.categoryIds.first);
+          (category) => category.id == business.categoryIds.first,
+        );
       }
 
       emit(
@@ -88,7 +107,9 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
         ),
       );
     } catch (e) {
-      log('Error: $e, Function: getRequiredData, File: business_home_view_cubit.dart');
+      log(
+        'Error: $e, Function: getRequiredData, File: business_home_view_cubit.dart',
+      );
       emit(
         state.copyWith(businessHomeViewState: BusinessViewCubitStatus.error),
       );
@@ -101,10 +122,8 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
     if (userLocation == null) return;
 
     //Then we get the geoHash from the coordinates
-    final geo = GeoFlutterFire();
-    GeoFirePoint currentPosition = geo.point(
-      latitude: userLocation.latitude!,
-      longitude: userLocation.longitude!,
+    GeoFirePoint currentPosition = GeoFirePoint(
+      GeoPoint(userLocation.latitude!, userLocation.longitude!),
     );
 
     //Then, we add the address and the location to the business
@@ -113,9 +132,7 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       locator.get<AppConstants>().usersCollection,
       currentUserId,
       "uid",
-      {
-        "geo_hash": currentPosition.data,
-      },
+      {"geo_hash": currentPosition.data},
     );
   }
 }

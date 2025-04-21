@@ -112,4 +112,18 @@ class AuthService {
       return null;
     }
   }
+
+  Future<bool> deleteAccount() async {
+    try {
+      await FirebaseAuth.instance.currentUser!.getIdTokenResult(true);
+
+      //Then we delete the user from the auth service
+      await FirebaseAuth.instance.currentUser!.delete();
+
+      return true;
+    } catch (e) {
+      log("Error: $e, Function: deleteAccount, File: auth_service.dart");
+      return false;
+    }
+  }
 }

@@ -1,3 +1,4 @@
+// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 // **************************************************************************
@@ -58,202 +59,6 @@ import 'package:heroes_app/src/presentation/pages/entryPoint/pages/unverified_us
     as _i23;
 import 'package:location/location.dart' as _i26;
 
-abstract class $AppRouter extends _i24.RootStackRouter {
-  $AppRouter({super.navigatorKey});
-
-  @override
-  final Map<String, _i24.PageFactory> pagesMap = {
-    AllBusinessView.name: (routeData) {
-      final args = routeData.argsAs<AllBusinessViewArgs>(
-          orElse: () => const AllBusinessViewArgs());
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i1.AllBusinessView(
-          key: args.key,
-          initialCategoryId: args.initialCategoryId,
-        ),
-      );
-    },
-    AuthView.name: (routeData) {
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const _i2.AuthView(),
-      );
-    },
-    BusinessDashBoardView.name: (routeData) {
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const _i3.BusinessDashBoardView(),
-      );
-    },
-    BusinessDetailsView.name: (routeData) {
-      final args = routeData.argsAs<BusinessDetailsViewArgs>();
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i4.BusinessDetailsView(
-          key: args.key,
-          businessId: args.businessId,
-        ),
-      );
-    },
-    DashBoardView.name: (routeData) {
-      final args = routeData.argsAs<DashBoardViewArgs>(
-          orElse: () => const DashBoardViewArgs());
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i5.DashBoardView(key: args.key),
-      );
-    },
-    DetailsProfileView.name: (routeData) {
-      final args = routeData.argsAs<DetailsProfileViewArgs>(
-          orElse: () => const DetailsProfileViewArgs());
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i6.DetailsProfileView(key: args.key),
-      );
-    },
-    EditProfileView.name: (routeData) {
-      final args = routeData.argsAs<EditProfileViewArgs>(
-          orElse: () => const EditProfileViewArgs());
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i7.EditProfileView(key: args.key),
-      );
-    },
-    EntryPointView.name: (routeData) {
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const _i8.EntryPointView(),
-      );
-    },
-    FavoritesView.name: (routeData) {
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const _i9.FavoritesView(),
-      );
-    },
-    FirstTimeView.name: (routeData) {
-      final args = routeData.argsAs<FirstTimeViewArgs>(
-          orElse: () => const FirstTimeViewArgs());
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i10.FirstTimeView(key: args.key),
-      );
-    },
-    HomeSearchView.name: (routeData) {
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const _i11.HomeSearchView(),
-      );
-    },
-    LoginView.name: (routeData) {
-      final args = routeData.argsAs<LoginViewArgs>();
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i12.LoginView(
-          key: args.key,
-          onResult: args.onResult,
-        ),
-      );
-    },
-    MapView.name: (routeData) {
-      final args = routeData.argsAs<MapViewArgs>();
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i13.MapView(
-          key: args.key,
-          initialCameraLocation: args.initialCameraLocation,
-        ),
-      );
-    },
-    OwnedBusinessDetailsView.name: (routeData) {
-      final args = routeData.argsAs<OwnedBusinessDetailsViewArgs>();
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i14.OwnedBusinessDetailsView(
-          key: args.key,
-          businessId: args.businessId,
-        ),
-      );
-    },
-    OwnedBusinessesView.name: (routeData) {
-      final args = routeData.argsAs<OwnedBusinessesViewArgs>(
-          orElse: () => const OwnedBusinessesViewArgs());
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i15.OwnedBusinessesView(key: args.key),
-      );
-    },
-    OwnedPromotionDetailsView.name: (routeData) {
-      final args = routeData.argsAs<OwnedPromotionDetailsViewArgs>();
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i16.OwnedPromotionDetailsView(
-          key: args.key,
-          promotion: args.promotion,
-        ),
-      );
-    },
-    ProfileView.name: (routeData) {
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const _i17.ProfileView(),
-      );
-    },
-    PromotionDetailsView.name: (routeData) {
-      final args = routeData.argsAs<PromotionDetailsViewArgs>();
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i18.PromotionDetailsView(
-          key: args.key,
-          promotion: args.promotion,
-          promotionId: args.promotionId,
-        ),
-      );
-    },
-    RestorePassword.name: (routeData) {
-      final args = routeData.argsAs<RestorePasswordArgs>(
-          orElse: () => const RestorePasswordArgs());
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i19.RestorePassword(key: args.key),
-      );
-    },
-    SearchView.name: (routeData) {
-      final args = routeData.argsAs<SearchViewArgs>(
-          orElse: () => const SearchViewArgs());
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i20.SearchView(key: args.key),
-      );
-    },
-    SignUpBusinessView.name: (routeData) {
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const _i21.SignUpBusinessView(),
-      );
-    },
-    SignUpView.name: (routeData) {
-      final args = routeData.argsAs<SignUpViewArgs>();
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i22.SignUpView(
-          key: args.key,
-          onResult: args.onResult,
-        ),
-      );
-    },
-    UnverifiedUserView.name: (routeData) {
-      final args = routeData.argsAs<UnverifiedUserViewArgs>(
-          orElse: () => const UnverifiedUserViewArgs());
-      return _i24.AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: _i23.UnverifiedUserView(key: args.key),
-      );
-    },
-  };
-}
-
 /// generated route for
 /// [_i1.AllBusinessView]
 class AllBusinessView extends _i24.PageRouteInfo<AllBusinessViewArgs> {
@@ -262,25 +67,32 @@ class AllBusinessView extends _i24.PageRouteInfo<AllBusinessViewArgs> {
     String? initialCategoryId,
     List<_i24.PageRouteInfo>? children,
   }) : super(
-          AllBusinessView.name,
-          args: AllBusinessViewArgs(
-            key: key,
-            initialCategoryId: initialCategoryId,
-          ),
-          initialChildren: children,
-        );
+         AllBusinessView.name,
+         args: AllBusinessViewArgs(
+           key: key,
+           initialCategoryId: initialCategoryId,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'AllBusinessView';
 
-  static const _i24.PageInfo<AllBusinessViewArgs> page =
-      _i24.PageInfo<AllBusinessViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<AllBusinessViewArgs>(
+        orElse: () => const AllBusinessViewArgs(),
+      );
+      return _i1.AllBusinessView(
+        key: args.key,
+        initialCategoryId: args.initialCategoryId,
+      );
+    },
+  );
 }
 
 class AllBusinessViewArgs {
-  const AllBusinessViewArgs({
-    this.key,
-    this.initialCategoryId,
-  });
+  const AllBusinessViewArgs({this.key, this.initialCategoryId});
 
   final _i25.Key? key;
 
@@ -296,28 +108,32 @@ class AllBusinessViewArgs {
 /// [_i2.AuthView]
 class AuthView extends _i24.PageRouteInfo<void> {
   const AuthView({List<_i24.PageRouteInfo>? children})
-      : super(
-          AuthView.name,
-          initialChildren: children,
-        );
+    : super(AuthView.name, initialChildren: children);
 
   static const String name = 'AuthView';
 
-  static const _i24.PageInfo<void> page = _i24.PageInfo<void>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      return const _i2.AuthView();
+    },
+  );
 }
 
 /// generated route for
 /// [_i3.BusinessDashBoardView]
 class BusinessDashBoardView extends _i24.PageRouteInfo<void> {
   const BusinessDashBoardView({List<_i24.PageRouteInfo>? children})
-      : super(
-          BusinessDashBoardView.name,
-          initialChildren: children,
-        );
+    : super(BusinessDashBoardView.name, initialChildren: children);
 
   static const String name = 'BusinessDashBoardView';
 
-  static const _i24.PageInfo<void> page = _i24.PageInfo<void>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      return const _i3.BusinessDashBoardView();
+    },
+  );
 }
 
 /// generated route for
@@ -328,25 +144,27 @@ class BusinessDetailsView extends _i24.PageRouteInfo<BusinessDetailsViewArgs> {
     required String businessId,
     List<_i24.PageRouteInfo>? children,
   }) : super(
-          BusinessDetailsView.name,
-          args: BusinessDetailsViewArgs(
-            key: key,
-            businessId: businessId,
-          ),
-          initialChildren: children,
-        );
+         BusinessDetailsView.name,
+         args: BusinessDetailsViewArgs(key: key, businessId: businessId),
+         initialChildren: children,
+       );
 
   static const String name = 'BusinessDetailsView';
 
-  static const _i24.PageInfo<BusinessDetailsViewArgs> page =
-      _i24.PageInfo<BusinessDetailsViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<BusinessDetailsViewArgs>();
+      return _i4.BusinessDetailsView(
+        key: args.key,
+        businessId: args.businessId,
+      );
+    },
+  );
 }
 
 class BusinessDetailsViewArgs {
-  const BusinessDetailsViewArgs({
-    this.key,
-    required this.businessId,
-  });
+  const BusinessDetailsViewArgs({this.key, required this.businessId});
 
   final _i25.Key? key;
 
@@ -361,19 +179,24 @@ class BusinessDetailsViewArgs {
 /// generated route for
 /// [_i5.DashBoardView]
 class DashBoardView extends _i24.PageRouteInfo<DashBoardViewArgs> {
-  DashBoardView({
-    _i25.Key? key,
-    List<_i24.PageRouteInfo>? children,
-  }) : super(
-          DashBoardView.name,
-          args: DashBoardViewArgs(key: key),
-          initialChildren: children,
-        );
+  DashBoardView({_i25.Key? key, List<_i24.PageRouteInfo>? children})
+    : super(
+        DashBoardView.name,
+        args: DashBoardViewArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'DashBoardView';
 
-  static const _i24.PageInfo<DashBoardViewArgs> page =
-      _i24.PageInfo<DashBoardViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DashBoardViewArgs>(
+        orElse: () => const DashBoardViewArgs(),
+      );
+      return _i5.DashBoardView(key: args.key);
+    },
+  );
 }
 
 class DashBoardViewArgs {
@@ -390,19 +213,24 @@ class DashBoardViewArgs {
 /// generated route for
 /// [_i6.DetailsProfileView]
 class DetailsProfileView extends _i24.PageRouteInfo<DetailsProfileViewArgs> {
-  DetailsProfileView({
-    _i25.Key? key,
-    List<_i24.PageRouteInfo>? children,
-  }) : super(
-          DetailsProfileView.name,
-          args: DetailsProfileViewArgs(key: key),
-          initialChildren: children,
-        );
+  DetailsProfileView({_i25.Key? key, List<_i24.PageRouteInfo>? children})
+    : super(
+        DetailsProfileView.name,
+        args: DetailsProfileViewArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'DetailsProfileView';
 
-  static const _i24.PageInfo<DetailsProfileViewArgs> page =
-      _i24.PageInfo<DetailsProfileViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DetailsProfileViewArgs>(
+        orElse: () => const DetailsProfileViewArgs(),
+      );
+      return _i6.DetailsProfileView(key: args.key);
+    },
+  );
 }
 
 class DetailsProfileViewArgs {
@@ -419,19 +247,24 @@ class DetailsProfileViewArgs {
 /// generated route for
 /// [_i7.EditProfileView]
 class EditProfileView extends _i24.PageRouteInfo<EditProfileViewArgs> {
-  EditProfileView({
-    _i25.Key? key,
-    List<_i24.PageRouteInfo>? children,
-  }) : super(
-          EditProfileView.name,
-          args: EditProfileViewArgs(key: key),
-          initialChildren: children,
-        );
+  EditProfileView({_i25.Key? key, List<_i24.PageRouteInfo>? children})
+    : super(
+        EditProfileView.name,
+        args: EditProfileViewArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'EditProfileView';
 
-  static const _i24.PageInfo<EditProfileViewArgs> page =
-      _i24.PageInfo<EditProfileViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<EditProfileViewArgs>(
+        orElse: () => const EditProfileViewArgs(),
+      );
+      return _i7.EditProfileView(key: args.key);
+    },
+  );
 }
 
 class EditProfileViewArgs {
@@ -449,46 +282,55 @@ class EditProfileViewArgs {
 /// [_i8.EntryPointView]
 class EntryPointView extends _i24.PageRouteInfo<void> {
   const EntryPointView({List<_i24.PageRouteInfo>? children})
-      : super(
-          EntryPointView.name,
-          initialChildren: children,
-        );
+    : super(EntryPointView.name, initialChildren: children);
 
   static const String name = 'EntryPointView';
 
-  static const _i24.PageInfo<void> page = _i24.PageInfo<void>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      return const _i8.EntryPointView();
+    },
+  );
 }
 
 /// generated route for
 /// [_i9.FavoritesView]
 class FavoritesView extends _i24.PageRouteInfo<void> {
   const FavoritesView({List<_i24.PageRouteInfo>? children})
-      : super(
-          FavoritesView.name,
-          initialChildren: children,
-        );
+    : super(FavoritesView.name, initialChildren: children);
 
   static const String name = 'FavoritesView';
 
-  static const _i24.PageInfo<void> page = _i24.PageInfo<void>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      return const _i9.FavoritesView();
+    },
+  );
 }
 
 /// generated route for
 /// [_i10.FirstTimeView]
 class FirstTimeView extends _i24.PageRouteInfo<FirstTimeViewArgs> {
-  FirstTimeView({
-    _i25.Key? key,
-    List<_i24.PageRouteInfo>? children,
-  }) : super(
-          FirstTimeView.name,
-          args: FirstTimeViewArgs(key: key),
-          initialChildren: children,
-        );
+  FirstTimeView({_i25.Key? key, List<_i24.PageRouteInfo>? children})
+    : super(
+        FirstTimeView.name,
+        args: FirstTimeViewArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'FirstTimeView';
 
-  static const _i24.PageInfo<FirstTimeViewArgs> page =
-      _i24.PageInfo<FirstTimeViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<FirstTimeViewArgs>(
+        orElse: () => const FirstTimeViewArgs(),
+      );
+      return _i10.FirstTimeView(key: args.key);
+    },
+  );
 }
 
 class FirstTimeViewArgs {
@@ -506,14 +348,16 @@ class FirstTimeViewArgs {
 /// [_i11.HomeSearchView]
 class HomeSearchView extends _i24.PageRouteInfo<void> {
   const HomeSearchView({List<_i24.PageRouteInfo>? children})
-      : super(
-          HomeSearchView.name,
-          initialChildren: children,
-        );
+    : super(HomeSearchView.name, initialChildren: children);
 
   static const String name = 'HomeSearchView';
 
-  static const _i24.PageInfo<void> page = _i24.PageInfo<void>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      return const _i11.HomeSearchView();
+    },
+  );
 }
 
 /// generated route for
@@ -524,25 +368,24 @@ class LoginView extends _i24.PageRouteInfo<LoginViewArgs> {
     required dynamic Function(bool?) onResult,
     List<_i24.PageRouteInfo>? children,
   }) : super(
-          LoginView.name,
-          args: LoginViewArgs(
-            key: key,
-            onResult: onResult,
-          ),
-          initialChildren: children,
-        );
+         LoginView.name,
+         args: LoginViewArgs(key: key, onResult: onResult),
+         initialChildren: children,
+       );
 
   static const String name = 'LoginView';
 
-  static const _i24.PageInfo<LoginViewArgs> page =
-      _i24.PageInfo<LoginViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<LoginViewArgs>();
+      return _i12.LoginView(key: args.key, onResult: args.onResult);
+    },
+  );
 }
 
 class LoginViewArgs {
-  const LoginViewArgs({
-    this.key,
-    required this.onResult,
-  });
+  const LoginViewArgs({this.key, required this.onResult});
 
   final _i25.Key? key;
 
@@ -562,25 +405,30 @@ class MapView extends _i24.PageRouteInfo<MapViewArgs> {
     required _i26.LocationData? initialCameraLocation,
     List<_i24.PageRouteInfo>? children,
   }) : super(
-          MapView.name,
-          args: MapViewArgs(
-            key: key,
-            initialCameraLocation: initialCameraLocation,
-          ),
-          initialChildren: children,
-        );
+         MapView.name,
+         args: MapViewArgs(
+           key: key,
+           initialCameraLocation: initialCameraLocation,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'MapView';
 
-  static const _i24.PageInfo<MapViewArgs> page =
-      _i24.PageInfo<MapViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<MapViewArgs>();
+      return _i13.MapView(
+        key: args.key,
+        initialCameraLocation: args.initialCameraLocation,
+      );
+    },
+  );
 }
 
 class MapViewArgs {
-  const MapViewArgs({
-    this.key,
-    required this.initialCameraLocation,
-  });
+  const MapViewArgs({this.key, required this.initialCameraLocation});
 
   final _i25.Key? key;
 
@@ -601,25 +449,27 @@ class OwnedBusinessDetailsView
     required String businessId,
     List<_i24.PageRouteInfo>? children,
   }) : super(
-          OwnedBusinessDetailsView.name,
-          args: OwnedBusinessDetailsViewArgs(
-            key: key,
-            businessId: businessId,
-          ),
-          initialChildren: children,
-        );
+         OwnedBusinessDetailsView.name,
+         args: OwnedBusinessDetailsViewArgs(key: key, businessId: businessId),
+         initialChildren: children,
+       );
 
   static const String name = 'OwnedBusinessDetailsView';
 
-  static const _i24.PageInfo<OwnedBusinessDetailsViewArgs> page =
-      _i24.PageInfo<OwnedBusinessDetailsViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<OwnedBusinessDetailsViewArgs>();
+      return _i14.OwnedBusinessDetailsView(
+        key: args.key,
+        businessId: args.businessId,
+      );
+    },
+  );
 }
 
 class OwnedBusinessDetailsViewArgs {
-  const OwnedBusinessDetailsViewArgs({
-    this.key,
-    required this.businessId,
-  });
+  const OwnedBusinessDetailsViewArgs({this.key, required this.businessId});
 
   final _i25.Key? key;
 
@@ -634,19 +484,24 @@ class OwnedBusinessDetailsViewArgs {
 /// generated route for
 /// [_i15.OwnedBusinessesView]
 class OwnedBusinessesView extends _i24.PageRouteInfo<OwnedBusinessesViewArgs> {
-  OwnedBusinessesView({
-    _i25.Key? key,
-    List<_i24.PageRouteInfo>? children,
-  }) : super(
-          OwnedBusinessesView.name,
-          args: OwnedBusinessesViewArgs(key: key),
-          initialChildren: children,
-        );
+  OwnedBusinessesView({_i25.Key? key, List<_i24.PageRouteInfo>? children})
+    : super(
+        OwnedBusinessesView.name,
+        args: OwnedBusinessesViewArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'OwnedBusinessesView';
 
-  static const _i24.PageInfo<OwnedBusinessesViewArgs> page =
-      _i24.PageInfo<OwnedBusinessesViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<OwnedBusinessesViewArgs>(
+        orElse: () => const OwnedBusinessesViewArgs(),
+      );
+      return _i15.OwnedBusinessesView(key: args.key);
+    },
+  );
 }
 
 class OwnedBusinessesViewArgs {
@@ -669,25 +524,27 @@ class OwnedPromotionDetailsView
     required _i27.Promotion promotion,
     List<_i24.PageRouteInfo>? children,
   }) : super(
-          OwnedPromotionDetailsView.name,
-          args: OwnedPromotionDetailsViewArgs(
-            key: key,
-            promotion: promotion,
-          ),
-          initialChildren: children,
-        );
+         OwnedPromotionDetailsView.name,
+         args: OwnedPromotionDetailsViewArgs(key: key, promotion: promotion),
+         initialChildren: children,
+       );
 
   static const String name = 'OwnedPromotionDetailsView';
 
-  static const _i24.PageInfo<OwnedPromotionDetailsViewArgs> page =
-      _i24.PageInfo<OwnedPromotionDetailsViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<OwnedPromotionDetailsViewArgs>();
+      return _i16.OwnedPromotionDetailsView(
+        key: args.key,
+        promotion: args.promotion,
+      );
+    },
+  );
 }
 
 class OwnedPromotionDetailsViewArgs {
-  const OwnedPromotionDetailsViewArgs({
-    this.key,
-    required this.promotion,
-  });
+  const OwnedPromotionDetailsViewArgs({this.key, required this.promotion});
 
   final _i25.Key? key;
 
@@ -703,14 +560,16 @@ class OwnedPromotionDetailsViewArgs {
 /// [_i17.ProfileView]
 class ProfileView extends _i24.PageRouteInfo<void> {
   const ProfileView({List<_i24.PageRouteInfo>? children})
-      : super(
-          ProfileView.name,
-          initialChildren: children,
-        );
+    : super(ProfileView.name, initialChildren: children);
 
   static const String name = 'ProfileView';
 
-  static const _i24.PageInfo<void> page = _i24.PageInfo<void>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      return const _i17.ProfileView();
+    },
+  );
 }
 
 /// generated route for
@@ -723,19 +582,28 @@ class PromotionDetailsView
     required String? promotionId,
     List<_i24.PageRouteInfo>? children,
   }) : super(
-          PromotionDetailsView.name,
-          args: PromotionDetailsViewArgs(
-            key: key,
-            promotion: promotion,
-            promotionId: promotionId,
-          ),
-          initialChildren: children,
-        );
+         PromotionDetailsView.name,
+         args: PromotionDetailsViewArgs(
+           key: key,
+           promotion: promotion,
+           promotionId: promotionId,
+         ),
+         initialChildren: children,
+       );
 
   static const String name = 'PromotionDetailsView';
 
-  static const _i24.PageInfo<PromotionDetailsViewArgs> page =
-      _i24.PageInfo<PromotionDetailsViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<PromotionDetailsViewArgs>();
+      return _i18.PromotionDetailsView(
+        key: args.key,
+        promotion: args.promotion,
+        promotionId: args.promotionId,
+      );
+    },
+  );
 }
 
 class PromotionDetailsViewArgs {
@@ -760,19 +628,24 @@ class PromotionDetailsViewArgs {
 /// generated route for
 /// [_i19.RestorePassword]
 class RestorePassword extends _i24.PageRouteInfo<RestorePasswordArgs> {
-  RestorePassword({
-    _i25.Key? key,
-    List<_i24.PageRouteInfo>? children,
-  }) : super(
-          RestorePassword.name,
-          args: RestorePasswordArgs(key: key),
-          initialChildren: children,
-        );
+  RestorePassword({_i25.Key? key, List<_i24.PageRouteInfo>? children})
+    : super(
+        RestorePassword.name,
+        args: RestorePasswordArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'RestorePassword';
 
-  static const _i24.PageInfo<RestorePasswordArgs> page =
-      _i24.PageInfo<RestorePasswordArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<RestorePasswordArgs>(
+        orElse: () => const RestorePasswordArgs(),
+      );
+      return _i19.RestorePassword(key: args.key);
+    },
+  );
 }
 
 class RestorePasswordArgs {
@@ -789,19 +662,24 @@ class RestorePasswordArgs {
 /// generated route for
 /// [_i20.SearchView]
 class SearchView extends _i24.PageRouteInfo<SearchViewArgs> {
-  SearchView({
-    _i25.Key? key,
-    List<_i24.PageRouteInfo>? children,
-  }) : super(
-          SearchView.name,
-          args: SearchViewArgs(key: key),
-          initialChildren: children,
-        );
+  SearchView({_i25.Key? key, List<_i24.PageRouteInfo>? children})
+    : super(
+        SearchView.name,
+        args: SearchViewArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'SearchView';
 
-  static const _i24.PageInfo<SearchViewArgs> page =
-      _i24.PageInfo<SearchViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<SearchViewArgs>(
+        orElse: () => const SearchViewArgs(),
+      );
+      return _i20.SearchView(key: args.key);
+    },
+  );
 }
 
 class SearchViewArgs {
@@ -819,14 +697,16 @@ class SearchViewArgs {
 /// [_i21.SignUpBusinessView]
 class SignUpBusinessView extends _i24.PageRouteInfo<void> {
   const SignUpBusinessView({List<_i24.PageRouteInfo>? children})
-      : super(
-          SignUpBusinessView.name,
-          initialChildren: children,
-        );
+    : super(SignUpBusinessView.name, initialChildren: children);
 
   static const String name = 'SignUpBusinessView';
 
-  static const _i24.PageInfo<void> page = _i24.PageInfo<void>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      return const _i21.SignUpBusinessView();
+    },
+  );
 }
 
 /// generated route for
@@ -837,25 +717,24 @@ class SignUpView extends _i24.PageRouteInfo<SignUpViewArgs> {
     required dynamic Function(bool?) onResult,
     List<_i24.PageRouteInfo>? children,
   }) : super(
-          SignUpView.name,
-          args: SignUpViewArgs(
-            key: key,
-            onResult: onResult,
-          ),
-          initialChildren: children,
-        );
+         SignUpView.name,
+         args: SignUpViewArgs(key: key, onResult: onResult),
+         initialChildren: children,
+       );
 
   static const String name = 'SignUpView';
 
-  static const _i24.PageInfo<SignUpViewArgs> page =
-      _i24.PageInfo<SignUpViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<SignUpViewArgs>();
+      return _i22.SignUpView(key: args.key, onResult: args.onResult);
+    },
+  );
 }
 
 class SignUpViewArgs {
-  const SignUpViewArgs({
-    this.key,
-    required this.onResult,
-  });
+  const SignUpViewArgs({this.key, required this.onResult});
 
   final _i25.Key? key;
 
@@ -870,19 +749,24 @@ class SignUpViewArgs {
 /// generated route for
 /// [_i23.UnverifiedUserView]
 class UnverifiedUserView extends _i24.PageRouteInfo<UnverifiedUserViewArgs> {
-  UnverifiedUserView({
-    _i25.Key? key,
-    List<_i24.PageRouteInfo>? children,
-  }) : super(
-          UnverifiedUserView.name,
-          args: UnverifiedUserViewArgs(key: key),
-          initialChildren: children,
-        );
+  UnverifiedUserView({_i25.Key? key, List<_i24.PageRouteInfo>? children})
+    : super(
+        UnverifiedUserView.name,
+        args: UnverifiedUserViewArgs(key: key),
+        initialChildren: children,
+      );
 
   static const String name = 'UnverifiedUserView';
 
-  static const _i24.PageInfo<UnverifiedUserViewArgs> page =
-      _i24.PageInfo<UnverifiedUserViewArgs>(name);
+  static _i24.PageInfo page = _i24.PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<UnverifiedUserViewArgs>(
+        orElse: () => const UnverifiedUserViewArgs(),
+      );
+      return _i23.UnverifiedUserView(key: args.key);
+    },
+  );
 }
 
 class UnverifiedUserViewArgs {

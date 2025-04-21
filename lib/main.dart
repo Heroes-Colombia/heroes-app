@@ -1,10 +1,11 @@
+import 'dart:io';
+
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:heroes_app/src/config/router/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:heroes_app/src/config/app_themes.dart';
@@ -24,23 +25,33 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:heroes_app/src/presentation/cubits/promotion/promotion_details_cubit.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'src/config/router/app_router.dart';
+
 //This method is used to handle the notifications listeners on background
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(
-    RemoteMessage mesasage) async {}
+  RemoteMessage mesasage,
+) async {}
 
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   //Splash screen
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   //Firebase dependencies
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  if (Platform.isIOS) {
+    await Firebase.initializeApp();
+  } else {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
   //DIO dependencies
   await initializeDependencies();
   //Cloud messaging dependencies
-  final userAcceptNotifications = await GetIt.instance
-      .get<CloudMessageService>()
-      .getNotificationsPermission();
+  final userAcceptNotifications =
+      await GetIt.instance
+          .get<CloudMessageService>()
+          .getNotificationsPermission();
   if (userAcceptNotifications) {
     await GetIt.instance.get<CloudMessageService>().initLocalNotifications();
     //This method is used to handle the notifications when the app is in background
@@ -82,36 +93,22 @@ class MyApp extends StatelessWidget {
     // to handle the cubits and the routes
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (context) => AuthCubit(),
-        ),
-        BlocProvider(
-          create: (context) => ProfileCubit(),
-        ),
+        BlocProvider(create: (context) => AuthCubit()),
+        BlocProvider(create: (context) => ProfileCubit()),
         BlocProvider(
           create: (context) => BusinessHomeViewCubit()..getInitial(),
         ),
-        BlocProvider(
-          create: (context) => BusinessDetailsCubit()..getInitial(),
-        ),
-        BlocProvider(
-          create: (context) => BusinessSearchResutlsCubit(),
-        ),
-        BlocProvider(
-          create: (context) => AllBusinessCubit()..getInitial(),
-        ),
+        BlocProvider(create: (context) => BusinessDetailsCubit()..getInitial()),
+        BlocProvider(create: (context) => BusinessSearchResutlsCubit()),
+        BlocProvider(create: (context) => AllBusinessCubit()..getInitial()),
         BlocProvider(
           create: (context) => FavouriteBusinessesCubit()..getInitial(),
         ),
-        BlocProvider(
-          create: (context) => OwnedBusinessesCubit()..getInitial(),
-        ),
+        BlocProvider(create: (context) => OwnedBusinessesCubit()..getInitial()),
         BlocProvider(
           create: (context) => OwnedBusinessDetailsCubit()..getInitial(),
         ),
-        BlocProvider(
-          create: (context) => MapCubit()..getInitial(),
-        ),
+        BlocProvider(create: (context) => MapCubit()..getInitial()),
         BlocProvider(
           create: (context) => PromotionDetailsCubit()..getInitial(),
         ),
@@ -121,8 +118,7 @@ class MyApp extends StatelessWidget {
         //We obtain the theme and darkTheme from the AdaptiveTheme builder
         theme: theme,
         darkTheme: darkTheme,
-        routerDelegate: _appRouter.delegate(),
-        routeInformationParser: _appRouter.defaultRouteParser(),
+        routerConfig: _appRouter.config(),
       ),
     );
   }

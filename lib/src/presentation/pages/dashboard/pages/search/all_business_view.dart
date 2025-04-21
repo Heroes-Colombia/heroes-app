@@ -31,9 +31,9 @@ class _AllBusinessViewState extends State<AllBusinessView> {
       context.read<AllBusinessCubit>().getBusinessCategories();
     }
 
-    context
-        .read<AllBusinessCubit>()
-        .setSelectedCategoryId(widget.initialCategoryId);
+    context.read<AllBusinessCubit>().setSelectedCategoryId(
+      widget.initialCategoryId,
+    );
   }
 
   @override
@@ -44,8 +44,12 @@ class _AllBusinessViewState extends State<AllBusinessView> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) =>
-          context.read<AllBusinessCubit>().handleOnPop(context),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          context.read<AllBusinessCubit>().handleOnPop(context);
+        }
+      },
+
       child: Scaffold(
         backgroundColor: theme.colorScheme.background,
         body: BlocBuilder<AllBusinessCubit, AllBusinessState>(
@@ -87,14 +91,17 @@ class _AllBusinessViewState extends State<AllBusinessView> {
           SliverPersistentHeader(
             pinned: true,
             delegate: PersistentHeader(
-                child: Container(
-                    color: theme.colorScheme.background,
-                    height: 100,
-                    width: double.infinity,
-                    child: categoriesDropDown(theme, texts))),
+              child: Container(
+                color: theme.colorScheme.background,
+                height: 100,
+                width: double.infinity,
+                child: categoriesDropDown(theme, texts),
+              ),
+            ),
           ),
         const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator()))
+          child: Center(child: CircularProgressIndicator()),
+        ),
       ],
     );
   }
@@ -103,39 +110,45 @@ class _AllBusinessViewState extends State<AllBusinessView> {
     return CustomScrollView(
       slivers: [
         SliverAppBar.large(
-            title: Text(
-          texts["error-title"],
-          style: TextStyle(
-            color: theme.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w900,
-            fontSize: theme.textTheme.headlineSmall!.fontSize,
+          title: Text(
+            texts["error-title"],
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w900,
+              fontSize: theme.textTheme.headlineSmall!.fontSize,
+            ),
           ),
-        )),
+        ),
         SliverFillRemaining(
           child: Center(
-              child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                texts["error-content"],
-                style: theme.textTheme.labelLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              FilledButton.icon(
-                icon: const Icon(Ionicons.refresh),
-                onPressed: () => getAllBusinesses(context),
-                label: Text(texts["error-button"]),
-              )
-            ],
-          )),
-        )
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  texts["error-content"],
+                  style: theme.textTheme.labelLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                FilledButton.icon(
+                  icon: const Icon(Ionicons.refresh),
+                  onPressed: () => getAllBusinesses(context),
+                  label: Text(texts["error-button"]),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  CustomScrollView succesView(ThemeData theme, texts,
-      List<ListableBusiness> businesses, BuildContext context) {
+  CustomScrollView succesView(
+    ThemeData theme,
+    texts,
+    List<ListableBusiness> businesses,
+    BuildContext context,
+  ) {
     return CustomScrollView(
       slivers: [
         SliverAppBar.large(
@@ -151,11 +164,13 @@ class _AllBusinessViewState extends State<AllBusinessView> {
         SliverPersistentHeader(
           pinned: true,
           delegate: PersistentHeader(
-              child: Container(
-                  color: theme.colorScheme.background,
-                  height: 100,
-                  width: double.infinity,
-                  child: categoriesDropDown(theme, texts))),
+            child: Container(
+              color: theme.colorScheme.background,
+              height: 100,
+              width: double.infinity,
+              child: categoriesDropDown(theme, texts),
+            ),
+          ),
         ),
         SliverPadding(
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
@@ -169,39 +184,37 @@ class _AllBusinessViewState extends State<AllBusinessView> {
   Widget businessGrid(List<ListableBusiness> businesses, theme, texts) {
     return businesses.isNotEmpty
         ? SliverGrid.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 1,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              mainAxisExtent: 174,
-            ),
-            itemCount: businesses.length,
-            itemBuilder: (context, index) {
-              return HorizontalCard(
-                isOnGrid: true,
-                image: businesses[index].featuredImage,
-                title: businesses[index].name,
-                id: businesses[index].id,
-                category: null,
-                callback: () {
-                  AutoRouter.of(context).push(
-                    BusinessDetailsView(
-                      businessId: businesses[index].id,
-                    ),
-                  );
-                },
-              );
-            },
-          )
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 1,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            mainAxisExtent: 174,
+          ),
+          itemCount: businesses.length,
+          itemBuilder: (context, index) {
+            return HorizontalCard(
+              isOnGrid: true,
+              image: businesses[index].featuredImage,
+              title: businesses[index].name,
+              id: businesses[index].id,
+              category: null,
+              callback: () {
+                AutoRouter.of(
+                  context,
+                ).push(BusinessDetailsView(businessId: businesses[index].id));
+              },
+            );
+          },
+        )
         : SliverFillRemaining(
-            child: Center(
-              child: Text(
-                texts["empty-content"],
-                style: theme.textTheme.labelLarge,
-              ),
+          child: Center(
+            child: Text(
+              texts["empty-content"],
+              style: theme.textTheme.labelLarge,
             ),
-          );
+          ),
+        );
   }
 
   Widget categoriesDropDown(ThemeData theme, texts) {
@@ -243,11 +256,7 @@ class _AllBusinessViewState extends State<AllBusinessView> {
                   value: e.id,
                   child: Row(
                     children: [
-                      SvgPicture.network(
-                        e.imageUrl,
-                        width: 24,
-                        height: 24,
-                      ),
+                      SvgPicture.network(e.imageUrl, width: 24, height: 24),
                       const SizedBox(width: 8),
                       Text(
                         e.name,
@@ -260,11 +269,12 @@ class _AllBusinessViewState extends State<AllBusinessView> {
                     ],
                   ),
                 ),
-              )
+              ),
             ],
-            onChanged: (value) => context
-                .read<AllBusinessCubit>()
-                .setSelectedCategoryId(value as String),
+            onChanged:
+                (value) => context
+                    .read<AllBusinessCubit>()
+                    .setSelectedCategoryId(value as String),
           ),
         );
       },

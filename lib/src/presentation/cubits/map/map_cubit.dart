@@ -26,7 +26,9 @@ class MapCubit extends Cubit<MapState> {
   }
 
   Future<void> getMapInitialInformation(
-      BuildContext context, LocationData? initialCameraPosition) async {
+    BuildContext context,
+    LocationData? initialCameraPosition,
+  ) async {
     try {
       emit(state.copyWith(isMapLoading: true));
       //First we get the business collection from Firestore
@@ -35,27 +37,32 @@ class MapCubit extends Cubit<MapState> {
       //Then we get the user location
       final userCurrentLocation = await locator<AppMethods>().getUserLocation();
       final userGeoPoint = GeoPoint(
-          userCurrentLocation!.latitude!, userCurrentLocation.longitude!);
+        userCurrentLocation!.latitude!,
+        userCurrentLocation.longitude!,
+      );
 
       //Then we emit the state with the user location
-      emit(state.copyWith(
-        userLocation: userCurrentLocation,
-        status: BusinessViewCubitStatus.success,
-        isMapLoading: true,
-      ));
+      emit(
+        state.copyWith(
+          userLocation: userCurrentLocation,
+          status: BusinessViewCubitStatus.success,
+          isMapLoading: true,
+        ),
+      );
       //Then we get the business info from the firestore collection
 
-      final businessRawInfoStream =
-          locator.get<FirestoreService>().getDocumentsNearPosition(
-                initialCameraPosition != null
-                    ? GeoPoint(
-                        initialCameraPosition.latitude!,
-                        initialCameraPosition.longitude!,
-                      )
-                    : userGeoPoint,
-                1.2,
-                businessCollection,
-              );
+      final businessRawInfoStream = locator
+          .get<FirestoreService>()
+          .getDocumentsNearPosition(
+            initialCameraPosition != null
+                ? GeoPoint(
+                  initialCameraPosition.latitude!,
+                  initialCameraPosition.longitude!,
+                )
+                : userGeoPoint,
+            1.2,
+            businessCollection,
+          );
 
       businessRawInfoStream.listen((event) {
         List<Map<String, dynamic>> businessesRawInfo = [];
@@ -69,49 +76,60 @@ class MapCubit extends Cubit<MapState> {
         }
 
         //Then we create the business markers from the raw info
-        final businessMarkers = businessesRawInfo
-            .map((business) => BusinessMarker.fromJson(business))
-            .toList();
+        final businessMarkers =
+            businessesRawInfo
+                .map((business) => BusinessMarker.fromJson(business))
+                .toList();
 
         //Then we create a list of markers from the business markers
-        final markers = businessMarkers
-            .map((business) => Marker(
-                  markerId: MarkerId(business.businessId),
-                  position: LatLng(
-                      business.location.latitude, business.location.longitude),
-                  infoWindow: InfoWindow(
-                    title: business.name,
-                    snippet: business.address,
+        final markers =
+            businessMarkers
+                .map(
+                  (business) => Marker(
+                    markerId: MarkerId(business.businessId),
+                    position: LatLng(
+                      business.location.latitude,
+                      business.location.longitude,
+                    ),
+                    infoWindow: InfoWindow(
+                      title: business.name,
+                      snippet: business.address,
+                    ),
+                    icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
+                    onTap: () {
+                      AutoRouter.of(context).push(
+                        BusinessDetailsView(businessId: business.businessId),
+                      );
+                    },
                   ),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
-                  onTap: () {
-                    AutoRouter.of(context).push(
-                      BusinessDetailsView(businessId: business.businessId),
-                    );
-                  },
-                ))
-            .toList();
+                )
+                .toList();
 
         //Then we set the state with the new info
-        emit(state.copyWith(
-          allMarkers: markers,
-          userLocation: userCurrentLocation,
-          allBusinessMarkers: businessMarkers,
-          filtredMarkers: markers,
-          isMapLoading: false,
-        ));
+        emit(
+          state.copyWith(
+            allMarkers: markers,
+            userLocation: userCurrentLocation,
+            allBusinessMarkers: businessMarkers,
+            filtredMarkers: markers,
+            isMapLoading: false,
+          ),
+        );
       });
     } catch (e) {
-      log('Error: $e, Function: getMapInitialInformation, File: map_cubit.dart');
+      log(
+        'Error: $e, Function: getMapInitialInformation, File: map_cubit.dart',
+      );
     }
   }
 
   void searchBusiness(String query) {
     try {
       //We serach the business by name and see if it matches the query
-      final searchedBusiness = state.allMarkers
-          .where((element) => element.infoWindow.title!.contains(query))
-          .toList();
+      final searchedBusiness =
+          state.allMarkers
+              .where((element) => element.infoWindow.title!.contains(query))
+              .toList();
 
       //Then we set the state with the new info
       emit(state.copyWith(filtredMarkers: searchedBusiness));
@@ -131,41 +149,46 @@ class MapCubit extends Cubit<MapState> {
       var rawSearchResults = await locator
           .get<FirestoreService>()
           .readActiveDocumentsBySearchQuery(
-              businessCollection, "name", searchQuery);
+            businessCollection,
+            "name",
+            searchQuery,
+          );
 
       //We convert the raw businesses to a list of ListableBusiness
-      final filteredBusinesses = rawSearchResults
-          .map((business) => BusinessMarker.fromJson(business))
-          .toList();
+      final filteredBusinesses =
+          rawSearchResults
+              .map((business) => BusinessMarker.fromJson(business))
+              .toList();
 
       //Then we create a list of markers from the business markers
-      final markers = filteredBusinesses
-          .map((business) => Marker(
-                markerId: MarkerId(business.businessId),
-                position: LatLng(
-                    business.location.latitude, business.location.longitude),
-                infoWindow: InfoWindow(
-                  title: business.name,
-                  snippet: business.address,
+      final markers =
+          filteredBusinesses
+              .map(
+                (business) => Marker(
+                  markerId: MarkerId(business.businessId),
+                  position: LatLng(
+                    business.location.latitude,
+                    business.location.longitude,
+                  ),
+                  infoWindow: InfoWindow(
+                    title: business.name,
+                    snippet: business.address,
+                  ),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
+                  onTap: () {
+                    emit(
+                      state.copyWith(filtredMarkers: [...state.filtredMarkers]),
+                    );
+                    AutoRouter.of(context).push(
+                      BusinessDetailsView(businessId: business.businessId),
+                    );
+                  },
                 ),
-                icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
-                onTap: () {
-                  emit(state.copyWith(
-                    filtredMarkers: [...state.filtredMarkers],
-                  ));
-                  AutoRouter.of(context).push(
-                    BusinessDetailsView(businessId: business.businessId),
-                  );
-                },
-              ))
-          .toList();
+              )
+              .toList();
 
       //Then we set the state with the new info
-      emit(
-        state.copyWith(
-          searchedMarkers: markers,
-        ),
-      );
+      emit(state.copyWith(searchedMarkers: markers));
     } catch (e) {
       log('Error: $e, Function: onSearchSubmitted, File: map_cubit.dart');
     }
@@ -183,69 +206,88 @@ class MapCubit extends Cubit<MapState> {
       final businessCollection = locator.get<AppConstants>().businessCollection;
 
       //Then we get the business info from the firestore collection
-      final businessRawInfoStream =
-          locator.get<FirestoreService>().getDocumentsNearPosition(
-                currentScreenLocation,
-                1.2,
-                businessCollection,
-              );
+      final businessRawInfoStream = locator
+          .get<FirestoreService>()
+          .getDocumentsNearPosition(
+            currentScreenLocation,
+            1.2,
+            businessCollection,
+          );
 
       businessRawInfoStream.listen((event) {
+        log('Event: $event');
         List<Map<String, dynamic>> businessesRawInfo = [];
 
         for (var docs in event) {
           if (docs.exists) {
             var data = docs.data() as Map<String, dynamic>;
             data['id'] = docs.id;
+            log('Data: $data');
             businessesRawInfo.add(data);
           }
         }
 
         //Then we create the business markers from the raw info
-        final businessMarkers = businessesRawInfo
-            .map((business) => BusinessMarker.fromJson(business))
-            .toSet();
+        final businessMarkers =
+            businessesRawInfo
+                .map((business) => BusinessMarker.fromJson(business))
+                .toSet();
 
         //Then we verify if the state contains the new markers if not we add them
         var currentBusinessMarkers = state.allBusinessMarkers.toSet();
         currentBusinessMarkers.addAll(businessMarkers);
 
         //Then we create a list of markers from the business markers
-        final markers = currentBusinessMarkers
-            .map((business) => Marker(
-                  markerId: MarkerId(business.businessId),
-                  position: LatLng(
-                      business.location.latitude, business.location.longitude),
-                  infoWindow: InfoWindow(
-                    title: business.name,
-                    snippet: business.address,
+        final markers =
+            currentBusinessMarkers
+                .map(
+                  (business) => Marker(
+                    markerId: MarkerId(business.businessId),
+                    position: LatLng(
+                      business.location.latitude,
+                      business.location.longitude,
+                    ),
+                    infoWindow: InfoWindow(
+                      title: business.name,
+                      snippet: business.address,
+                    ),
+                    icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
+                    onTap: () {
+                      AutoRouter.of(context).push(
+                        BusinessDetailsView(businessId: business.businessId),
+                      );
+                    },
                   ),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
-                  onTap: () {
-                    AutoRouter.of(context).push(
-                      BusinessDetailsView(businessId: business.businessId),
-                    );
-                  },
-                ))
-            .toSet();
+                )
+                .toSet();
 
         //Then we set the state with the new info
-        emit(state.copyWith(
-          allMarkers: markers.toList(),
-          filtredMarkers: markers.toList(),
-          allBusinessMarkers: currentBusinessMarkers.toList(),
-          isMapLoading: false,
-        ));
+        emit(
+          state.copyWith(
+            allMarkers: markers.toList(),
+            filtredMarkers: markers.toList(),
+            allBusinessMarkers: currentBusinessMarkers.toList(),
+            isMapLoading: false,
+          ),
+        );
       });
     } catch (e) {
-      log('Error: $e, Function: addBusinessesInCurrentPosition, File: map_cubit.dart');
+      log(
+        'Error: $e, Function: addBusinessesInCurrentPosition, File: map_cubit.dart',
+      );
     }
   }
 
   Future<double> getDistanceBetweenPointsInKm(
-      LatLng firstPoint, LatLng secondPoint) async {
-    final distance = Geolocator.distanceBetween(firstPoint.latitude,
-        firstPoint.longitude, secondPoint.latitude, secondPoint.longitude);
+    LatLng firstPoint,
+    LatLng secondPoint,
+  ) async {
+    final distance = Geolocator.distanceBetween(
+      firstPoint.latitude,
+      firstPoint.longitude,
+      secondPoint.latitude,
+      secondPoint.longitude,
+    );
 
     return distance / 1000;
   }
