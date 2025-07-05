@@ -69,9 +69,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
                 ),
               ),
             ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 40),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
             userSwitch(texts),
             _isCreatingANewBusiness
                 ? businessRelatedFields(texts)
@@ -104,9 +102,10 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
           children: [
             Text(texts['registerAsBusiness']!),
             Switch(
-                value: _isCreatingANewBusiness,
-                onChanged: (value) =>
-                    setState(() => _isCreatingANewBusiness = value)),
+              value: _isCreatingANewBusiness,
+              onChanged:
+                  (value) => setState(() => _isCreatingANewBusiness = value),
+            ),
           ],
         ),
       ),
@@ -138,28 +137,30 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Expanded(
-                    child: FormBuilderTextField(
-                  name: 'first_name',
-                  key: const Key('_register_business_first_name'),
-                  validator: (value) => validateEmptyString(value, texts),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  decoration: InputDecoration(
-                    labelText: texts['firstname-label']!,
-                    hintText: texts['firstname-hint']!,
-                    border: const OutlineInputBorder(),
+                  child: FormBuilderTextField(
+                    name: 'first_name',
+                    key: const Key('_register_business_first_name'),
+                    validator: (value) => validateEmptyString(value, texts),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    decoration: InputDecoration(
+                      labelText: texts['firstname-label']!,
+                      hintText: texts['firstname-hint']!,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                )),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
-                    child: FormBuilderTextField(
-                  name: 'second_name',
-                  key: const Key('_register_business_second_name'),
-                  decoration: InputDecoration(
-                    labelText: texts['secondname-label']!,
-                    hintText: texts['secondname-hint']!,
-                    border: const OutlineInputBorder(),
+                  child: FormBuilderTextField(
+                    name: 'second_name',
+                    key: const Key('_register_business_second_name'),
+                    decoration: InputDecoration(
+                      labelText: texts['secondname-label']!,
+                      hintText: texts['secondname-hint']!,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                )),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -167,27 +168,29 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Expanded(
-                    child: FormBuilderTextField(
-                  name: 'first_last_name',
-                  key: const Key('_register_business_last_name'),
-                  validator: (value) => validateEmptyString(value, texts),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  decoration: InputDecoration(
-                    labelText: texts['first-lastname-label']!,
-                    hintText: texts['first-lastname-hint']!,
-                    border: const OutlineInputBorder(),
+                  child: FormBuilderTextField(
+                    name: 'first_last_name',
+                    key: const Key('_register_business_last_name'),
+                    validator: (value) => validateEmptyString(value, texts),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    decoration: InputDecoration(
+                      labelText: texts['first-lastname-label']!,
+                      hintText: texts['first-lastname-hint']!,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                )),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
-                    child: FormBuilderTextField(
-                  name: 'second_last_name',
-                  decoration: InputDecoration(
-                    labelText: texts['second-lastname-label']!,
-                    hintText: texts['second-lastname-hint']!,
-                    border: const OutlineInputBorder(),
+                  child: FormBuilderTextField(
+                    name: 'second_last_name',
+                    decoration: InputDecoration(
+                      labelText: texts['second-lastname-label']!,
+                      hintText: texts['second-lastname-hint']!,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                )),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -203,17 +206,19 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
             ),
             const SizedBox(height: 12),
             EmailInputWidget(
-                keyName: 'signup_email',
-                key: const Key('_register_business_signup_email'),
-                name: 'email',
-                label: texts['email-label']!,
-                hintText: texts['email-hint']!),
+              keyName: 'signup_email',
+              key: const Key('_register_business_signup_email'),
+              name: 'email',
+              label: texts['email-label']!,
+              hintText: texts['email-hint']!,
+            ),
             const SizedBox(height: 12),
             PasswordInput(
-                keyName: '_register_business_password',
-                name: 'password',
-                label: texts['password-label']!,
-                hintText: texts['password-hint']!),
+              keyName: '_register_business_password',
+              name: 'password',
+              label: texts['password-label']!,
+              hintText: texts['password-hint']!,
+            ),
           ],
         ),
       ),
@@ -264,37 +269,40 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
             pictureField(texts, Theme.of(context)),
             const SizedBox(height: 12),
             EmailInputWidget(
-                keyName: 'business_email',
-                key: const Key('_register_business_signup_email'),
-                name: 'business_email',
-                label: texts['email-label']!,
-                hintText: texts['email-hint']!),
+              keyName: 'business_email',
+              key: const Key('_register_business_signup_email'),
+              name: 'business_email',
+              label: texts['email-label']!,
+              hintText: texts['email-hint']!,
+            ),
             const SizedBox(height: 12),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Expanded(
-                    child: FormBuilderTextField(
-                  name: 'owner_name',
-                  key: const Key('_register_business_owner_name'),
-                  decoration: InputDecoration(
-                    labelText: texts['ownername-label']!,
-                    hintText: texts['ownername-hint']!,
-                    border: const OutlineInputBorder(),
+                  child: FormBuilderTextField(
+                    name: 'owner_name',
+                    key: const Key('_register_business_owner_name'),
+                    decoration: InputDecoration(
+                      labelText: texts['ownername-label']!,
+                      hintText: texts['ownername-hint']!,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                )),
+                ),
                 const SizedBox(width: 12),
                 Expanded(
-                    child: FormBuilderTextField(
-                  name: 'phone_number',
-                  key: const Key('_register_business_second_name'),
-                  keyboardType: TextInputType.phone,
-                  decoration: InputDecoration(
-                    labelText: texts['phone-label']!,
-                    hintText: texts['phone-hint']!,
-                    border: const OutlineInputBorder(),
+                  child: FormBuilderTextField(
+                    name: 'phone_number',
+                    key: const Key('_register_business_second_name'),
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: texts['phone-label']!,
+                      hintText: texts['phone-hint']!,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                )),
+                ),
               ],
             ),
           ],
@@ -304,11 +312,17 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
   }
 
   SliverToBoxAdapter registerButton(
-      BuildContext context, Map<String, String> texts) {
+    BuildContext context,
+    Map<String, String> texts,
+  ) {
     return SliverToBoxAdapter(
       child: Container(
         margin: const EdgeInsetsDirectional.only(
-            bottom: 24, start: 12, end: 12, top: 12),
+          bottom: 24,
+          start: 12,
+          end: 12,
+          top: 12,
+        ),
         child: AsyncButtonWidget(
           onPressed: () => doRegister(context, texts),
           buttonText: texts['signupButton']!,
@@ -318,49 +332,50 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
   }
 
   FormBuilderField<Object> pictureField(
-      Map<String, String> texts, ThemeData theme) {
+    Map<String, String> texts,
+    ThemeData theme,
+  ) {
     return FormBuilderField(
       name: "RUT_img",
       key: const Key('RUT_img'),
       builder: (field) {
         return InkWell(
           onTap: () async {
-            final picture = await locator.get<AppMethods>().takePicture();
-            if (picture == null) return;
-            field.didChange(picture);
+            _showImagePickerDialog(context, field, texts, theme);
           },
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                  color:
-                      field.hasError ? Colors.red : theme.colorScheme.primary),
+                color: field.hasError ? Colors.red : theme.colorScheme.primary,
+              ),
             ),
             padding: const EdgeInsets.symmetric(
               horizontal: 12.0,
               vertical: 18.0,
             ),
             child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    field.value != null
-                        ? texts["identification-card-img-filled"]!
-                        : texts['identification-card-img-hint']!,
-                    style: TextStyle(
-                      color: theme.colorScheme.primary,
-                      fontSize: theme.textTheme.bodyLarge!.fontSize,
-                    ),
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  field.value != null
+                      ? texts["identification-card-img-filled"]!
+                      : texts['identification-card-img-hint']!,
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontSize: theme.textTheme.bodyLarge!.fontSize,
                   ),
-                  Icon(
-                    field.value != null
-                        ? Ionicons.camera_reverse_outline
-                        : Ionicons.camera_outline,
-                    color:
-                        field.hasError ? Colors.red : theme.colorScheme.primary,
-                  )
-                ]),
+                ),
+                Icon(
+                  field.value != null
+                      ? Ionicons.checkmark_circle_outline
+                      : Ionicons.document_attach_outline,
+                  color:
+                      field.hasError ? Colors.red : theme.colorScheme.primary,
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -373,9 +388,10 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
 
   String? validateEmptyString(value, texts) {
     final locator = GetIt.instance;
-    final validator = locator
-        .get<AppMethods>()
-        .emptyStringValidator(value, texts['genericValidator']!);
+    final validator = locator.get<AppMethods>().emptyStringValidator(
+      value,
+      texts['genericValidator']!,
+    );
     return validator;
   }
 
@@ -386,21 +402,25 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
     if (!formIsValid) return;
 
     //create a modifiable copy of the form data
-    var formData =
-        Map<String, dynamic>.from(_formKeySignUpBusiness.currentState!.value);
+    var formData = Map<String, dynamic>.from(
+      _formKeySignUpBusiness.currentState!.value,
+    );
 
     //If the user wants to create a new business attached to the new account
     if (_isCreatingANewBusiness) {
       //Then create the user data and the business data
-      final userData =
-          User.toInitialFirebaseJson(formData, UserPermissions.business);
+      final userData = User.toInitialFirebaseJson(
+        formData,
+        UserPermissions.business,
+      );
 
       //Then we transform the address to a GeoPoint
       final location = await transformToLatLng(formData['address']);
       if (location == null) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(texts['badLocation']!)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(texts['badLocation']!)));
         return;
       }
 
@@ -412,15 +432,18 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
 
       //Then we create the user in firestore and the business in firestore
       if (!context.mounted) return;
-      final isBusinessCreated = await context
-          .read<AuthCubit>()
-          .signUpBusiness(userData, businessData, businessRutImg);
+      final isBusinessCreated = await context.read<AuthCubit>().signUpBusiness(
+        userData,
+        businessData,
+        businessRutImg,
+      );
 
       //If the user and business is not created and logged in we show an error message
       if (!isBusinessCreated) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
         return;
       }
     }
@@ -430,18 +453,23 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
      we create the user and log in
     */
     if (!_isCreatingANewBusiness) {
-      final userData =
-          User.toInitialFirebaseJson(formData, UserPermissions.business);
+      final userData = User.toInitialFirebaseJson(
+        formData,
+        UserPermissions.business,
+      );
 
       if (!context.mounted) return;
-      final isUserCreatedAndLoggedInd =
-          await context.read<AuthCubit>().signUp(userData, null);
+      final isUserCreatedAndLoggedInd = await context.read<AuthCubit>().signUp(
+        userData,
+        null,
+      );
 
       //If the user is not created and logged in we show an error message
       if (!isUserCreatedAndLoggedInd) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
         return;
       }
     }
@@ -449,22 +477,91 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
     //If the user is created and logged in we show a success message and navigate to the login page
     if (!context.mounted) return;
     locator.get<AppMethods>().showDialogAlert(
-        context,
-        texts["registerSuccess-title"]!,
-        texts["registerSuccess-body"]!,
-        texts["registerSuccess-button"]!, () {
-      AutoRouter.of(context).replaceAll([LoginView(onResult: (callback) {})]);
-    });
+      context,
+      texts["registerSuccess-title"]!,
+      texts["registerSuccess-body"]!,
+      texts["registerSuccess-button"]!,
+      () {
+        AutoRouter.of(context).replaceAll([LoginView(onResult: (callback) {})]);
+      },
+    );
   }
 
   Future<Location?> transformToLatLng(String address) async {
     try {
-      var location =
-          await locator.get<AppMethods>().getCoordinatesFromAddress(address);
+      var location = await locator.get<AppMethods>().getCoordinatesFromAddress(
+        address,
+      );
       return location;
     } catch (e) {
-      log('Error: $e, Function: transformToLatLng, File: owned_business_details_cubit.dart');
+      log(
+        'Error: $e, Function: transformToLatLng, File: owned_business_details_cubit.dart',
+      );
       return null;
     }
+  }
+
+  void _showImagePickerDialog(
+    BuildContext context,
+    FormFieldState field,
+    Map<String, String> texts,
+    ThemeData theme,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(texts['identification-card-img-source']!),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Ionicons.camera_outline),
+                title: Text(texts["identification-card-img-take-picture"]!),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final picture = await locator.get<AppMethods>().takePicture();
+                  if (picture != null) {
+                    field.didChange(picture);
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Ionicons.image_outline),
+                title: Text(
+                  texts["identification-card-img-select-from-gallery"]!,
+                ),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final picture =
+                      await locator.get<AppMethods>().selectPicture();
+                  if (picture != null) {
+                    field.didChange(picture);
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Ionicons.document_outline),
+                title: Text(texts["identification-card-img-select-pdf"]!),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final pdfFile =
+                      await locator.get<AppMethods>().selectPDFAsXFile();
+                  if (pdfFile != null) {
+                    field.didChange(pdfFile);
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(texts['cancel'] ?? 'Cancel'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

@@ -76,6 +76,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '928314563960',
     projectId: 'heroes-cd74a',
     storageBucket: 'heroes-cd74a.appspot.com',
-    iosBundleId: 'com.example.heroesApp.RunnerTests',
+    iosBundleId: 'com.heroes.heroesApp.RunnerTests',
   );
 }

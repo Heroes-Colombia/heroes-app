@@ -68,73 +68,80 @@ class SignUpView extends StatelessWidget {
                     ),
                     const SizedBox(height: 40),
                     //Removed in iOS for App Store approval
-                    Builder(builder: (context) {
-                      if (!Platform.isIOS) {
-                        return Column(
-                          children: [
-                            FormBuilderTextField(
-                              name: 'license',
-                              key: const Key('license'),
-                              decoration: InputDecoration(
-                                labelText: texts['license-label']!,
-                                hintText: texts['license-hint']!,
-                                border: const OutlineInputBorder(),
+                    Builder(
+                      builder: (context) {
+                        if (!Platform.isIOS) {
+                          return Column(
+                            children: [
+                              FormBuilderTextField(
+                                name: 'license',
+                                key: const Key('license'),
+                                decoration: InputDecoration(
+                                  labelText: texts['license-label']!,
+                                  hintText: texts['license-hint']!,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                validator:
+                                    (value) => validateInputs(context, value),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
                               ),
-                              validator: (value) =>
-                                  validateInputs(context, value),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                            ),
-                            const SizedBox(height: 12),
-                            FormBuilderTextField(
-                              name: 'identification_card',
-                              key: const Key('identification_card'),
-                              decoration: InputDecoration(
-                                labelText: texts['identification-card-label']!,
-                                hintText: texts['identification-card-hint']!,
-                                border: const OutlineInputBorder(),
+                              const SizedBox(height: 12),
+                              FormBuilderTextField(
+                                name: 'identification_card',
+                                key: const Key('identification_card'),
+                                decoration: InputDecoration(
+                                  labelText:
+                                      texts['identification-card-label']!,
+                                  hintText: texts['identification-card-hint']!,
+                                  border: const OutlineInputBorder(),
+                                ),
+                                validator:
+                                    (value) => validateInputs(context, value),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                keyboardType: TextInputType.number,
                               ),
-                              validator: (value) =>
-                                  validateInputs(context, value),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              keyboardType: TextInputType.number,
-                            ),
-                            const SizedBox(height: 12),
-                            pictureField(texts, theme),
-                            const SizedBox(height: 12),
-                          ],
-                        );
-                      } else {
-                        return const SizedBox(height: 12);
-                      }
-                    }),
+                              const SizedBox(height: 12),
+                              pictureField(texts, theme, context),
+                              const SizedBox(height: 12),
+                            ],
+                          );
+                        } else {
+                          return const SizedBox(height: 12);
+                        }
+                      },
+                    ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Expanded(
-                            child: FormBuilderTextField(
-                          name: 'first_name',
-                          key: const Key('_register_first_name'),
-                          decoration: InputDecoration(
-                            labelText: texts['firstname-label']!,
-                            hintText: texts['firstname-hint']!,
-                            border: const OutlineInputBorder(),
+                          child: FormBuilderTextField(
+                            name: 'first_name',
+                            key: const Key('_register_first_name'),
+                            decoration: InputDecoration(
+                              labelText: texts['firstname-label']!,
+                              hintText: texts['firstname-hint']!,
+                              border: const OutlineInputBorder(),
+                            ),
+                            validator:
+                                (value) => validateInputs(context, value),
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                           ),
-                          validator: (value) => validateInputs(context, value),
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                        )),
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
-                            child: FormBuilderTextField(
-                          name: 'second_name',
-                          key: const Key('_register_second_name'),
-                          decoration: InputDecoration(
-                            labelText: texts['secondname-label']!,
-                            hintText: texts['secondname-hint']!,
-                            border: const OutlineInputBorder(),
+                          child: FormBuilderTextField(
+                            name: 'second_name',
+                            key: const Key('_register_second_name'),
+                            decoration: InputDecoration(
+                              labelText: texts['secondname-label']!,
+                              hintText: texts['secondname-hint']!,
+                              border: const OutlineInputBorder(),
+                            ),
                           ),
-                        )),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -142,27 +149,31 @@ class SignUpView extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Expanded(
-                            child: FormBuilderTextField(
-                          name: 'first_last_name',
-                          key: const Key('_register_last_name'),
-                          decoration: InputDecoration(
-                            labelText: texts['first-lastname-label']!,
-                            hintText: texts['first-lastname-hint']!,
-                            border: const OutlineInputBorder(),
+                          child: FormBuilderTextField(
+                            name: 'first_last_name',
+                            key: const Key('_register_last_name'),
+                            decoration: InputDecoration(
+                              labelText: texts['first-lastname-label']!,
+                              hintText: texts['first-lastname-hint']!,
+                              border: const OutlineInputBorder(),
+                            ),
+                            validator:
+                                (value) => validateInputs(context, value),
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                           ),
-                          validator: (value) => validateInputs(context, value),
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                        )),
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
-                            child: FormBuilderTextField(
-                          name: 'second_last_name',
-                          decoration: InputDecoration(
-                            labelText: texts['second-lastname-label']!,
-                            hintText: texts['second-lastname-hint']!,
-                            border: const OutlineInputBorder(),
+                          child: FormBuilderTextField(
+                            name: 'second_last_name',
+                            decoration: InputDecoration(
+                              labelText: texts['second-lastname-label']!,
+                              hintText: texts['second-lastname-hint']!,
+                              border: const OutlineInputBorder(),
+                            ),
                           ),
-                        )),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -181,17 +192,19 @@ class SignUpView extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     EmailInputWidget(
-                        keyName: 'signup_email',
-                        key: const Key('signup_email'),
-                        name: 'email',
-                        label: texts['email-label']!,
-                        hintText: texts['email-hint']!),
+                      keyName: 'signup_email',
+                      key: const Key('signup_email'),
+                      name: 'email',
+                      label: texts['email-label']!,
+                      hintText: texts['email-hint']!,
+                    ),
                     const SizedBox(height: 12),
                     PasswordInput(
-                        keyName: '_register_password',
-                        name: 'password',
-                        label: texts['password-label']!,
-                        hintText: texts['password-hint']!),
+                      keyName: '_register_password',
+                      name: 'password',
+                      label: texts['password-label']!,
+                      hintText: texts['password-hint']!,
+                    ),
                     const SizedBox(height: 12),
                     AsyncButtonWidget(
                       onPressed: () => doRegister(context, texts),
@@ -209,7 +222,10 @@ class SignUpView extends StatelessWidget {
   }
 
   FormBuilderField<Object> pictureField(
-      Map<String, String> texts, ThemeData theme) {
+    Map<String, String> texts,
+    ThemeData theme,
+    BuildContext context,
+  ) {
     return FormBuilderField(
       validator: (value) {
         if (value == null) {
@@ -223,42 +239,41 @@ class SignUpView extends StatelessWidget {
       builder: (field) {
         return InkWell(
           onTap: () async {
-            final picture = await locator.get<AppMethods>().takePicture();
-            if (picture == null) return;
-            field.didChange(picture);
+            _showImagePickerDialog(context, field, texts, theme);
           },
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                  color:
-                      field.hasError ? Colors.red : theme.colorScheme.primary),
+                color: field.hasError ? Colors.red : theme.colorScheme.primary,
+              ),
             ),
             padding: const EdgeInsets.symmetric(
               horizontal: 12.0,
               vertical: 18.0,
             ),
             child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    field.isValid
-                        ? texts["identification-card-img-filled"]!
-                        : texts['identification-card-img-hint']!,
-                    style: TextStyle(
-                      color: theme.colorScheme.primary,
-                      fontSize: theme.textTheme.bodyLarge!.fontSize,
-                    ),
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  field.isValid
+                      ? texts["identification-card-img-filled"]!
+                      : texts['identification-card-img-hint']!,
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontSize: theme.textTheme.bodyLarge!.fontSize,
                   ),
-                  Icon(
-                    field.isValid
-                        ? Ionicons.camera_reverse_outline
-                        : Ionicons.camera_outline,
-                    color:
-                        field.hasError ? Colors.red : theme.colorScheme.primary,
-                  )
-                ]),
+                ),
+                Icon(
+                  field.isValid
+                      ? Ionicons.checkmark_circle_outline
+                      : Ionicons.document_attach_outline,
+                  color:
+                      field.hasError ? Colors.red : theme.colorScheme.primary,
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -268,9 +283,10 @@ class SignUpView extends StatelessWidget {
   //This method is used to validate empty inputs
   String? validateInputs(BuildContext context, String? value) {
     final texts = locator.get<AppConstants>().authTexts['signupView']!;
-    final message = locator
-        .get<AppMethods>()
-        .emptyStringValidator(value, texts['genericValidator']!);
+    final message = locator.get<AppMethods>().emptyStringValidator(
+      value,
+      texts['genericValidator']!,
+    );
     return message;
   }
 
@@ -287,29 +303,31 @@ class SignUpView extends StatelessWidget {
     //Then we extract the image from the form data
     final identificationImage = formData['identification_card_img'];
 
-    final isUserCreatedAndLoggedInd =
-        await context.read<AuthCubit>().signUp(userData, identificationImage);
+    final isUserCreatedAndLoggedInd = await context.read<AuthCubit>().signUp(
+      userData,
+      identificationImage,
+    );
 
     //If the user is not created and logged in we show an error message
     if (!isUserCreatedAndLoggedInd) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(texts['signupErrorTitle']!),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
       return;
     }
 
     //If the user is created and logged in we show a success message and navigate to the login page
     if (!context.mounted) return;
     locator.get<AppMethods>().showDialogAlert(
-        context,
-        texts["registerSuccess-title"]!,
-        texts["registerSuccess-body"]!,
-        texts["registerSuccess-button"]!, () {
-      AutoRouter.of(context).replaceAll([LoginView(onResult: (callback) {})]);
-    });
+      context,
+      texts["registerSuccess-title"]!,
+      texts["registerSuccess-body"]!,
+      texts["registerSuccess-button"]!,
+      () {
+        AutoRouter.of(context).replaceAll([LoginView(onResult: (callback) {})]);
+      },
+    );
   }
 
   //This method is used to get the ranks from the constants file
@@ -328,9 +346,10 @@ class SignUpView extends StatelessWidget {
           child: Text(
             locator.get<AppMethods>().capitalize(category),
             style: TextStyle(
-                fontSize: theme.textTheme.bodyLarge!.fontSize,
-                fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                color: theme.colorScheme.primary),
+              fontSize: theme.textTheme.bodyLarge!.fontSize,
+              fontWeight: theme.textTheme.labelLarge!.fontWeight,
+              color: theme.colorScheme.primary,
+            ),
           ),
         ),
       );
@@ -346,9 +365,10 @@ class SignUpView extends StatelessWidget {
               child: Text(
                 locator.get<AppMethods>().capitalize(subCategory),
                 style: TextStyle(
-                    fontSize: theme.textTheme.labelMedium!.fontSize,
-                    fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                    color: theme.colorScheme.primary.withOpacity(0.6)),
+                  fontSize: theme.textTheme.labelMedium!.fontSize,
+                  fontWeight: theme.textTheme.labelLarge!.fontWeight,
+                  color: theme.colorScheme.primary.withOpacity(0.6),
+                ),
               ),
             ),
           ),
@@ -364,9 +384,10 @@ class SignUpView extends StatelessWidget {
                 child: Text(
                   locator.get<AppMethods>().capitalize(option),
                   style: TextStyle(
-                      fontSize: theme.textTheme.labelMedium!.fontSize,
-                      fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                      color: theme.colorScheme.onSurfaceVariant),
+                    fontSize: theme.textTheme.labelMedium!.fontSize,
+                    fontWeight: theme.textTheme.labelLarge!.fontWeight,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),
@@ -388,5 +409,69 @@ class SignUpView extends StatelessWidget {
     });
 
     return dropdownItems;
+  }
+
+  void _showImagePickerDialog(
+    BuildContext context,
+    FormFieldState field,
+    Map<String, String> texts,
+    ThemeData theme,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(texts['identification-card-img-label']!),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Ionicons.camera_outline),
+                title: Text(texts["identification-card-img-take-picture"]!),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final picture = await locator.get<AppMethods>().takePicture();
+                  if (picture != null) {
+                    field.didChange(picture);
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Ionicons.image_outline),
+                title: Text(
+                  texts["identification-card-img-select-from-gallery"]!,
+                ),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final picture =
+                      await locator.get<AppMethods>().selectPicture();
+                  if (picture != null) {
+                    field.didChange(picture);
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Ionicons.document_outline),
+                title: Text(texts["identification-card-img-select-pdf"]!),
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  final pdfFile =
+                      await locator.get<AppMethods>().selectPDFAsXFile();
+                  if (pdfFile != null) {
+                    field.didChange(pdfFile);
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(texts['cancel'] ?? 'Cancel'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

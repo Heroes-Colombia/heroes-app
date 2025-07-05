@@ -48,6 +48,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.3
   auto_route_generator: ^10.0.1
   geoflutterfire_plus: ^0.0.32
+  file_picker: ^8.1.4
 
 dev_dependencies:
   flutter_test:

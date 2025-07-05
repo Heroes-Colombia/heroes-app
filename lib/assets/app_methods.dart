@@ -13,6 +13,7 @@ import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:http/http.dart' as http;
+import 'package:file_picker/file_picker.dart';
 
 class AppMethods {
   //Validate email input field
@@ -70,7 +71,10 @@ class AppMethods {
 
   //Validate password input field
   String? passwordValidator(
-      String? value, String emptyString, String invalidLength) {
+    String? value,
+    String emptyString,
+    String invalidLength,
+  ) {
     if (value == null || value.isEmpty) {
       return emptyString;
     }
@@ -157,20 +161,42 @@ class AppMethods {
     return photo;
   }
 
+  //Get PDF file from the device and convert it to XFile for compatibility
+  Future<XFile?> selectPDFAsXFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final platformFile = result.files.first;
+        if (platformFile.path != null) {
+          return XFile(platformFile.path!);
+        }
+      }
+    } catch (e) {
+      log('Error picking PDF file: $e');
+    }
+    return null;
+  }
+
   //Show dialog alert
-  Future<void> showDialogAlert(BuildContext context, String title, String body,
-      String button, Function callback) async {
+  Future<void> showDialogAlert(
+    BuildContext context,
+    String title,
+    String body,
+    String button,
+    Function callback,
+  ) async {
     return await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
           content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(body),
-              ],
-            ),
+            child: ListBody(children: <Widget>[Text(body)]),
           ),
           actions: <Widget>[
             TextButton(child: Text(button), onPressed: () => callback()),
@@ -211,24 +237,24 @@ class AppMethods {
 
   //This method is used to convert from address to coordinates
   Future<geocoding.Location?> getCoordinatesFromAddress(String address) async {
-    List<geocoding.Location> locations =
-        await geocoding.locationFromAddress(address);
+    List<geocoding.Location> locations = await geocoding.locationFromAddress(
+      address,
+    );
     return locations.first;
   }
 
   //This method is used to convert from coordinates to address
   Future<String?> getAddressFromCoordinates(
-      double latitude, double longitude) async {
+    double latitude,
+    double longitude,
+  ) async {
     final locationString = await reverseGeocodeCoordinates(latitude, longitude);
     return locationString;
   }
 
   //This method is used to open app from url
   Future<void> openAppFromUri(Uri url) async {
-    if (!await launchUrl(
-      url,
-      mode: LaunchMode.externalApplication,
-    )) {
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       throw Exception('Error trying to open the following url: $url');
     }
   }
@@ -245,9 +271,10 @@ class AppMethods {
   ) {
     if (latitude == null || longitude == null) return '';
     final locator = GetIt.instance;
-    final mapThemeId = brightness == Brightness.light
-        ? locator.get<AppConstants>().lightMapTheme
-        : locator.get<AppConstants>().darkMapTheme;
+    final mapThemeId =
+        brightness == Brightness.light
+            ? locator.get<AppConstants>().lightMapTheme
+            : locator.get<AppConstants>().darkMapTheme;
     final mapKey = dotenv.env["GOOGLE_MAPS_API_KEY_WEB"];
     final staticMapApi = locator.get<AppConstants>().googleMapsStaticApi;
 
@@ -280,14 +307,16 @@ class AppMethods {
     BuildContext context,
   ) async {
     if (message.data.containsKey("promotion")) {
-      AutoRouter.of(context).push(PromotionDetailsView(
-        promotion: null,
-        promotionId: message.data["promotion"],
-      ));
+      AutoRouter.of(context).push(
+        PromotionDetailsView(
+          promotion: null,
+          promotionId: message.data["promotion"],
+        ),
+      );
     } else if (message.data.containsKey("business")) {
-      AutoRouter.of(context).push(BusinessDetailsView(
-        businessId: message.data["business"],
-      ));
+      AutoRouter.of(
+        context,
+      ).push(BusinessDetailsView(businessId: message.data["business"]));
     } else if (message.data.containsKey("route")) {
       log("Route found for: ${message.data}");
       AutoRouter.of(context).pushNamed("/${message.data["route"]}");

@@ -130,11 +130,7 @@ class AppConstants {
         "Cadete",
         "Alférez",
       ],
-      "OTROS GRADOS": [
-        "Personal civil",
-        "Servicio militar",
-        "Beneficiarios",
-      ],
+      "OTROS GRADOS": ["Personal civil", "Servicio militar", "Beneficiarios"],
     },
     "ARMADA NACIONAL": {
       "SUBOFICIALES": [
@@ -206,7 +202,7 @@ class AppConstants {
     "unverifiedUserView": {
       "title": "Usuario no verificado",
       "content":
-          'Lo sentimos pero tu usuario aún no ha sido verificado. Cuando tu perfil haya sido corroborado tendrás acceso a la aplicación.'
+          'Lo sentimos pero tu usuario aún no ha sido verificado. Cuando tu perfil haya sido corroborado tendrás acceso a la aplicación.',
     },
   };
   final authTexts = {
@@ -219,7 +215,7 @@ class AppConstants {
     },
     'loginView': {
       'title': 'Iniciar sesión',
-      "sub-title": "¡Qué bueno tenerte denuevo Héroe!",
+      "sub-title": "¡Qué bueno tenerte de nuevo Héroe!",
       'forgotPassword': 'Olvidé mi contraseña',
       'email-label': 'Correo electrónico',
       'email-hint': 'Ingresa tu correo electrónico',
@@ -239,13 +235,17 @@ class AppConstants {
       'email-label': 'Correo electrónico',
       'email-hint': 'Ingresa tu correo electrónico',
       'email-validator': 'Por favor ingresa un correo electrónico válido',
-      'license-label': 'Carnet',
-      'license-hint': 'Ingresa tu carnet',
+      'license-label': 'Numero de carnet',
+      'license-hint': 'Ingresa el numero de tu carnet',
       'identification-card-label': 'Número de cédula de ciudadanía',
       'identification-card-hint': 'Ingresa tu número de cédula de ciudadanía',
-      'identification-card-img-label': 'Foto del carnet',
-      'identification-card-img-hint': 'Tomar foto a carnet',
-      'identification-card-img-filled': 'Tomar otra foto',
+      'identification-card-img-label': 'Adjuntar carnet',
+      'identification-card-img-hint': 'Carnet de policia o militar',
+      'identification-card-img-filled': 'Seleccionar otro documento',
+      'identification-card-img-take-picture': 'Tomar foto',
+      'identification-card-img-select-from-gallery':
+          'Seleccionar de la galería',
+      'identification-card-img-select-pdf': 'Seleccionar PDF',
       'firstname-label': 'Nombre',
       'firstname-hint': 'Ingresa tu nombre',
       'secondname-label': 'Segundo nombre',
@@ -273,8 +273,13 @@ class AppConstants {
       'identification-card-label': 'Número de cédula de ciudadanía',
       'identification-card-hint': 'Ingresa tu número de cédula de ciudadanía',
       'identification-card-img-label': 'Foto del RUT del comercio',
-      'identification-card-img-hint': 'Tomar foto al RUT del comercio',
-      'identification-card-img-filled': 'Tomar otra foto',
+      'identification-card-img-hint': 'RUT del comercio',
+      'identification-card-img-filled': 'Selecionar otro RUT',
+      'identification-card-img-source': 'RUT del comercio',
+      'identification-card-img-take-picture': 'Tomar foto',
+      'identification-card-img-select-from-gallery':
+          'Seleccionar de la galería',
+      'identification-card-img-select-pdf': 'Seleccionar PDF',
       'email-label': 'Correo electrónico',
       'email-hint': 'Ingresa tu correo electrónico',
       'email-validator': 'Por favor ingresa un correo electrónico válido',
@@ -475,7 +480,7 @@ class AppConstants {
       'search-error-content': 'Ocurrió un error al buscar',
       "search-suggestions": "Sugerencias",
       "search-results": "Resultados",
-    }
+    },
   };
   final businessDashboardTexts = {
     "ownedBusinessesView": {
