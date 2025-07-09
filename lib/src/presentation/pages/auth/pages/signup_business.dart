@@ -248,6 +248,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
             FormBuilderTextField(
               name: 'address',
               key: const Key('_register_business_address'),
+              validator: (value) => validateEmptyString(value, texts),
               keyboardType: TextInputType.streetAddress,
               decoration: InputDecoration(
                 labelText: texts['address-label']!,
@@ -408,6 +409,18 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
 
     //If the user wants to create a new business attached to the new account
     if (_isCreatingANewBusiness) {
+      // Validate all required fields before processing
+      final requiredFields = ['email', 'password', 'first_name', 'first_last_name', 'rank'];
+      for (String field in requiredFields) {
+        if (formData[field] == null || formData[field].toString().isEmpty) {
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('${field.replaceAll('_', ' ')} is required')));
+          return;
+        }
+      }
+
       //Then create the user data and the business data
       final userData = User.toInitialFirebaseJson(
         formData,
@@ -415,7 +428,16 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
       );
 
       //Then we transform the address to a GeoPoint
-      final location = await transformToLatLng(formData['address']);
+      final address = formData['address'] as String?;
+      if (address == null || address.isEmpty) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(texts['badLocation']!)));
+        return;
+      }
+
+      final location = await transformToLatLng(address);
       if (location == null) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(

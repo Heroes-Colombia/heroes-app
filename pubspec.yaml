@@ -1,7 +1,7 @@
 name: heroes_app
 description: Encuentra promociones cercas de ti.
 
-version: 1.0.0+17
+version: 1.0.1+19
 
 environment:
   sdk: ^3.7.2
