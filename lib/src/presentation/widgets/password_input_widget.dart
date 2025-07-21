@@ -6,12 +6,13 @@ import 'package:heroes_app/assets/app_methods.dart';
 import 'package:ionicons/ionicons.dart';
 
 class PasswordInput extends StatefulWidget {
-  const PasswordInput(
-      {super.key,
-      required this.keyName,
-      required this.name,
-      required this.label,
-      required this.hintText});
+  const PasswordInput({
+    super.key,
+    required this.keyName,
+    required this.name,
+    required this.label,
+    required this.hintText,
+  });
 
   final String keyName;
   final String name;
@@ -51,8 +52,12 @@ class _PasswordInputState extends State<PasswordInput> {
         ),
         border: const OutlineInputBorder(),
       ),
-      validator: (value) => locator.get<AppMethods>().passwordValidator(value,
-          texts['password-validator']!, texts['password-length-validator']!),
+      validator:
+          (value) => locator.get<AppMethods>().passwordValidator(
+            value,
+            texts['password-validator']!,
+            texts['password-length-validator']!,
+          ),
       autovalidateMode: AutovalidateMode.onUserInteraction,
     );
   }

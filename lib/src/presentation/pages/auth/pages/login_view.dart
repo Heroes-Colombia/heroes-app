@@ -53,22 +53,25 @@ class LoginView extends StatelessWidget {
                   authTexts['sub-title']!,
                   textAlign: TextAlign.left,
                   style: TextStyle(
-                      fontSize: theme.textTheme.labelLarge?.fontSize,
-                      fontWeight: FontWeight.w500,
-                      color: theme.colorScheme.onBackground),
+                    fontSize: theme.textTheme.labelLarge?.fontSize,
+                    fontWeight: FontWeight.w500,
+                    color: theme.colorScheme.onBackground,
+                  ),
                 ),
                 const SizedBox(height: 28),
                 EmailInputWidget(
-                    keyName: "email",
-                    name: "email",
-                    label: authTexts['email-label']!,
-                    hintText: authTexts['email-hint']!),
+                  keyName: "email",
+                  name: "email",
+                  label: authTexts['email-label']!,
+                  hintText: authTexts['email-hint']!,
+                ),
                 const SizedBox(height: 12),
                 PasswordInput(
-                    keyName: '_login_password',
-                    name: 'password',
-                    label: authTexts['password-label']!,
-                    hintText: authTexts['password-hint']!),
+                  keyName: '_login_password',
+                  name: 'password',
+                  label: authTexts['password-label']!,
+                  hintText: authTexts['password-hint']!,
+                ),
                 const SizedBox(height: 12),
                 AsyncButtonWidget(
                   onPressed: () => _loginUser(context, authTexts),
@@ -76,8 +79,8 @@ class LoginView extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 TextButton(
-                  onPressed: () =>
-                      AutoRouter.of(context).push(RestorePassword()),
+                  onPressed:
+                      () => AutoRouter.of(context).push(RestorePassword()),
                   child: Text(authTexts['forgotPassword']!),
                 ),
                 const SizedBox(height: 12),
@@ -91,19 +94,25 @@ class LoginView extends StatelessWidget {
 
   //This method is used to login the user
   Future<void> _loginUser(
-      BuildContext context, Map<String, String> texts) async {
+    BuildContext context,
+    Map<String, String> texts,
+  ) async {
     //First we validate the form
     final formIsValid = _formKey.currentState!.saveAndValidate();
     if (formIsValid) {
       final formData = _formKey.currentState!.value;
-      final userIsValid =
-          await context.read<AuthCubit>().logIn(formData, context);
+      final loginResult = await context.read<AuthCubit>().logIn(
+        formData,
+        context,
+      );
 
-      if (!userIsValid) {
+      if (!loginResult.success) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(texts['loginErrorContent']!),
+            content: Text(
+              loginResult.errorMessage ?? texts['loginErrorContent']!,
+            ),
           ),
         );
       }

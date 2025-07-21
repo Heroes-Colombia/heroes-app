@@ -873,12 +873,22 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
   }
 
   //This method is used to update the business information
-  Future<void> handleEditBusinessInformation(
+  Future<bool> handleEditBusinessInformation(
     GlobalKey<FormBuilderState> editInfoKey,
   ) async {
     try {
       if (editInfoKey.currentState!.saveAndValidate()) {
         final newBusinessMap = editInfoKey.currentState!.fields;
+
+        // Check for validation errors
+        final hasErrors = newBusinessMap.values.any((field) => field.hasError);
+        if (hasErrors) {
+          newBusinessMap.forEach((key, field) {
+            if (field.hasError) {
+              log('DEBUG: Validation error in $key: ${field.errorText}');
+            }
+          });
+        }
         final business = state.business!.copyWith(
           name: newBusinessMap["name"]!.value,
           ownerName: newBusinessMap["owner_name"]!.value,
@@ -890,6 +900,12 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
                   .map((e) => e.toString())
                   .toList(),
         );
+        if (newBusinessMap["featured_image"]!.value != null) {
+          //Then we extract the image from the form data
+          final businessImage =
+              newBusinessMap['featured_image']!.value as XFile;
+          await handleEditFeaturedImage(businessImage);
+        }
 
         final firestoreService = locator.get<FirestoreService>();
         final businessCollection =
@@ -914,11 +930,16 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
             business: updatedBusiness,
           ),
         );
+
+        return true;
       }
-    } catch (e) {
+      return false;
+    } catch (e, stackTrace) {
       log(
         'Error: $e, Function: handleEditBusinessInformation, File: owned_business_details_cubit.dart',
+        stackTrace: stackTrace,
       );
+      return false;
     }
   }
 
@@ -927,7 +948,7 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
     try {
       emit(state.copyWith(status: BusinessViewCubitStatus.loading));
       final fireStorage = locator.get<FireStorageService>();
-      final imagePath = await fireStorage.uploadPromotionFeaturedImage(
+      final imagePath = await fireStorage.uploadBusinessFeaturedImage(
         newImage,
         state.businessId!,
       );

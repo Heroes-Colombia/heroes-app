@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/domain/models/user_model.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
@@ -150,19 +151,26 @@ class EditProfileView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  FormBuilderDropdown(
-                    name: 'rank',
-                    key: const Key('_register_rank'),
-                    initialValue: user.rank,
-                    dropdownColor: theme.colorScheme.background,
+                  loadingRankPermission(context, theme, texts, user),
+                  const SizedBox(height: 12),
+                  FormBuilderTextField(
+                    name: 'license',
+                    initialValue: user.license,
+                    enabled: false,
                     decoration: InputDecoration(
-                      labelText: texts['rank-label']!,
-                      hintText: texts['rank-hint']!,
+                      labelText: texts['license-label']!,
                       border: const OutlineInputBorder(),
                     ),
-                    items: getRanks(context),
-                    validator: (value) => validateInputs(context, value),
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                  ),
+                  const SizedBox(height: 12),
+                  FormBuilderTextField(
+                    name: 'identification_card',
+                    initialValue: user.identificationCard,
+                    enabled: false,
+                    decoration: InputDecoration(
+                      labelText: texts['identification-label']!,
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   AsyncButtonWidget(
@@ -176,6 +184,46 @@ class EditProfileView extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  //This method is used to show the user's permission and rank
+  //It will show the rank if the user is a regular user and the position if the user is an admin
+  loadingRankPermission(
+    BuildContext context,
+    ThemeData theme,
+    texts,
+    User user,
+  ) {
+    return (user.permission == UserPermissions.user
+        ? FormBuilderDropdown(
+          name: 'rank',
+          key: const Key('_register_rank'),
+          initialValue: user.rank,
+          dropdownColor: theme.colorScheme.background,
+          decoration: InputDecoration(
+            labelText: texts['rank-label']!,
+            hintText: texts['rank-hint']!,
+            border: const OutlineInputBorder(),
+          ),
+          items: getRanks(context),
+          validator: (value) => validateInputs(context, value),
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+        )
+        : FormBuilderTextField(
+          name: 'rank',
+          initialValue: user.rank.split(" ").last,
+          validator:
+              (value) => locator.get<AppMethods>().emptyStringValidator(
+                value!,
+                texts['empty-string']!,
+              ),
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          decoration: InputDecoration(
+            hintText: texts['position-hint']!,
+            labelText: texts['position-label']!,
+            border: const OutlineInputBorder(),
+          ),
+        ));
   }
 
   //This method is used to show a loading view when the user info is loading

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
@@ -98,8 +100,6 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                 return succesView(theme, texts, state);
               case BusinessViewCubitStatus.error:
                 return errorView(theme, texts);
-              default:
-                return const Center(child: Text('Error'));
             }
           },
         ),
@@ -238,46 +238,46 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            if (business.featuredImage.isNotEmpty)
-              GestureDetector(
-                onTap: () async {
-                  final newPicture =
-                      await locator.get<AppMethods>().selectPicture();
-                  if (newPicture != null) {
-                    if (!mounted) return;
-                    await context
-                        .read<OwnedBusinessDetailsCubit>()
-                        .handleEditFeaturedImage(newPicture);
-                  }
+            GestureDetector(
+              onTap: () async {
+                final newPicture = await _showImagePickerDialog(
+                  context,
+                  texts,
+                  theme,
+                );
+                if (newPicture != null) {
                   if (!mounted) return;
-                  context.read<OwnedBusinessesCubit>().getOwnedBusinesses();
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      business.featuredImage,
-                      height: 220,
-                      width: double.infinity,
-                      fit: BoxFit.fitWidth,
-                    ),
-                  ),
+                  await context
+                      .read<OwnedBusinessDetailsCubit>()
+                      .handleEditFeaturedImage(newPicture);
+                }
+                if (!mounted) return;
+                context.read<OwnedBusinessesCubit>().getOwnedBusinesses();
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
                 ),
-              )
-            else
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'assets/images/file-not-found.png',
-                  height: 220,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child:
+                      business.featuredImage.isNotEmpty
+                          ? Image.network(
+                            business.featuredImage,
+                            height: 220,
+                            width: double.infinity,
+                            fit: BoxFit.fitWidth,
+                          )
+                          : Image.asset(
+                            'assets/images/file-not-found.png',
+                            height: 220,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
                 ),
               ),
+            ),
             const SizedBox(height: 16),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -811,6 +811,8 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    pictureField(texts, Theme.of(context), 'business'),
+                    const SizedBox(height: 16),
                     FormBuilderField(
                       initialValue: business.categories,
                       validator:
@@ -902,10 +904,23 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                     ),
                     const SizedBox(height: 16),
                     AsyncButtonWidget(
-                      onPressed:
-                          () async => await context
-                              .read<OwnedBusinessDetailsCubit>()
-                              .handleEditBusinessInformation(editInfoKey),
+                      onPressed: () async {
+                        final success = await context
+                            .read<OwnedBusinessDetailsCubit>()
+                            .handleEditBusinessInformation(editInfoKey);
+                        if (success && context.mounted) {
+                          Navigator.of(context).pop();
+                          // Show success message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(texts["business-updated-success"]!),
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.primary,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
                       buttonText: texts["edit-button"]!,
                     ),
                     TextButton(
@@ -1173,7 +1188,7 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      pictureField(texts, Theme.of(context)),
+                      pictureField(texts, Theme.of(context), 'promotion'),
                       const SizedBox(height: 16),
                       AsyncButtonWidget(
                         buttonText: texts["create-button"]!,
@@ -1379,49 +1394,134 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
   FormBuilderField<Object> pictureField(
     Map<String, String> texts,
     ThemeData theme,
+    String? type,
   ) {
-    var locator = GetIt.instance;
-
     return FormBuilderField(
       name: "featured_image",
       builder: (field) {
-        return InkWell(
-          onTap: () async {
-            final picture = await locator.get<AppMethods>().selectPicture();
-            if (picture == null) return;
-            field.didChange(picture);
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: theme.colorScheme.primary),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: () async {
+                final picture = await _showImagePickerDialog(
+                  context,
+                  texts,
+                  theme,
+                );
+                if (picture == null) return;
+                field.didChange(picture);
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: theme.colorScheme.primary),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12.0,
+                  vertical: 18.0,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      field.value != null
+                          ? texts["featured-img-filled"]!
+                          : type == 'business'
+                          ? texts['business-img-hint']!
+                          : texts['featured-img-hint']!,
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontSize: theme.textTheme.bodyLarge!.fontSize,
+                      ),
+                    ),
+                    Icon(
+                      field.value != null
+                          ? Ionicons.camera_reverse_outline
+                          : Ionicons.image_outline,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ],
+                ),
+              ),
             ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 18.0,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  field.value != null
-                      ? texts["featured-img-filled"]!
-                      : texts['featured-img-hint']!,
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontSize: theme.textTheme.bodyLarge!.fontSize,
+            if (field.value != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                texts["featured-img-uploaded-success"]!,
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
+                  fontSize: theme.textTheme.bodySmall!.fontSize,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withOpacity(0.3),
                   ),
                 ),
-                Icon(
-                  field.value != null
-                      ? Ionicons.camera_reverse_outline
-                      : Ionicons.image_outline,
-                  color: theme.colorScheme.primary,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    File((field.value as XFile).path),
+                    height: 120,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  //Method to show the image picker dialog
+  //This method is used to show a dialog with options to take a picture or select one
+  //It returns the selected image as an XFile
+  Future<XFile?> _showImagePickerDialog(
+    BuildContext context,
+    Map<String, String> texts,
+    ThemeData theme,
+  ) async {
+    return await showDialog<XFile?>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(texts['business-img-hint']!),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Ionicons.camera_outline),
+                title: Text(texts["business-img-take-picture"]!),
+                onTap: () async {
+                  final picture = await locator.get<AppMethods>().takePicture();
+                  Navigator.of(context).pop(picture);
+                },
+              ),
+              ListTile(
+                leading: Icon(Ionicons.image_outline),
+                title: Text(texts["business-img-select-from-gallery"]!),
+                onTap: () async {
+                  final picture =
+                      await locator.get<AppMethods>().selectPicture();
+                  Navigator.of(context).pop(picture);
+                },
+              ),
+            ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: Text(texts['cancel'] ?? 'Cancel'),
+            ),
+          ],
         );
       },
     );

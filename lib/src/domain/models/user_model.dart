@@ -4,6 +4,7 @@ import 'package:heroes_app/assets/app_enums.dart';
 class User extends Equatable {
   final String uid;
   final String license;
+  final String identificationCard;
   final String firstName;
   final String secondName;
   final String firstLastName;
@@ -18,6 +19,7 @@ class User extends Equatable {
   const User({
     required this.uid,
     required this.license,
+    required this.identificationCard,
     required this.firstName,
     required this.secondName,
     required this.firstLastName,
@@ -32,42 +34,48 @@ class User extends Equatable {
 
   @override
   List<Object?> get props => [
-        uid,
-        email,
-        license,
-        firstName,
-        secondName,
-        firstLastName,
-        secondLastName,
-        permission,
-        rank,
-        verified,
-        favouriteBusinesses,
-        deviceNotificationToken
-      ];
+    uid,
+    email,
+    license,
+    identificationCard,
+    firstName,
+    secondName,
+    firstLastName,
+    secondLastName,
+    permission,
+    rank,
+    verified,
+    favouriteBusinesses,
+    deviceNotificationToken,
+  ];
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       uid: json['uid'] as String,
       email: json['email'] as String,
       license: json['license'] as String,
+      identificationCard: json['identification_card'] as String,
       firstName: json['first_name'] as String,
       secondName: json['second_name'] ?? "",
       firstLastName: json['first_last_name'] as String,
       secondLastName: json['second_last_name'] ?? "",
       rank: json['rank'] as String,
-      permission: UserPermissions.values.firstWhere((element) =>
-          element.toString().split('.').last == json['permission']),
+      permission: UserPermissions.values.firstWhere(
+        (element) => element.toString().split('.').last == json['permission'],
+      ),
       verified: json['verified'] as bool,
-      favouriteBusinesses: json['favourite_businesses'] != null
-          ? List<String>.from(json['favourite_businesses'])
-          : [],
+      favouriteBusinesses:
+          json['favourite_businesses'] != null
+              ? List<String>.from(json['favourite_businesses'])
+              : [],
       deviceNotificationToken: json['device_notification_token'] as String?,
     );
   }
 
   static Map<String, dynamic> toInitialFirebaseJson(
-      Map<String, dynamic> json, UserPermissions? permission) {
+    Map<String, dynamic> json,
+    UserPermissions? permission,
+  ) {
     return {
       'email': json['email'],
       'license': json['license'] ?? "",
@@ -77,9 +85,10 @@ class User extends Equatable {
       'second_last_name': json['second_last_name'],
       'verified': false,
       'rank': json['rank'],
-      "permission": permission != null
-          ? permission.toString().split(".").last
-          : UserPermissions.user.toString().split(".").last,
+      "permission":
+          permission != null
+              ? permission.toString().split(".").last
+              : UserPermissions.user.toString().split(".").last,
       "status": UserStatus.pending.toString().split('.').last,
       "favourite_businesses": [],
       "password": json['password'],
@@ -90,6 +99,7 @@ class User extends Equatable {
   User copyWith({
     String? uid,
     String? license,
+    String? identificationCard,
     String? firstName,
     String? secondName,
     String? firstLastName,
@@ -105,6 +115,7 @@ class User extends Equatable {
       uid: uid ?? this.uid,
       email: email ?? this.email,
       license: license ?? this.license,
+      identificationCard: identificationCard ?? this.identificationCard,
       firstName: firstName ?? this.firstName,
       secondName: secondName ?? this.secondName,
       firstLastName: firstLastName ?? this.firstLastName,

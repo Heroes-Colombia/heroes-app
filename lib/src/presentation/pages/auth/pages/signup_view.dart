@@ -237,44 +237,63 @@ class SignUpView extends StatelessWidget {
       key: const Key('identification_card_img'),
       autovalidateMode: AutovalidateMode.onUserInteraction,
       builder: (field) {
-        return InkWell(
-          onTap: () async {
-            _showImagePickerDialog(context, field, texts, theme);
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: field.hasError ? Colors.red : theme.colorScheme.primary,
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 18.0,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  field.isValid
-                      ? texts["identification-card-img-filled"]!
-                      : texts['identification-card-img-hint']!,
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontSize: theme.textTheme.bodyLarge!.fontSize,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: () async {
+                _showImagePickerDialog(context, field, texts, theme);
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color:
+                        field.hasError ? Colors.red : theme.colorScheme.primary,
                   ),
                 ),
-                Icon(
-                  field.isValid
-                      ? Ionicons.checkmark_circle_outline
-                      : Ionicons.document_attach_outline,
-                  color:
-                      field.hasError ? Colors.red : theme.colorScheme.primary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12.0,
+                  vertical: 18.0,
                 ),
-              ],
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      field.isValid
+                          ? texts["identification-card-img-filled"]!
+                          : texts['identification-card-img-hint']!,
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontSize: theme.textTheme.bodyLarge!.fontSize,
+                      ),
+                    ),
+                    Icon(
+                      field.isValid
+                          ? Ionicons.checkmark_circle_outline
+                          : Ionicons.document_attach_outline,
+                      color:
+                          field.hasError
+                              ? Colors.red
+                              : theme.colorScheme.primary,
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
+            if (field.value != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                texts["identification-card-img-uploaded-success"]!,
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
+                  fontSize: theme.textTheme.bodySmall!.fontSize,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
         );
       },
     );
@@ -303,17 +322,21 @@ class SignUpView extends StatelessWidget {
     //Then we extract the image from the form data
     final identificationImage = formData['identification_card_img'];
 
-    final isUserCreatedAndLoggedInd = await context.read<AuthCubit>().signUp(
+    final userCreationResult = await context.read<AuthCubit>().signUp(
       userData,
       identificationImage,
     );
 
-    //If the user is not created and logged in we show an error message
-    if (!isUserCreatedAndLoggedInd) {
+    //If the user is not created, we show a specific error message
+    if (!userCreationResult.success) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            userCreationResult.errorMessage ?? texts['signupErrorTitle']!,
+          ),
+        ),
+      );
       return;
     }
 

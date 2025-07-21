@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
@@ -340,44 +342,63 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
       name: "RUT_img",
       key: const Key('RUT_img'),
       builder: (field) {
-        return InkWell(
-          onTap: () async {
-            _showImagePickerDialog(context, field, texts, theme);
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: field.hasError ? Colors.red : theme.colorScheme.primary,
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 18.0,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  field.value != null
-                      ? texts["identification-card-img-filled"]!
-                      : texts['identification-card-img-hint']!,
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontSize: theme.textTheme.bodyLarge!.fontSize,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: () async {
+                _showImagePickerDialog(context, field, texts, theme);
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color:
+                        field.hasError ? Colors.red : theme.colorScheme.primary,
                   ),
                 ),
-                Icon(
-                  field.value != null
-                      ? Ionicons.checkmark_circle_outline
-                      : Ionicons.document_attach_outline,
-                  color:
-                      field.hasError ? Colors.red : theme.colorScheme.primary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12.0,
+                  vertical: 18.0,
                 ),
-              ],
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      field.value != null
+                          ? texts["identification-card-img-filled"]!
+                          : texts['identification-card-img-hint']!,
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontSize: theme.textTheme.bodyLarge!.fontSize,
+                      ),
+                    ),
+                    Icon(
+                      field.value != null
+                          ? Ionicons.checkmark_circle_outline
+                          : Ionicons.document_attach_outline,
+                      color:
+                          field.hasError
+                              ? Colors.red
+                              : theme.colorScheme.primary,
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
+            if (field.value != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                texts["identification-card-img-uploaded-success"]!,
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
+                  fontSize: theme.textTheme.bodySmall!.fontSize,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
         );
       },
     );
@@ -410,13 +431,21 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
     //If the user wants to create a new business attached to the new account
     if (_isCreatingANewBusiness) {
       // Validate all required fields before processing
-      final requiredFields = ['email', 'password', 'first_name', 'first_last_name', 'rank'];
+      final requiredFields = [
+        'email',
+        'password',
+        'first_name',
+        'first_last_name',
+        'rank',
+      ];
       for (String field in requiredFields) {
         if (formData[field] == null || formData[field].toString().isEmpty) {
           if (!context.mounted) return;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('${field.replaceAll('_', ' ')} is required')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${field.replaceAll('_', ' ')} is required'),
+            ),
+          );
           return;
         }
       }
@@ -454,18 +483,20 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
 
       //Then we create the user in firestore and the business in firestore
       if (!context.mounted) return;
-      final isBusinessCreated = await context.read<AuthCubit>().signUpBusiness(
-        userData,
-        businessData,
-        businessRutImg,
-      );
+      final businessCreationResult = await context
+          .read<AuthCubit>()
+          .signUpBusiness(userData, businessData, businessRutImg);
 
-      //If the user and business is not created and logged in we show an error message
-      if (!isBusinessCreated) {
+      //If the user and business is not created, we show a specific error message
+      if (!businessCreationResult.success) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              businessCreationResult.errorMessage ?? texts['signupErrorTitle']!,
+            ),
+          ),
+        );
         return;
       }
     }
@@ -481,17 +512,21 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
       );
 
       if (!context.mounted) return;
-      final isUserCreatedAndLoggedInd = await context.read<AuthCubit>().signUp(
+      final userCreationResult = await context.read<AuthCubit>().signUp(
         userData,
         null,
       );
 
-      //If the user is not created and logged in we show an error message
-      if (!isUserCreatedAndLoggedInd) {
+      //If the user is not created, we show a specific error message
+      if (!userCreationResult.success) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(texts['signupErrorTitle']!)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              userCreationResult.errorMessage ?? texts['signupErrorTitle']!,
+            ),
+          ),
+        );
         return;
       }
     }

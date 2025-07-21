@@ -9,6 +9,7 @@ import 'package:equatable/equatable.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
+import 'package:heroes_app/src/domain/models/auth_result.dart';
 import 'package:heroes_app/src/domain/models/user_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/cloud_message_service.dart';
@@ -25,8 +26,10 @@ class AuthCubit extends Cubit<AuthState> {
   final getIt = GetIt.instance;
 
   //This method is used to log in the user
-  Future<bool> logIn(
-      Map<String, dynamic> userData, BuildContext context) async {
+  Future<AuthResult> logIn(
+    Map<String, dynamic> userData,
+    BuildContext context,
+  ) async {
     try {
       //First we log in the user in firebase auth
       await getIt<AuthService>().signInWithEmailAndPassword(
@@ -37,50 +40,60 @@ class AuthCubit extends Cubit<AuthState> {
       //Then we get the user information from firestore
       final usersCollection = getIt.get<AppConstants>().usersCollection;
       final userUid = getIt.get<AuthService>().getUserId();
-      final userJson = await getIt
-          .get<FirestoreService>()
-          .readDocumentById(usersCollection, userUid, "uid");
+      final userJson = await getIt.get<FirestoreService>().readDocumentById(
+        usersCollection,
+        userUid,
+        "uid",
+      );
       final user = User.fromJson(userJson);
 
       //Check if the user has a device notification token and if not, we save it
       await locator.get<CloudMessageService>().handleDeviceNotificationToken(
-          user.deviceNotificationToken, usersCollection, userUid);
+        user.deviceNotificationToken,
+        usersCollection,
+        userUid,
+      );
 
       //Check if the user status is active (Verified)
       if (!user.verified) {
-        if (!context.mounted) return false;
+        if (!context.mounted)
+          return AuthResult.failure(errorMessage: 'Context no disponible');
         AutoRouter.of(context).replaceAll([UnverifiedUserView()]);
-        return true;
+        return AuthResult.unverified();
       }
 
       //Check if the user is a business
       if (user.permission == UserPermissions.business) {
-        if (!context.mounted) return false;
+        if (!context.mounted)
+          return AuthResult.failure(errorMessage: 'Context no disponible');
         //We suscribe the user to the business user channel
         final businessTopic = locator.get<AppConstants>().businessUserTopic;
         locator.get<CloudMessageService>().subscribeToTopic(businessTopic);
         emit(const AuthState(authStatus: AuthStatus.businessLoggedIn));
         //And we replace the current route with the business dashboard
         AutoRouter.of(context).replaceAll([const BusinessDashBoardView()]);
-        return true;
+        return AuthResult.success();
       }
 
       //If the user is a normal user, we suscribe the user to the default topics
       await setInitialTopicsForUser();
 
       //If the user is logged in and verified, we emit the userLoggedIn state
-      if (!context.mounted) return false;
+      if (!context.mounted)
+        return AuthResult.failure(errorMessage: 'Context no disponible');
       AutoRouter.of(context).replaceAll([DashBoardView()]);
-      return true;
+      return AuthResult.success();
     } catch (e) {
       log('Error: $e, Function: logIn, File: auth_cubit.dart');
-      return false;
+      return AuthResult.fromFirebaseException(e);
     }
   }
 
   //This method is used to sign up the user or a business user with out a business
-  Future<bool> signUp(
-      Map<String, dynamic> userData, XFile? identification) async {
+  Future<AuthResult> signUp(
+    Map<String, dynamic> userData,
+    XFile? identification,
+  ) async {
     try {
       //First we create the user in firebase auth
       final uid = await getIt<AuthService>().signUpWithEmailAndPassword(
@@ -95,17 +108,20 @@ class AuthCubit extends Cubit<AuthState> {
 
       //Then we save in firebase storage the identification image if the user is not a business
       if (identification != null) {
-        await getIt
-            .get<FireStorageService>()
-            .uploadUserIdentification(identification, uid);
+        await getIt.get<FireStorageService>().uploadUserIdentification(
+          identification,
+          uid,
+        );
       }
 
       //Get user information from firestore
       final usersCollection = getIt.get<AppConstants>().usersCollection;
       //Set the new user device notification token
-      locator
-          .get<CloudMessageService>()
-          .handleDeviceNotificationToken(null, usersCollection, uid);
+      locator.get<CloudMessageService>().handleDeviceNotificationToken(
+        null,
+        usersCollection,
+        uid,
+      );
 
       //Check if the user is a business user
       if (identification != null) {
@@ -117,17 +133,20 @@ class AuthCubit extends Cubit<AuthState> {
         await setInitialTopicsForUser();
       }
 
-      //And return true or false in case of error
-      return true;
+      //And return success result
+      return AuthResult.success();
     } catch (e) {
       log('Error: $e, Function: signUp, File: auth_cubit.dart');
-      return false;
+      return AuthResult.fromFirebaseException(e);
     }
   }
 
   //This method is used to sign up the business with the owner user
-  Future<bool> signUpBusiness(Map<String, dynamic> userData,
-      Map<String, dynamic> businessData, XFile? identification) async {
+  Future<AuthResult> signUpBusiness(
+    Map<String, dynamic> userData,
+    Map<String, dynamic> businessData,
+    XFile? identification,
+  ) async {
     try {
       //First we create the user from the business info in firebase auth
       final uid = await getIt<AuthService>().signUpWithEmailAndPassword(
@@ -143,9 +162,10 @@ class AuthCubit extends Cubit<AuthState> {
 
       //Then we save in firebase storage the RUT image
       if (identification != null) {
-        await getIt
-            .get<FireStorageService>()
-            .uploadBusinessRut(identification, uid);
+        await getIt.get<FireStorageService>().uploadBusinessRut(
+          identification,
+          uid,
+        );
       }
 
       //Then we add the owner_uid to the business data
@@ -157,19 +177,21 @@ class AuthCubit extends Cubit<AuthState> {
       //Get user information from firestore
       final usersCollection = getIt.get<AppConstants>().usersCollection;
       //Check if the user has a device notification token and if not, we save it
-      locator
-          .get<CloudMessageService>()
-          .handleDeviceNotificationToken(null, usersCollection, uid);
+      locator.get<CloudMessageService>().handleDeviceNotificationToken(
+        null,
+        usersCollection,
+        uid,
+      );
 
       //Then we suscribe the user to the business user channel
       final businessTopic = locator.get<AppConstants>().businessUserTopic;
       locator.get<CloudMessageService>().subscribeToTopic(businessTopic);
 
-      //And return true or false in case of error
-      return true;
+      //And return success result
+      return AuthResult.success();
     } catch (e) {
       log('Error: $e, Function: signUpBusiness, File: auth_cubit.dart');
-      return false;
+      return AuthResult.fromFirebaseException(e);
     }
   }
 
@@ -180,18 +202,18 @@ class AuthCubit extends Cubit<AuthState> {
       await getIt<AuthService>().signOut();
 
       //Then we unsubscribe the user from all topics
-      locator
-          .get<CloudMessageService>()
-          .unsubscribeFromTopic(locator.get<AppConstants>().normalUserTopic);
-      locator
-          .get<CloudMessageService>()
-          .unsubscribeFromTopic(locator.get<AppConstants>().favoriteTopic);
-      locator
-          .get<CloudMessageService>()
-          .unsubscribeFromTopic(locator.get<AppConstants>().discoverTopic);
-      locator
-          .get<CloudMessageService>()
-          .unsubscribeFromTopic(locator.get<AppConstants>().businessUserTopic);
+      locator.get<CloudMessageService>().unsubscribeFromTopic(
+        locator.get<AppConstants>().normalUserTopic,
+      );
+      locator.get<CloudMessageService>().unsubscribeFromTopic(
+        locator.get<AppConstants>().favoriteTopic,
+      );
+      locator.get<CloudMessageService>().unsubscribeFromTopic(
+        locator.get<AppConstants>().discoverTopic,
+      );
+      locator.get<CloudMessageService>().unsubscribeFromTopic(
+        locator.get<AppConstants>().businessUserTopic,
+      );
 
       //Then we return true or false in case of error
       return true;
@@ -206,7 +228,10 @@ class AuthCubit extends Cubit<AuthState> {
       final userUid = getIt.get<AuthService>().getUserId();
       //First we mark the user as inactive
       await getIt.get<FirestoreService>().makeDocumentInactive(
-          getIt.get<AppConstants>().usersCollection, "uid", userUid);
+        getIt.get<AppConstants>().usersCollection,
+        "uid",
+        userUid,
+      );
 
       //then we delete the user from firebase auth
       final requiredRefreshLogin = await getIt<AuthService>().deleteAccount();
@@ -215,19 +240,21 @@ class AuthCubit extends Cubit<AuthState> {
         //In case that the token is expired, we show a dialog to the user
         if (!context.mounted) return false;
         showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                  title: Text(texts["refresh-account-title"]!),
-                  content: Text(texts["refresh-account-confirmation"]!),
-                  actions: [
-                    FilledButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(texts["confirm"]!),
-                    ),
-                  ],
-                ));
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: Text(texts["refresh-account-title"]!),
+                content: Text(texts["refresh-account-confirmation"]!),
+                actions: [
+                  FilledButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(texts["confirm"]!),
+                  ),
+                ],
+              ),
+        );
       }
 
       //Then we return true or false in case of error
@@ -239,15 +266,15 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   //This method is used to restore the password
-  Future<bool> restorePassword(String email) async {
+  Future<AuthResult> restorePassword(String email) async {
     try {
       //First we send the password reset email
       await getIt<AuthService>().sendPasswordResetEmail(email);
-      //Then we return true or false in case of error
-      return true;
+      //Then we return success result
+      return AuthResult.success();
     } catch (e) {
       log('Error: $e, Function: restorePassword, File: auth_cubit.dart');
-      return false;
+      return AuthResult.fromFirebaseException(e);
     }
   }
 
@@ -265,7 +292,8 @@ class AuthCubit extends Cubit<AuthState> {
 
   //This method is used to create a business in firestore,
   Future<void> createBusinessInFirestore(
-      Map<String, dynamic> businessData) async {
+    Map<String, dynamic> businessData,
+  ) async {
     //We create the business in firestore
     await getIt<FirestoreService>().createDocument(
       locator<AppConstants>().businessCollection,
@@ -288,7 +316,10 @@ class AuthCubit extends Cubit<AuthState> {
       //Check if the user status is active (Verified)
       final userUid = getIt.get<AuthService>().getUserId();
       final userJson = await getIt.get<FirestoreService>().readDocumentById(
-          getIt.get<AppConstants>().usersCollection, userUid, "uid");
+        getIt.get<AppConstants>().usersCollection,
+        userUid,
+        "uid",
+      );
       final user = User.fromJson(userJson);
       if (!user.verified) {
         emit(const AuthState(authStatus: AuthStatus.userLoggedInNotVerified));
@@ -329,17 +360,19 @@ class AuthCubit extends Cubit<AuthState> {
 
     //If the user doesn't have a device notification preferences, we create the default topics
     if (!containsDiscoverTopicKey && !containsFavoritesTopicKey) {
-      await locator
-          .get<SharedPreferencesService>()
-          .setBool(favoritesTopic, true);
+      await locator.get<SharedPreferencesService>().setBool(
+        favoritesTopic,
+        true,
+      );
       await locator.get<CloudMessageService>().subscribeToTopic(favoritesTopic);
 
-      await locator
-          .get<SharedPreferencesService>()
-          .setBool(discoverPromotionsTopic, true);
-      await locator
-          .get<CloudMessageService>()
-          .subscribeToTopic(discoverPromotionsTopic);
+      await locator.get<SharedPreferencesService>().setBool(
+        discoverPromotionsTopic,
+        true,
+      );
+      await locator.get<CloudMessageService>().subscribeToTopic(
+        discoverPromotionsTopic,
+      );
 
       return;
     }
@@ -347,13 +380,14 @@ class AuthCubit extends Cubit<AuthState> {
     //If the user already has a device notification preferences, we subscribe the user to the default topics
     await locator.get<CloudMessageService>().subscribeToTopic(normalTopic);
 
-    final favoritesTopicSavedValue =
-        await locator.get<SharedPreferencesService>().getBool(favoritesTopic);
+    final favoritesTopicSavedValue = await locator
+        .get<SharedPreferencesService>()
+        .getBool(favoritesTopic);
 
     favoritesTopicSavedValue
-        ? await locator
-            .get<CloudMessageService>()
-            .subscribeToTopic(favoritesTopic)
+        ? await locator.get<CloudMessageService>().subscribeToTopic(
+          favoritesTopic,
+        )
         : null;
 
     final discoverTopicSavedValue = await locator
@@ -361,9 +395,9 @@ class AuthCubit extends Cubit<AuthState> {
         .getBool(discoverPromotionsTopic);
 
     discoverTopicSavedValue
-        ? await locator
-            .get<CloudMessageService>()
-            .subscribeToTopic(discoverPromotionsTopic)
+        ? await locator.get<CloudMessageService>().subscribeToTopic(
+          discoverPromotionsTopic,
+        )
         : null;
   }
 }

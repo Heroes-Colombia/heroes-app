@@ -202,7 +202,8 @@ class AppConstants {
     "unverifiedUserView": {
       "title": "Usuario no verificado",
       "content":
-          'Lo sentimos pero tu usuario aún no ha sido verificado. Cuando tu perfil haya sido corroborado tendrás acceso a la aplicación.',
+          'Lo sentimos pero tu usuario aún no ha sido verificado por los administradores. Cuando tu perfil haya sido corroborado tendrás acceso a la aplicación.',
+      "go-back-button": "Regresar",
     },
   };
   final authTexts = {
@@ -241,11 +242,14 @@ class AppConstants {
       'identification-card-hint': 'Ingresa tu número de cédula de ciudadanía',
       'identification-card-img-label': 'Adjuntar carnet',
       'identification-card-img-hint': 'Carnet de policia o militar',
-      'identification-card-img-filled': 'Seleccionar otro documento',
+      'identification-card-img-filled':
+          'Desea seleccionar un documento diferente?',
       'identification-card-img-take-picture': 'Tomar foto',
       'identification-card-img-select-from-gallery':
           'Seleccionar de la galería',
       'identification-card-img-select-pdf': 'Seleccionar PDF',
+      'identification-card-img-uploaded-success':
+          'Carnet cargado correctamente',
       'firstname-label': 'Nombre',
       'firstname-hint': 'Ingresa tu nombre',
       'secondname-label': 'Segundo nombre',
@@ -265,7 +269,7 @@ class AppConstants {
       "genericValidator": "Este campo no puede estar vacío",
       "registerSuccess-title": "¡Registro exitoso!",
       "registerSuccess-body":
-          "Tu cuenta ha sido creada exitosamente. Por favor espera a que tu cuenta sea verificada para poder ingresar a la aplicación.",
+          "Tu cuenta ha sido creada exitosamente. Por favor espera a que tu cuenta sea verificada por los administradores para poder ingresar a la aplicación.",
       "registerSuccess-button": "Aceptar",
     },
     'signupBusinessView': {
@@ -274,12 +278,14 @@ class AppConstants {
       'identification-card-hint': 'Ej. 1022555000',
       'identification-card-img-label': 'Foto del RUT del comercio',
       'identification-card-img-hint': 'RUT del comercio',
-      'identification-card-img-filled': 'Selecionar otro RUT',
+      'identification-card-img-filled':
+          'Desea seleccionar un archivo diferente?',
       'identification-card-img-source': 'RUT del comercio',
       'identification-card-img-take-picture': 'Tomar foto',
       'identification-card-img-select-from-gallery':
           'Seleccionar de la galería',
       'identification-card-img-select-pdf': 'Seleccionar PDF',
+      'identification-card-img-uploaded-success': 'RUT cargado correctamente',
       'email-label': 'Correo electrónico del comercio',
       'email-hint': 'Ingresa el correo de contacto del comercio',
       'email-validator': 'Por favor ingresa un correo electrónico válido',
@@ -314,7 +320,7 @@ class AppConstants {
       "genericValidator": "Este campo no puede estar vacío",
       "registerSuccess-title": "¡Registro exitoso!",
       "registerSuccess-body":
-          "Tu cuenta ha sido creada exitosamente. Por favor espera a que tu cuenta sea verificada para poder ingresar a la aplicación.",
+          "Tu cuenta ha sido creada exitosamente. Por favor espera a que tu cuenta sea verificada por los administradores para poder ingresar a la aplicación.",
       "registerSuccess-button": "Aceptar",
     },
     'restorePasswordView': {
@@ -441,6 +447,10 @@ class AppConstants {
       'second-lastname-hint': 'Ingresa tu segundo apellido',
       'rank-label': 'Fuerza a la que pertenece',
       'rank-hint': 'Ingresa tu rango',
+      'position-label': 'Cargo o posición',
+      'position-hint': 'Ingresa tu cargo o posición',
+      'license-label': 'Numero de Carnet',
+      'identification-label': 'Cedula de ciudadanía',
       'savechanges-button': 'Guardar cambios',
       'error-content': 'Hubo un error al guardar los cambios',
       'success-content': 'Información actualizada',
@@ -462,8 +472,10 @@ class AppConstants {
       'second-lastname-label': 'Segundo apellido',
       'second-lastname-hint': 'Ingresa tu segundo apellido',
       'rank-label': 'Fuerza a la que pertenece',
-      'identification-label': 'Número de identificación',
-      'licence-label': 'Carnet',
+      'position-label': 'Cargo o posición',
+      'position-hint': 'Ingresa tu cargo o posición',
+      'identification-label': 'Cedula de ciudadanía',
+      'license-label': 'Numero de Carnet',
       'rank-hint': 'Ingresa tu rango',
       'savechanges-button': 'Guardar cambios',
       'error-content': 'Hubo un error al guardar los cambios',
@@ -504,6 +516,8 @@ class AppConstants {
       "business-email-hint": "Ingresa el Email del comercio",
       "business-category-label": "Categorías del comercio",
       "business-category-hint": "Agrega categorías al comercio",
+      "business-updated-success":
+          "Información del comercio actualizada con éxito",
       "user-already-mange-error":
           "Este usuario ya es administrador del comercio",
       "loading-title": "Cargando",
@@ -531,8 +545,12 @@ class AppConstants {
       "review-success-title":
           "¡Reseña creada! Espera a que sea aprobada para que sea visible",
       "empty-value": "Por favor ingresa un valor",
-      "featured-img-filled": "Seleccionar otra foto",
+      "featured-img-filled": "Desea cargar una foto diferente?",
       "featured-img-hint": "Foto de la promoción",
+      "featured-img-uploaded-success": "Imagen cargada correctamente",
+      "business-img-hint": "Foto o logo del comercio",
+      'business-img-take-picture': 'Tomar foto',
+      'business-img-select-from-gallery': 'Seleccionar de la galería',
       "cancel-button": "Cerrar",
       "title-label": "Título",
       "title-hint": "Ingresa el título de la promoción",

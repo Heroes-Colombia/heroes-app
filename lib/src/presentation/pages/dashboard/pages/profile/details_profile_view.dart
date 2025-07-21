@@ -5,6 +5,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
+import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/user_model.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
@@ -207,76 +208,124 @@ class DetailsProfileView extends StatelessWidget {
                     color: theme.colorScheme.onBackground.withOpacity(0.5),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          user.rank.contains("_")
-                              ? user.rank.split("_").last
-                              : user.rank.split(" ").last,
-                          style: TextStyle(
-                            overflow: TextOverflow.ellipsis,
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
-                            fontSize: theme.textTheme.labelMedium!.fontSize,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        texts['rank-label']!,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                            0.8,
-                          ),
-                          fontWeight: FontWeight.w600,
-                          fontSize: theme.textTheme.labelMedium!.fontSize,
-                        ),
-                      ),
-                    ],
-                  ),
+                  loadingRankPermission(context, theme, texts, user),
                   const SizedBox(height: 6),
                   Divider(
                     thickness: 0.5,
                     color: theme.colorScheme.onBackground.withOpacity(0.5),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          user.license,
+                  if (user.license.isNotEmpty) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            user.license,
+                            style: TextStyle(
+                              overflow: TextOverflow.ellipsis,
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                              fontSize: theme.textTheme.labelMedium!.fontSize,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          texts['license-label']!,
                           style: TextStyle(
-                            overflow: TextOverflow.ellipsis,
-                            color: theme.colorScheme.onSurfaceVariant,
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withOpacity(0.8),
                             fontWeight: FontWeight.w600,
                             fontSize: theme.textTheme.labelMedium!.fontSize,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        texts['identification-label']!,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                            0.8,
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Divider(
+                      thickness: 0.5,
+                      color: theme.colorScheme.onBackground.withOpacity(0.5),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  if (user.identificationCard.isNotEmpty) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            user.identificationCard,
+                            style: TextStyle(
+                              overflow: TextOverflow.ellipsis,
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                              fontSize: theme.textTheme.labelMedium!.fontSize,
+                            ),
                           ),
-                          fontWeight: FontWeight.w600,
-                          fontSize: theme.textTheme.labelMedium!.fontSize,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Divider(
-                    thickness: 0.5,
-                    color: theme.colorScheme.onBackground.withOpacity(0.5),
-                  ),
+                        const SizedBox(width: 12),
+                        Text(
+                          texts['identification-label']!,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurfaceVariant
+                                .withOpacity(0.8),
+                            fontWeight: FontWeight.w600,
+                            fontSize: theme.textTheme.labelMedium!.fontSize,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Divider(
+                      thickness: 0.5,
+                      color: theme.colorScheme.onBackground.withOpacity(0.5),
+                    ),
+                  ],
                 ],
               ),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  //This method is used to show the user's permission and rank
+  //It will show the rank if the user is a regular user and the position if the user is an admin
+  loadingRankPermission(
+    BuildContext context,
+    ThemeData theme,
+    texts,
+    User user,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: Text(
+            user.permission == UserPermissions.user
+                ? user.rank.split("_").last
+                : user.permission == UserPermissions.admin
+                ? user.permission.name
+                : user.rank.trim().split("_").last,
+            style: TextStyle(
+              overflow: TextOverflow.ellipsis,
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+              fontSize: theme.textTheme.labelMedium!.fontSize,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          user.permission == UserPermissions.user
+              ? (texts['rank-label']!)
+              : (texts['position-label']!),
+          style: TextStyle(
+            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.8),
+            fontWeight: FontWeight.w600,
+            fontSize: theme.textTheme.labelMedium!.fontSize,
           ),
         ),
       ],
