@@ -35,6 +35,8 @@ Future<void> _firebaseMessagingBackgroundHandler(
 
 Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  //Load env file
+  await dotenv.load(fileName: ".env");
   //Splash screen
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   //Firebase dependencies
@@ -62,7 +64,6 @@ Future<void> main() async {
   await initializeDateFormatting('es', null);
   //Theme dependencies
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
-  await dotenv.load(fileName: ".env");
 
   runApp(MyApp(savedThemeMode: savedThemeMode));
 }

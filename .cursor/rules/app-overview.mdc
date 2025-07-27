@@ -1,0 +1,11 @@
+---
+description: overview of the app functionality
+alwaysApply: false
+---
+# Heroes Colombia
+
+Heroes Colombia is an app that allow military personnel and people working with government institutions in Colombia to find allies businesses such as retails, convenience stores, mall centers, schools, services, and more that offer promotions and special discounts to them. Using the current location of users, they will be able to see the nearby businnesses that have available offers.
+
+There is an integration with Google Maps for users to see within the map, the nearby businesses and the possibility to nagivate to that specific location.
+
+Businness' managers have a profile to manage their business information, and promotions in order to increase their vibility within the app.

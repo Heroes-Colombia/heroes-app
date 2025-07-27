@@ -30,6 +30,8 @@
 	<string>Para subir fotografías públicas que verán los otros Usuarios.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Para poder mostrar las promociones cercanas a los Usuarios.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Para poder mostrar las promociones cercanas a los Usuarios.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Para subir fotografías públicas que verán los otros Usuarios.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

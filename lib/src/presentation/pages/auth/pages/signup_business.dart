@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
@@ -16,9 +14,9 @@ import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/location_picker_field.dart';
+import 'package:heroes_app/src/presentation/widgets/location_picker_widget.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:geocoding/geocoding.dart';
-import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 final _formKeySignUpBusiness = GlobalKey<FormBuilderState>();
@@ -211,8 +209,8 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
               keyName: 'signup_email',
               key: const Key('_register_business_signup_email'),
               name: 'email',
-              label: texts['email-label']!,
-              hintText: texts['email-hint']!,
+              label: texts['user-email-label']!,
+              hintText: texts['user-email-hint']!,
             ),
             const SizedBox(height: 12),
             PasswordInput(
@@ -247,16 +245,17 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
               ),
             ),
             const SizedBox(height: 12),
-            FormBuilderTextField(
-              name: 'address',
-              key: const Key('_register_business_address'),
-              validator: (value) => validateEmptyString(value, texts),
-              keyboardType: TextInputType.streetAddress,
-              decoration: InputDecoration(
-                labelText: texts['address-label']!,
-                hintText: texts['address-hint']!,
-                border: const OutlineInputBorder(),
-              ),
+            LocationPickerField(
+              name: 'location',
+              label: texts['address-label']!,
+              hint: texts['address-hint']!,
+              searchHint: texts['address-search-hint']!,
+              validator: (value) {
+                if (value == null) {
+                  return texts['genericValidator']!;
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 12),
             FormBuilderTextField(
@@ -456,9 +455,9 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
         UserPermissions.business,
       );
 
-      //Then we transform the address to a GeoPoint
-      final address = formData['address'] as String?;
-      if (address == null || address.isEmpty) {
+      //Then we get the selected location from the location picker
+      final locationResult = formData['location'] as LocationResult?;
+      if (locationResult == null) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(
           context,
@@ -466,16 +465,13 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
         return;
       }
 
-      final location = await transformToLatLng(address);
-      if (location == null) {
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(texts['badLocation']!)));
-        return;
-      }
+      // Set the location and address in form data
+      formData['location'] = GeoPoint(
+        locationResult.coordinates.latitude,
+        locationResult.coordinates.longitude,
+      );
+      formData['address'] = locationResult.formattedAddress;
 
-      formData['location'] = GeoPoint(location.latitude, location.longitude);
       final businessData = Business.toInitialFirebaseJson(formData);
 
       //Then we extract the image from the form data
@@ -542,20 +538,6 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
         AutoRouter.of(context).replaceAll([LoginView(onResult: (callback) {})]);
       },
     );
-  }
-
-  Future<Location?> transformToLatLng(String address) async {
-    try {
-      var location = await locator.get<AppMethods>().getCoordinatesFromAddress(
-        address,
-      );
-      return location;
-    } catch (e) {
-      log(
-        'Error: $e, Function: transformToLatLng, File: owned_business_details_cubit.dart',
-      );
-      return null;
-    }
   }
 
   void _showImagePickerDialog(

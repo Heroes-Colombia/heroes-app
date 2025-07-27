@@ -9,41 +9,32 @@ import 'package:heroes_app/src/domain/repositories/cloud_message_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestorage_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 import 'package:heroes_app/src/domain/repositories/shared_preferences_service.dart';
+import 'package:heroes_app/src/domain/services/places_service.dart';
 
 final locator = GetIt.instance;
 
 //This function initialize all the dependencies with the locator
 //GetIt is used to get the dependencies in the app using the singleton pattern
 Future<void> initializeDependencies() async {
-  //Network dependencies
   final dio = Dio();
-
-  //Repositories dependencies
   locator.registerSingleton<Dio>(dio);
-  locator.registerSingleton<AppConstants>(AppConstants());
-  locator.registerSingleton<AuthService>(
-    AuthService(),
-  );
-  locator.registerSingleton<FirestoreService>(
-    FirestoreService(),
-  );
 
-  locator.registerSingleton<AppMethods>(
-    AppMethods(),
-  );
+  final appConstants = AppConstants();
+  locator.registerSingleton<AppConstants>(appConstants);
 
-  locator.registerSingleton<SharedPreferencesService>(
-    SharedPreferencesService(),
-  );
+  final sharedPreferencesService = SharedPreferencesService();
+  locator.registerSingleton<SharedPreferencesService>(sharedPreferencesService);
 
-  locator.registerSingleton<FireStorageService>(
-    FireStorageService(),
-  );
-  locator.registerSingleton<CloudMessageService>(
-    CloudMessageService(),
-  );
+  locator.registerSingleton<AuthService>(AuthService());
+  locator.registerSingleton<FirestoreService>(FirestoreService());
+  locator.registerSingleton<AppMethods>(AppMethods());
+  locator.registerSingleton<FireStorageService>(FireStorageService());
+  locator.registerSingleton<CloudMessageService>(CloudMessageService());
   locator.registerSingleton<AppRouter>(AppRouter());
 
   locator.registerSingleton<BusinessSubscriptionService>(
-      BusinessSubscriptionService());
+    BusinessSubscriptionService(),
+  );
+
+  locator.registerSingleton<PlacesService>(PlacesService());
 }

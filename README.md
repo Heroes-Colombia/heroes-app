@@ -1,29 +1,14 @@
-# README #
+# Heroes Colombia
 
-This README would normally document whatever steps are necessary to get your application up and running.
+## Description of the project
 
-### What is this repository for? ###
+Heroes Colombia is a mobile application that allos military personnel and people working with government organisations to access to discounts, offers and specials promotions from allies businesses such as retails, services, convenience stores, mall centers, schools, and more.
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+## Tech stack
 
-### How do I get set up? ###
+### Admin App
+https://bitbucket.org/heroes-app/heroesadminpanel/src/main/
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
 
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+### Mobile
+- **Flutter**: Dart

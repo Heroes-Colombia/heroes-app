@@ -269,11 +269,27 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
                             width: double.infinity,
                             fit: BoxFit.fitWidth,
                           )
-                          : Image.asset(
-                            'assets/images/file-not-found.png',
-                            height: 220,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
+                          : Stack(
+                            children: [
+                              Image.asset(
+                                'assets/images/file-not-found.png',
+                                height: 220,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Icon(
+                                    Ionicons.pencil,
+                                    color: theme.colorScheme.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                 ),
               ),

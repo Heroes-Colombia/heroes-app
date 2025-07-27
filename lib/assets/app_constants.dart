@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class AppConstants {
   //Firebase Collections
   final String usersCollection = 'users';
@@ -33,6 +36,15 @@ class AppConstants {
       "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
   final String googleMapsStaticApi =
       "https://maps.googleapis.com/maps/api/staticmap";
+
+  String? get googlePlacesApiKey {
+    if (Platform.isAndroid) {
+      return dotenv.env['GOOGLE_MAPS_API_KEY_ANDROID'];
+    } else if (Platform.isIOS) {
+      return dotenv.env['GOOGLE_MAPS_API_KEY_IOS'];
+    }
+    return dotenv.env['GOOGLE_MAPS_API_KEY_WEB'];
+  }
 
   //URL Intents
   final String appleIntent = 'https://maps.apple.com/?q=';
@@ -287,10 +299,13 @@ class AppConstants {
       'identification-card-img-select-pdf': 'Seleccionar PDF',
       'identification-card-img-uploaded-success': 'RUT cargado correctamente',
       'email-label': 'Correo electrónico del comercio',
-      'email-hint': 'Ingresa el correo de contacto del comercio',
+      'email-hint': 'correo-del-comercio@gmail.com',
+      'user-email-label': 'Correo electrónico del administrador',
+      'user-email-hint': 'correo-del-administrador@gmail.com',
       'email-validator': 'Por favor ingresa un correo electrónico válido',
       'address-label': 'Dirección',
-      'address-hint': 'Ej. Calle 123 #45-00',
+      'address-hint': 'Ej. Calle 123 #45-00 Bogotá',
+      'address-search-hint': 'Buscar la dirección de tu negocio',
       'identification-label': 'NIT',
       'identification-hint': 'Ingresa el NIT del comercio',
       'name-label': 'Nombre del comercio',
@@ -322,6 +337,30 @@ class AppConstants {
       "registerSuccess-body":
           "Tu cuenta ha sido creada exitosamente. Por favor espera a que tu cuenta sea verificada por los administradores para poder ingresar a la aplicación.",
       "registerSuccess-button": "Aceptar",
+    },
+    'locationPickerWidget': {
+      'selected-location-marker': 'Ubicación Seleccionada',
+      'searching': 'Buscando...',
+      'search-placeholder':
+          'Buscar direcciones o escribir dirección personalizada...',
+      'getting-address': 'Obteniendo dirección...',
+      'tap-markers-hint':
+          'Toca los marcadores azules/verdes para seleccionar resultados de búsqueda',
+      'confirm': 'Confirmar',
+      'unknown-location': 'Ubicación desconocida',
+      'address-not-available': 'Dirección no disponible',
+      'search-failed': 'Error al buscar ubicación. Por favor intenta de nuevo.',
+      'location-permission-error':
+          'No se puede obtener la ubicación actual. Por favor verifica los permisos de ubicación.',
+      'location-service-error':
+          'Servicio de ubicación no disponible. Por favor intenta de nuevo o selecciona la ubicación manualmente.',
+      'edit-address-hint': 'Toca para editar la dirección manualmente',
+      'address-updated':
+          'Dirección actualizada. Puedes editarla en la barra de búsqueda.',
+      'custom-address-set': 'Dirección personalizada establecida',
+      'search-error': 'Error al buscar la dirección',
+      'no-results-found': 'No se encontraron resultados',
+      'details-error': 'No se pudieron obtener los detalles de la ubicación',
     },
     'restorePasswordView': {
       'title': 'Recuperar contraseña',
