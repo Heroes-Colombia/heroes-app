@@ -53,67 +53,73 @@ class _ProfileViewState extends State<ProfileView> {
           SliverToBoxAdapter(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ListBody(children: [
-                const SizedBox(height: 16),
-                Text(
-                  texts['account']!,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.bold,
-                    fontSize: theme.textTheme.labelLarge!.fontSize,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ListTile(
-                  leading: SvgPicture.asset(
-                    'assets/icon/editProfile.svg',
-                    width: 24,
-                    height: 24,
-                    colorFilter: ColorFilter.mode(
-                      theme.colorScheme.primary,
-                      BlendMode.srcIn,
+              child: ListBody(
+                children: [
+                  const SizedBox(height: 16),
+                  Text(
+                    texts['account']!,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.bold,
+                      fontSize: theme.textTheme.labelLarge!.fontSize,
                     ),
                   ),
-                  title: Text(texts['edit-profile']!),
-                  onTap: () => context.router.push(DetailsProfileView()),
-                ),
-                ListTile(
+                  const SizedBox(height: 8),
+                  ListTile(
+                    leading: SvgPicture.asset(
+                      'assets/icon/editProfile.svg',
+                      width: 24,
+                      height: 24,
+                      colorFilter: ColorFilter.mode(
+                        theme.colorScheme.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    title: Text(texts['edit-profile']!),
+                    onTap: () => context.router.push(DetailsProfileView()),
+                  ),
+                  ListTile(
                     leading: Icon(
                       Ionicons.log_out_outline,
                       color: theme.colorScheme.primary,
                     ),
                     title: Text(texts['logout']!),
-                    onTap: () => doLogOut(context, texts)),
-                ListTile(
-                  leading: Icon(
-                    Ionicons.trash_outline,
-                    color: theme.colorScheme.primary,
+                    onTap: () => doLogOut(context, texts),
                   ),
-                  title: Text(texts['delete-account-title']!),
-                  onTap: () => deleteAccount(context, texts),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  texts['settings']!,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.bold,
-                    fontSize: theme.textTheme.labelLarge!.fontSize,
+                  ListTile(
+                    leading: Icon(
+                      Ionicons.trash_outline,
+                      color: theme.colorScheme.primary,
+                    ),
+                    title: Text(texts['delete-account-title']!),
+                    onTap: () => deleteAccount(context, texts),
                   ),
-                ),
-                const SizedBox(height: 8),
-                ListTile(
-                  leading: Icon(Ionicons.moon_outline,
-                      color: theme.colorScheme.primary),
-                  title: Text(texts['dark-mode']!),
-                  trailing: Switch(
-                    value: AdaptiveTheme.of(context).mode ==
-                        AdaptiveThemeMode.dark,
-                    onChanged: (_) => changeThemeMode(context),
+                  const SizedBox(height: 16),
+                  Text(
+                    texts['settings']!,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.bold,
+                      fontSize: theme.textTheme.labelLarge!.fontSize,
+                    ),
                   ),
-                ),
-                notificationSettingsWidget(texts, theme),
-              ]),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    leading: Icon(
+                      Ionicons.moon_outline,
+                      color: theme.colorScheme.primary,
+                    ),
+                    title: Text(texts['dark-mode']!),
+                    trailing: Switch(
+                      value:
+                          AdaptiveTheme.of(context).mode ==
+                          AdaptiveThemeMode.dark,
+                      onChanged: (_) => changeThemeMode(context),
+                    ),
+                  ),
+                  notificationSettingsWidget(texts, theme),
+                ],
+              ),
             ),
           ),
         ],
@@ -126,84 +132,89 @@ class _ProfileViewState extends State<ProfileView> {
     Map<String, String> texts,
     ThemeData theme,
   ) {
-    return BlocBuilder<AuthCubit, AuthState>(builder: (context, state) {
-      if (state.authStatus != AuthStatus.businessLoggedIn) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            Text(
-              texts['notifications']!,
-              style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.bold,
-                fontSize: theme.textTheme.labelLarge!.fontSize,
-              ),
-            ),
-            const SizedBox(height: 8),
-            ListTile(
-              leading: SvgPicture.asset(
-                'assets/icon/notifications_outline.svg',
-                width: 28,
-                height: 28,
-                colorFilter: ColorFilter.mode(
-                  theme.colorScheme.primary,
-                  BlendMode.srcIn,
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, state) {
+        if (state.authStatus != AuthStatus.businessLoggedIn) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              Text(
+                texts['notifications']!,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.bold,
+                  fontSize: theme.textTheme.labelLarge!.fontSize,
                 ),
               ),
-              title: Text(texts['favorites-topic']!),
-              trailing: Switch(
-                value: favoriteTopic,
-                onChanged: (value) {
-                  handleSetNotificationPreference(
-                    locator.get<AppConstants>().favoriteTopic,
-                    value,
-                  );
+              const SizedBox(height: 8),
+              ListTile(
+                leading: SvgPicture.asset(
+                  'assets/icon/notifications_outline.svg',
+                  width: 28,
+                  height: 28,
+                  colorFilter: ColorFilter.mode(
+                    theme.colorScheme.primary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                title: Text(texts['favorites-topic']!),
+                trailing: Switch(
+                  value: favoriteTopic,
+                  onChanged: (value) {
+                    handleSetNotificationPreference(
+                      locator.get<AppConstants>().favoriteTopic,
+                      value,
+                    );
 
-                  setState(() {
-                    favoriteTopic = value;
-                  });
-                },
-              ),
-            ),
-            ListTile(
-              leading: SvgPicture.asset(
-                'assets/icon/notifications_outline.svg',
-                width: 28,
-                height: 28,
-                colorFilter: ColorFilter.mode(
-                  theme.colorScheme.primary,
-                  BlendMode.srcIn,
+                    setState(() {
+                      favoriteTopic = value;
+                    });
+                  },
                 ),
               ),
-              title: Text(texts['discover-topic']!),
-              trailing: Switch(
-                value: discoverTopic,
-                onChanged: (value) {
-                  handleSetNotificationPreference(
-                    locator.get<AppConstants>().discoverTopic,
-                    value,
-                  );
+              ListTile(
+                leading: SvgPicture.asset(
+                  'assets/icon/notifications_outline.svg',
+                  width: 28,
+                  height: 28,
+                  colorFilter: ColorFilter.mode(
+                    theme.colorScheme.primary,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                title: Text(texts['discover-topic']!),
+                trailing: Switch(
+                  value: discoverTopic,
+                  onChanged: (value) {
+                    handleSetNotificationPreference(
+                      locator.get<AppConstants>().discoverTopic,
+                      value,
+                    );
 
-                  setState(() {
-                    discoverTopic = value;
-                  });
-                },
+                    setState(() {
+                      discoverTopic = value;
+                    });
+                  },
+                ),
               ),
-            ),
-          ],
-        );
-      } else {
-        return const SizedBox.shrink();
-      }
-    });
+            ],
+          );
+        } else {
+          return const SizedBox.shrink();
+        }
+      },
+    );
   }
 
   //Methods
 
   //This method is used to log out the user
   void doLogOut(BuildContext context, texts) async {
-    //First we log out the user
+    // Reset the ProfileCubit state before logging out
+    context.read<ProfileCubit>().resetState();
+
+    //Then log out the user
     final userIsLoggedIn = await context.read<AuthCubit>().logOut();
     if (userIsLoggedIn) {
       if (!context.mounted) return;
@@ -212,15 +223,13 @@ class _ProfileViewState extends State<ProfileView> {
     } else {
       if (!context.mounted) return;
       //If the user is not logged out we show a snackbar with an error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(texts['logout-error-message']!),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(texts['logout-error-message']!)));
     }
   }
 
-//This method is used to change the theme mode
+  //This method is used to change the theme mode
   void changeThemeMode(BuildContext context) {
     //First we get the current theme mode
     final themeMode = AdaptiveTheme.of(context).mode;
@@ -255,42 +264,42 @@ class _ProfileViewState extends State<ProfileView> {
 
   void deleteAccount(BuildContext context, dynamic texts) async {
     showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-              title: Text(texts['delete-account-title']!),
-              content: Text(texts["delete-account-confirmation"]!),
-              actions: [
-                FilledButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(texts["cancel"]!),
-                ),
-                AsyncTextButtonWidget(
-                  onPressed: () async {
-                    final accountDeleted = await context
-                        .read<AuthCubit>()
-                        .deleteAccount(context, texts);
-                    if (!context.mounted) return;
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(texts['delete-account-title']!),
+            content: Text(texts["delete-account-confirmation"]!),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(texts["cancel"]!),
+              ),
+              AsyncTextButtonWidget(
+                onPressed: () async {
+                  final accountDeleted = await context
+                      .read<AuthCubit>()
+                      .deleteAccount(context, texts);
+                  if (!context.mounted) return;
 
-                    if (!accountDeleted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(texts["delete-account-error"]!),
-                        ),
-                      );
-                      return;
-                    }
-                    context.router.replaceAll([const AuthView()]);
-                  },
-                  buttonText: texts["delete"]!,
-                ),
-              ],
-            ));
+                  if (!accountDeleted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(texts["delete-account-error"]!)),
+                    );
+                    return;
+                  }
+                  context.router.replaceAll([const AuthView()]);
+                },
+                buttonText: texts["delete"]!,
+              ),
+            ],
+          ),
+    );
   }
 
   void handleSetNotificationPreference(String topic, bool newValue) async {
-    await context
-        .read<ProfileCubit>()
-        .setNotificationPreferencesForTopic(topic);
+    await context.read<ProfileCubit>().setNotificationPreferencesForTopic(
+      topic,
+    );
 
     if (!context.mounted) return;
 

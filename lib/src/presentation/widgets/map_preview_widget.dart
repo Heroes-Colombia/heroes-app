@@ -9,12 +9,14 @@ class MapPreviewWidget extends StatefulWidget {
   final double borderRadius;
   final double? latitude;
   final double? longitude;
+  final VoidCallback? onTap;
 
   const MapPreviewWidget({
     super.key,
     required this.borderRadius,
     required this.latitude,
     required this.longitude,
+    this.onTap,
   });
 
   @override
@@ -67,27 +69,28 @@ class _MapPreviewWidgetState extends State<MapPreviewWidget> {
   Widget build(BuildContext context) {
     return latitude != null && longitude != null
         ? InkWell(
-            onTap: () {
-              LocationData userLocationData = LocationData.fromMap({
-                'latitude': latitude,
-                'longitude': longitude,
-              });
-              AutoRouter.of(context).push(
-                MapView(initialCameraLocation: userLocationData),
-              );
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(widget.borderRadius),
-              child: Image.network(
-                mapUrl ?? '',
-                fit: BoxFit.cover,
-                width: double.infinity,
-              ),
+          onTap:
+              widget.onTap != null
+                  ? widget.onTap
+                  : () {
+                    LocationData userLocationData = LocationData.fromMap({
+                      'latitude': latitude,
+                      'longitude': longitude,
+                    });
+                    AutoRouter.of(
+                      context,
+                    ).push(MapView(initialCameraLocation: userLocationData));
+                  },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            child: Image.network(
+              mapUrl ?? '',
+              fit: BoxFit.cover,
+              width: double.infinity,
             ),
-          )
-        : const Center(
-            child: CircularProgressIndicator(),
-          );
+          ),
+        )
+        : const Center(child: CircularProgressIndicator());
   }
 
   void getMapInfo() {
@@ -96,22 +99,22 @@ class _MapPreviewWidgetState extends State<MapPreviewWidget> {
 
     if (latitude == null || longitude == null) return;
 
-    const zoom = 18;
-    const size = '600x300';
+    const zoom = 17;
+    const size = '600x500';
     const mapType = 'roadmap';
     var markers = 'color:green%7Clabel:Yo%7C$latitude,$longitude';
 
     var currentTheme = brightness;
 
     final url = locator.get<AppMethods>().getStaticMapURL(
-          zoom,
-          size,
-          mapType,
-          markers,
-          latitude,
-          longitude,
-          currentTheme,
-        );
+      zoom,
+      size,
+      mapType,
+      markers,
+      latitude,
+      longitude,
+      currentTheme,
+    );
     setState(() {
       mapUrl = url;
     });

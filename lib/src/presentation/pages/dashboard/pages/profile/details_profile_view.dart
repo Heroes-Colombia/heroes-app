@@ -8,6 +8,7 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/user_model.dart';
+import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
 import 'package:ionicons/ionicons.dart';
 
@@ -44,9 +45,17 @@ class DetailsProfileView extends StatelessWidget {
             builder: (context, state) {
               switch (state.runtimeType) {
                 case const (ProfileInitial):
+                  // Always get fresh profile info when in initial state
                   context.read<ProfileCubit>().getInitialProfileInfo();
                   return loadingView(context, theme, texts);
                 case const (ProfileLoaded):
+                  // Verify we're showing data for the current user by comparing UIDs
+                  final currentUserId = locator.get<AuthService>().getUserId();
+                  if (state.user?.uid != currentUserId) {
+                    // If UIDs don't match, refresh the profile data
+                    context.read<ProfileCubit>().getInitialProfileInfo();
+                    return loadingView(context, theme, texts);
+                  }
                   return successView(context, state.user!, texts, theme);
                 default:
                   return errorView(context, theme, texts);

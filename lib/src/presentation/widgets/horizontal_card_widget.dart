@@ -3,14 +3,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:heroes_app/src/domain/models/business_category.dart';
 
 class HorizontalCard extends StatelessWidget {
-  const HorizontalCard(
-      {super.key,
-      required this.image,
-      required this.title,
-      required this.id,
-      required this.callback,
-      this.isOnGrid = false,
-      required this.category});
+  const HorizontalCard({
+    super.key,
+    required this.image,
+    required this.title,
+    required this.id,
+    required this.callback,
+    this.isOnGrid = false,
+    this.category,
+  });
 
   final String image;
   final String title;
@@ -40,17 +41,17 @@ class HorizontalCard extends StatelessWidget {
             children: [
               image.isNotEmpty
                   ? Image.network(
-                      image,
-                      fit: BoxFit.fitWidth,
-                      width: double.infinity,
-                      height: !isOnGrid ? 180 : 130,
-                    )
+                    image,
+                    fit: BoxFit.fitWidth,
+                    width: double.infinity,
+                    height: !isOnGrid ? 180 : 130,
+                  )
                   : Image.asset(
-                      "assets/images/file-not-found.png",
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: !isOnGrid ? 180 : 130,
-                    ),
+                    "assets/images/file-not-found.png",
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: !isOnGrid ? 180 : 130,
+                  ),
               content(theme, category),
             ],
           ),
@@ -60,20 +61,18 @@ class HorizontalCard extends StatelessWidget {
   }
 
   Widget content(ThemeData theme, BusinessCategory? category) {
+    final hasCategory = category != null;
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: 8,
-        vertical: category != null || isOnGrid ? 12 : 24,
+        vertical: hasCategory || isOnGrid ? 12 : 24,
       ),
       child: Row(
         children: [
           if (category != null) const SizedBox(width: 8),
           if (category != null)
-            SvgPicture.network(
-              category.imageUrl,
-              width: 24,
-              height: 24,
-            ),
+            SvgPicture.network(category.imageUrl, width: 24, height: 24),
           if (category != null) const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -90,18 +89,19 @@ class HorizontalCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
-                category != null
-                    ? Text(
-                        category.name,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          fontSize: theme.textTheme.labelLarge!.fontSize,
-                          fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      )
-                    : const SizedBox.shrink(),
+                if (hasCategory)
+                  Text(
+                    category.name,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontSize: theme.textTheme.labelLarge!.fontSize,
+                      fontWeight: theme.textTheme.labelLarge!.fontWeight,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  )
+                else
+                  const SizedBox.shrink(),
               ],
             ),
           ),

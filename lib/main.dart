@@ -95,7 +95,12 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => AuthCubit()),
-        BlocProvider(create: (context) => ProfileCubit()),
+        BlocProvider(
+          create: (context) {
+            // Always initialize a fresh ProfileCubit to avoid stale data
+            return ProfileCubit();
+          },
+        ),
         BlocProvider(
           create: (context) => BusinessHomeViewCubit()..getInitial(),
         ),

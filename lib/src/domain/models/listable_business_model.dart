@@ -14,20 +14,22 @@ class ListableBusiness extends Equatable {
     required this.id,
     required this.featuredImage,
     required this.categoryIds,
-    required this.category,
+    this.category,
   });
 
   factory ListableBusiness.fromJson(Map<String, dynamic> json) {
     return ListableBusiness(
       name: json['name'] as String,
       id: json['id'] as String,
-      featuredImage: json["featured_image"] != null
-          ? json['featured_image'] as String
-          : "",
-      categoryIds: json['categories'] != null
-          ? List<String>.from(json['categories'])
-          : [],
-      category: null,
+      featuredImage:
+          json["featured_image"] != null
+              ? json['featured_image'] as String
+              : "",
+      categoryIds:
+          json['categories'] != null
+              ? List<String>.from(json['categories'])
+              : [],
+      category: null, // Will be populated later by a repository or service
     );
   }
 

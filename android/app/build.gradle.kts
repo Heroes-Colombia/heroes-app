@@ -38,7 +38,7 @@ android {
         applicationId = "com.heroes.heroes_app"
         minSdk = 28
         targetSdk = flutter.targetSdkVersion
-        versionCode = 20
+        versionCode = 21
         versionName = "1.0.1"
     }
 

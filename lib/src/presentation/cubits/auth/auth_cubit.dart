@@ -31,6 +31,10 @@ class AuthCubit extends Cubit<AuthState> {
     BuildContext context,
   ) async {
     try {
+      // Note: We don't need to reset the ProfileCubit here directly
+      // The profile state will be reset in the ProfileView during logout
+      // This prevents dependency issues with GetIt
+
       //First we log in the user in firebase auth
       await getIt<AuthService>().signInWithEmailAndPassword(
         userData['email'],
@@ -214,6 +218,10 @@ class AuthCubit extends Cubit<AuthState> {
       locator.get<CloudMessageService>().unsubscribeFromTopic(
         locator.get<AppConstants>().businessUserTopic,
       );
+
+      // Note: We don't need to reset the ProfileCubit here
+      // It will automatically reset when the user logs in again
+      // or navigates to a new route
 
       //Then we return true or false in case of error
       return true;

@@ -15,6 +15,12 @@ class ProfileCubit extends Cubit<ProfileState> {
   ProfileCubit() : super(const ProfileInitial());
   final locator = GetIt.instance;
 
+  //This method is used to reset the state to initial, clearing any user data
+  //Used primarily when logging out to ensure no stale data remains
+  void resetState() {
+    emit(const ProfileInitial(user: null));
+  }
+
   //This method is used to restore the previous state of the cubit
   void restoreProfileState() {
     //If the current state is ProfileError, we try to restore the previous state
@@ -31,6 +37,9 @@ class ProfileCubit extends Cubit<ProfileState> {
   //This method is used to get the profile info
   void getProfileInfo() async {
     try {
+      //First reset to initial state to ensure we're not using cached data
+      emit(const ProfileInitial());
+
       //First collect the user info collection from Firestore
       final userCollection = locator.get<AppConstants>().usersCollection;
       //Then get the user id from the auth service
@@ -56,9 +65,12 @@ class ProfileCubit extends Cubit<ProfileState> {
       //Then get the user id from the auth service
       final userId = locator.get<AuthService>().getUserId();
       //Then update the user info from the firestore collection
-      await locator
-          .get<FirestoreService>()
-          .editDocumentById(userCollection, userId, 'uid', data);
+      await locator.get<FirestoreService>().editDocumentById(
+        userCollection,
+        userId,
+        'uid',
+        data,
+      );
       //Finally call getProfileInfo() to get the updated info
       getProfileInfo();
     } catch (e) {
@@ -69,19 +81,22 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   //This method is used to check if the user has notification preferences saved on the device
   Future<bool> getNotificationPreferencesForTopic(String topic) async {
-    final isTopicActive =
-        await locator.get<SharedPreferencesService>().getBool(topic);
+    final isTopicActive = await locator.get<SharedPreferencesService>().getBool(
+      topic,
+    );
 
     return isTopicActive;
   }
 
   //This method is used to check if the user has notification preferences saved on the device
   Future<bool> setNotificationPreferencesForTopic(String topic) async {
-    final isTopicActive =
-        await locator.get<SharedPreferencesService>().getBool(topic);
-    await locator
-        .get<SharedPreferencesService>()
-        .setBool(topic, !isTopicActive);
+    final isTopicActive = await locator.get<SharedPreferencesService>().getBool(
+      topic,
+    );
+    await locator.get<SharedPreferencesService>().setBool(
+      topic,
+      !isTopicActive,
+    );
 
     return isTopicActive;
   }

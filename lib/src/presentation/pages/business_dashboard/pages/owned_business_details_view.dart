@@ -19,9 +19,11 @@ import 'package:heroes_app/src/presentation/cubits/manage_business/owned_busines
 import 'package:heroes_app/src/presentation/cubits/manage_business/owned_businesses/owned_businesses_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
-import 'package:heroes_app/src/presentation/widgets/map_picker_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/map_preview_widget.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:heroes_app/src/presentation/widgets/location_picker_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/location_picker_field.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -38,37 +40,55 @@ class OwnedBusinessDetailsView extends StatefulWidget {
 }
 
 class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
+  // Add a state variable to track the current selected location
+  LocationResult? selectedLocation;
+
   @override
   void initState() {
     super.initState();
     context.read<OwnedBusinessDetailsCubit>().getInitial();
-    context
-        .read<OwnedBusinessDetailsCubit>()
-        .getBusinessDetails(widget.businessId)
-        .then((value) {
-          final currentBusiness =
-              context.read<OwnedBusinessDetailsCubit>().state.business!;
-          final texts =
-              GetIt.instance<AppConstants>()
-                  .businessDashboardTexts["ownedBusinessDetailsView"];
-          final paymentMethods =
-              context.read<OwnedBusinessDetailsCubit>().state.allPaymentMethods;
+    context.read<OwnedBusinessDetailsCubit>().getBusinessDetails(widget.businessId).then((
+      value,
+    ) {
+      // Initialize the selectedLocation with the business's current location if available
+      final business = context.read<OwnedBusinessDetailsCubit>().state.business;
+      if (business != null) {
+        try {
+          setState(() {
+            selectedLocation = LocationResult(
+              coordinates: LatLng(
+                business.location.latitude,
+                business.location.longitude,
+              ),
+              formattedAddress: business.address,
+            );
+          });
+        } catch (e) {
+          // Ignore errors when initializing the location
+          print('Error initializing location: $e');
+        }
+      }
+      final currentBusiness =
+          context.read<OwnedBusinessDetailsCubit>().state.business!;
+      final texts =
+          GetIt.instance<AppConstants>()
+              .businessDashboardTexts["ownedBusinessDetailsView"];
+      final paymentMethods =
+          context.read<OwnedBusinessDetailsCubit>().state.allPaymentMethods;
 
-          //On the first load we check if the subscription status is pending to refresh the status
-          if (currentBusiness.subscriptionStatus ==
-              BusinessSubscriptionStatus.pending) {
-            context
-                .read<OwnedBusinessDetailsCubit>()
-                .refreshSubscriptionStatus();
-          }
+      //On the first load we check if the subscription status is pending to refresh the status
+      if (currentBusiness.subscriptionStatus ==
+          BusinessSubscriptionStatus.pending) {
+        context.read<OwnedBusinessDetailsCubit>().refreshSubscriptionStatus();
+      }
 
-          //On the first load we check if the user has a free trial to show the dialog
-          if (currentBusiness.subscriptionStatus ==
-                  BusinessSubscriptionStatus.freeTrial &&
-              paymentMethods.isEmpty) {
-            showFreeTrialDialog(context, currentBusiness, texts);
-          }
-        });
+      //On the first load we check if the user has a free trial to show the dialog
+      if (currentBusiness.subscriptionStatus ==
+              BusinessSubscriptionStatus.freeTrial &&
+          paymentMethods.isEmpty) {
+        showFreeTrialDialog(context, currentBusiness, texts);
+      }
+    });
   }
 
   @override
@@ -189,10 +209,10 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               onPressed: () => seeAllBusinessManagers(theme, texts),
               icon: const Icon(Ionicons.people_outline),
             ),
-            IconButton(
-              onPressed: () => seeAllPaymenthMethods(theme, texts),
-              icon: const Icon(Ionicons.card_outline),
-            ),
+            // IconButton(
+            //   onPressed: () => seeAllPaymenthMethods(theme, texts),
+            //   icon: const Icon(Ionicons.card_outline),
+            // ),
             IconButton(
               onPressed: () => seeEditBusinessInformation(theme, texts),
               icon: const Icon(Ionicons.settings_outline),
@@ -299,8 +319,8 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                subscriptionButton(business, texts),
-                const SizedBox(width: 12),
+                // subscriptionButton(business, texts),
+                // const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
                     onPressed: () => seeCreatePromotionView(theme, texts),
@@ -582,48 +602,135 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
   }
 
   Widget informationList(Business? business, ThemeData theme, texts) {
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      itemCount: 1,
-      itemBuilder: (context, index) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              texts["address-title"]!,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: theme.textTheme.labelLarge!.fontSize,
-              ),
+    final key = GlobalKey<FormBuilderState>();
+    return FormBuilder(
+      key: key,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        children: [
+          // Hidden field to store the location
+          FormBuilderField(
+            name: 'location',
+            initialValue: selectedLocation,
+            builder: (field) => const SizedBox.shrink(), // Hidden field
+          ),
+          Text(
+            texts["address-title"]!,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: theme.textTheme.labelLarge!.fontSize,
             ),
-            const SizedBox(height: 4),
-            Text(business!.address),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-              ),
-              height: 200,
-              child: InkWell(
-                onTap: () {
-                  seeAddLocationToBusiness(theme, texts);
-                },
-                child: MapPreviewWidget(
-                  borderRadius: 20,
-                  latitude: business.location.latitude,
-                  longitude: business.location.longitude,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            TextButton(
-              onPressed: () => seeAddLocationToBusiness(theme, texts),
-              child: Text(texts["edit-address-button"]!),
-            ),
-          ],
-        );
-      },
+          ),
+          const SizedBox(height: 4),
+          Text(selectedLocation?.formattedAddress ?? business!.address),
+          const SizedBox(height: 16),
+          const SizedBox(height: 16),
+          Builder(
+            builder: (context) {
+              // Safely handle the location which might be null despite the type
+              LatLng? initialLocation;
+              try {
+                initialLocation = LatLng(
+                  business!.location.latitude,
+                  business.location.longitude,
+                );
+              } catch (e) {
+                // Location might be null or invalid - leave initialLocation as null
+              }
+
+              // Get the parent FormBuilder key to access fields
+              final formBuilderState = FormBuilder.of(context);
+
+              return Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                    ),
+                    height: 200,
+                    child: Stack(
+                      children: [
+                        MapPreviewWidget(
+                          borderRadius: 20,
+                          latitude:
+                              selectedLocation?.coordinates.latitude ??
+                              (formBuilderState?.fields['location']?.value
+                                      as LocationResult?)
+                                  ?.coordinates
+                                  .latitude ??
+                              business!.location.latitude,
+                          longitude:
+                              selectedLocation?.coordinates.longitude ??
+                              (formBuilderState?.fields['location']?.value
+                                      as LocationResult?)
+                                  ?.coordinates
+                                  .longitude ??
+                              business!.location.longitude,
+                          onTap: () async {
+                            // Use the static helper method to open the location picker directly
+                            final result =
+                                await LocationPickerField.openLocationPicker(
+                                  context,
+                                  texts['address-label']!,
+                                  texts['address-search-hint']!,
+                                  initialLocation,
+                                );
+
+                            if (result != null) {
+                              // Update the form field with the new location
+                              FormBuilder.of(
+                                context,
+                              )?.fields['location']?.didChange(result);
+
+                              // Immediately save the new address to the database
+                              await _saveAddressToDatabase(result, texts);
+                            }
+                          },
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: InkWell(
+                            onTap: () async {
+                              // Use the same function as the MapPreviewWidget
+                              final result =
+                                  await LocationPickerField.openLocationPicker(
+                                    context,
+                                    texts['address-label']!,
+                                    texts['address-search-hint']!,
+                                    initialLocation,
+                                  );
+
+                              if (result != null) {
+                                // Update the form field with the new location
+                                FormBuilder.of(
+                                  context,
+                                )?.fields['location']?.didChange(result);
+
+                                // Immediately save the new address to the database
+                                await _saveAddressToDatabase(result, texts);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(
+                                Ionicons.pencil,
+                                color: theme.colorScheme.primary,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -1228,73 +1335,6 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     );
   }
 
-  Widget changeBusinessLocationBody() {
-    var key = GlobalKey<FormBuilderState>();
-    var locator = GetIt.instance;
-
-    var texts =
-        locator<AppConstants>()
-            .businessDashboardTexts["ownedBusinessDetailsView"]!;
-    validateEmptyString(value, message) =>
-        locator<AppMethods>().emptyStringValidator(value, message);
-    var business = context.read<OwnedBusinessDetailsCubit>().state.business!;
-    var businessAddress = business.address;
-
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Container(
-        color: Theme.of(context).colorScheme.background,
-        padding: const EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 8),
-        child: FormBuilder(
-          key: key,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              FormBuilderTextField(
-                name: "address",
-                initialValue: businessAddress,
-                validator:
-                    (value) =>
-                        validateEmptyString(value, texts["empty-value"]!),
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                decoration: InputDecoration(
-                  labelText: texts["address-label"]!,
-                  hintText: texts["address-hint"]!,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 200,
-                child: MapPickerWidget(
-                  borderRadius: 12,
-                  latitude: business.location.latitude,
-                  longitude: business.location.longitude,
-                  onLocationChanged:
-                      (double? latitude, double? longitude) =>
-                          locationToAddress(key, latitude, longitude),
-                ),
-              ),
-              const SizedBox(height: 16),
-              AsyncButtonWidget(
-                buttonText: texts["edit-button"]!,
-                onPressed: () async {
-                  await handleEditAddressAndLocation(key, texts);
-                },
-              ),
-              const SizedBox(height: 4),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(texts["cancel-button"]!),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget allPaymentMethodsBody() {
     var theme = Theme.of(context);
     var locator = GetIt.instance;
@@ -1586,18 +1626,6 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     showBottomModal(
       body,
       BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 8),
-    );
-  }
-
-  void seeAddLocationToBusiness(ThemeData theme, texts) {
-    //We create the body of the modal
-    Widget body = changeBusinessLocationBody();
-
-    //We show the modal
-    showBottomModal(
-      body,
-      BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 8),
-      enableDrag: false,
     );
   }
 
@@ -1985,51 +2013,6 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
     );
   }
 
-  Future<void> locationToAddress(
-    GlobalKey<FormBuilderState> key,
-    double? latitude,
-    double? longitude,
-  ) async {
-    final newAddress = await locator<AppMethods>().getAddressFromCoordinates(
-      latitude!,
-      longitude!,
-    );
-
-    key.currentState!.fields["address"]!.didChange(newAddress);
-  }
-
-  Future<void> handleEditAddressAndLocation(
-    GlobalKey<FormBuilderState> key,
-    texts,
-  ) async {
-    if (!key.currentState!.saveAndValidate()) return;
-
-    var businessAddress = key.currentState!.fields["address"]!.value;
-
-    final isAddressEdited = await context
-        .read<OwnedBusinessDetailsCubit>()
-        .setAddressToBusiness(businessAddress);
-
-    if (!context.mounted) return;
-    if (isAddressEdited) {
-      //Close the modal
-      Navigator.of(context).pop();
-
-      //Show the snackbar if the address was edited
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(texts["address-edited"]!),
-          duration: const Duration(seconds: 4),
-        ),
-      );
-
-      return;
-    } else {
-      //We set error to the address field
-      key.currentState!.fields["address"]!.invalidate(texts["address-error"]!);
-    }
-  }
-
   Future<void> handleCreateSubscription(texts) async {
     //First we get the payment methods
     context.read<OwnedBusinessDetailsCubit>().getAllPaymentMethods(
@@ -2244,6 +2227,69 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
       if (!context.mounted) return;
       Navigator.of(context).pop();
       createScaffoldMessage(texts["create-subscription-error"]!);
+    }
+  }
+
+  // This method saves the address to the database and updates the UI
+  Future<bool> _saveAddressToDatabase(
+    LocationResult locationResult,
+    dynamic texts,
+  ) async {
+    // Update our local state to immediately reflect changes in the UI
+    setState(() {
+      selectedLocation = locationResult;
+    });
+
+    try {
+      // Pass the address and coordinates to the cubit to update the business location
+      final isAddressEdited = await context
+          .read<OwnedBusinessDetailsCubit>()
+          .setAddressToBusiness(
+            locationResult.formattedAddress,
+            coordinates: locationResult.coordinates,
+          );
+
+      if (!mounted) return false;
+
+      if (isAddressEdited) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(texts['address-updated-success']!),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        );
+
+        // Reload the business details to reflect the changes in the state
+        await context.read<OwnedBusinessDetailsCubit>().getBusinessDetails(
+          widget.businessId,
+        );
+
+        // Force a UI refresh to ensure the new address is displayed
+        setState(() {
+          // This empty setState forces a rebuild with the updated data
+        });
+
+        return true;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(texts['address-updated-error']!),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+        return false;
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(texts['address-updated-error']!),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+      return false;
     }
   }
 }

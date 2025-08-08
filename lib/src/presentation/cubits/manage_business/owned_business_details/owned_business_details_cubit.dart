@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
@@ -779,23 +780,34 @@ class OwnedBusinessDetailsCubit extends Cubit<OwnedBusinessDetailsState> {
   }
 
   //This method is used to set the business address
-  Future<bool> setAddressToBusiness(String address) async {
+  Future<bool> setAddressToBusiness(
+    String address, {
+    LatLng? coordinates,
+  }) async {
     try {
       //First, we get the firestore service and the users collection
       final firestoreService = locator.get<FirestoreService>();
       final businessCollection = locator.get<AppConstants>().businessCollection;
 
-      //Then we get the business coordinates from the address
-      final coordinates = await transformToLatLng(address);
-      if (coordinates == null) return false;
+      double latitude;
+      double longitude;
+
+      // Use provided coordinates if available, otherwise calculate them from the address
+      if (coordinates != null) {
+        latitude = coordinates.latitude;
+        longitude = coordinates.longitude;
+      } else {
+        final locationFromAddress = await transformToLatLng(address);
+        if (locationFromAddress == null) return false;
+        latitude = locationFromAddress.latitude;
+        longitude = locationFromAddress.longitude;
+      }
 
       //Then we transform the coordinates to a geoPoint
-      final geoPoint = GeoPoint(coordinates.latitude, coordinates.longitude);
+      final geoPoint = GeoPoint(latitude, longitude);
 
       //Then we get the geoHash from the coordinates
-      final currentPosition = GeoFirePoint(
-        GeoPoint(coordinates.latitude, coordinates.longitude),
-      );
+      final currentPosition = GeoFirePoint(GeoPoint(latitude, longitude));
 
       //Then, we add the address and the location to the business
       await firestoreService.editDocumentByDocumentId(

@@ -34,59 +34,77 @@ class OwnedBusinessesCubit extends Cubit<OwnedBusinessesState> {
       //We get the business that the user owns
       final rawOwnerBusinesses = await locator<FirestoreService>()
           .readAllDocumentsByCondition(
-              collectionName, "owner_uid", user.uid, 99);
+            collectionName,
+            "owner_uid",
+            user.uid,
+            99,
+          );
       final ownerBusinesses =
           rawOwnerBusinesses.map((e) => ListableBusiness.fromJson(e)).toList();
 
-      //Check if the user is not managing any business
-      if (ownedBusinessesIds.isEmpty) {
-        businesses.addAll(ownerBusinesses);
-        emit(state.copyWith(
-          status: BusinessViewCubitStatus.success,
-          businesses: businesses,
-        ));
-        return;
+      // Add owner businesses to the list
+      businesses.addAll(ownerBusinesses);
+
+      // Get businesses that the user manages (if any)
+      if (ownedBusinessesIds.isNotEmpty) {
+        final rawManagedBusinesses = await locator<FirestoreService>()
+            .readAllDocumentsByDocumentIDs(collectionName, ownedBusinessesIds);
+
+        final managedBusinesses =
+            rawManagedBusinesses
+                .map((e) => ListableBusiness.fromJson(e))
+                .toList();
+
+        // Add managed businesses that aren't already in the owner list
+        businesses.addAll(
+          managedBusinesses.where(
+            (element) => !ownerBusinesses.contains(element),
+          ),
+        );
       }
 
-      //We get the businesses that the user manages
-      final rawManagedBusinesses = await locator<FirestoreService>()
-          .readAllDocumentsByDocumentIDs(collectionName, ownedBusinessesIds);
-
-      final managedBusinesses = rawManagedBusinesses
-          .map((e) => ListableBusiness.fromJson(e))
-          .toList();
-
-      //We check if we have the owned business inside our managed businesses list
-      businesses.addAll(ownerBusinesses);
-      businesses.addAll(managedBusinesses
-          .where((element) => !ownerBusinesses.contains(element)));
-
-      //Then we get the business categories from firestore
+      // Get the business categories from firestore
       final businessCategoriesRaw = await locator
           .get<FirestoreService>()
           .readAllActiveDocuments(
-              locator.get<AppConstants>().businessCategoryCollection);
+            locator.get<AppConstants>().businessCategoryCollection,
+          );
 
-      //We convert the raw data to a list of business categories
-      final businessCategories = businessCategoriesRaw
-          .map((e) => BusinessCategory.fromJson(e))
-          .toList();
+      // Convert raw data to a list of business categories
+      final businessCategories =
+          businessCategoriesRaw
+              .map((e) => BusinessCategory.fromJson(e))
+              .toList();
 
-      //Then we add the first category data to the list of business categories
+      // Set the category for each business (using the first category ID)
       for (var business in businesses) {
-        business.category = businessCategories.firstWhere(
-            (category) => category.id == business.categoryIds.first);
+        if (business.categoryIds.isNotEmpty) {
+          try {
+            business.category = businessCategories.firstWhere(
+              (category) => category.id == business.categoryIds.first,
+            );
+          } catch (e) {
+            // If the category isn't found, log it
+            log(
+              'Category not found for business ${business.id}, categoryId: ${business.categoryIds.first}',
+            );
+          }
+        }
       }
 
       //We emit the state with the businesses
-      emit(state.copyWith(
-        status: BusinessViewCubitStatus.success,
-        businesses: businesses,
-        businessCategories: businessCategories,
-      ));
+      emit(
+        state.copyWith(
+          status: BusinessViewCubitStatus.success,
+          businesses: businesses,
+          businessCategories: businessCategories,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(status: BusinessViewCubitStatus.error));
-      log('Error: $e, Function: ownedBusinesses, File: owned_business_cubit.dart');
+      log(
+        'Error: $e, Function: ownedBusinesses, File: owned_business_cubit.dart',
+      );
     }
   }
 }

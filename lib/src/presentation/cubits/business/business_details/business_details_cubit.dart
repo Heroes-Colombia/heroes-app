@@ -46,18 +46,22 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       final reviews = await getBusinessReviews(businessId);
 
       //We update the state with the new business details
-      emit(state.copyWith(
-        businessId: businessId,
-        business: business,
-        promotions: promotions,
-        status: BusinessViewCubitStatus.success,
-        isFavourite: state.isFavourite,
-        favouriteIsLoading: state.favouriteIsLoading,
-        reviews: reviews,
-      ));
+      emit(
+        state.copyWith(
+          businessId: businessId,
+          business: business,
+          promotions: promotions,
+          status: BusinessViewCubitStatus.success,
+          isFavourite: state.isFavourite,
+          favouriteIsLoading: state.favouriteIsLoading,
+          reviews: reviews,
+        ),
+      );
     } catch (e) {
-      log('Error: $e, Function: getBusinessDetails, File: business_details_cubit.dart',
-          stackTrace: StackTrace.current);
+      log(
+        'Error: $e, Function: getBusinessDetails, File: business_details_cubit.dart',
+        stackTrace: StackTrace.current,
+      );
       emit(state.copyWith(status: BusinessViewCubitStatus.error));
     }
   }
@@ -70,9 +74,13 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
           locator.get<AppConstants>().advertisementCollection;
 
       //We fetch the promotions from the database
-      final rawPromotions =
-          await firestoreService.readActiveDocumentsByCondition(
-              promotionsCollection, 'business_id', businessId, 999);
+      final rawPromotions = await firestoreService
+          .readActiveDocumentsByCondition(
+            promotionsCollection,
+            'business_id',
+            businessId,
+            999,
+          );
 
       final promotions =
           rawPromotions.map((e) => Promotion.fromJson(e)).toList();
@@ -80,7 +88,9 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       //Then return the promotions
       return promotions;
     } catch (e) {
-      log('Error: $e, Function: getBusinessPromotions, File: business_details_cubit.dart');
+      log(
+        'Error: $e, Function: getBusinessPromotions, File: business_details_cubit.dart',
+      );
       return [];
     }
   }
@@ -98,7 +108,7 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
     }
   }
 
-//This method is used to get business reviews
+  //This method is used to get business reviews
   Future<List<UserReview>> getBusinessReviews(String businessId) async {
     try {
       final firestoreService = locator.get<FirestoreService>();
@@ -106,14 +116,20 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
 
       //We fetch the reviews from the database
       final rawReviews = await firestoreService.readActiveDocumentsByCondition(
-          reviewsCollection, 'business_id', businessId, 999);
+        reviewsCollection,
+        'business_id',
+        businessId,
+        999,
+      );
 
       final reviews = rawReviews.map((e) => UserReview.fromJson(e)).toList();
 
       //Then return the reviews
       return reviews;
     } catch (e) {
-      log('Error: $e, Function: getBusinessReviews, File: business_details_cubit.dart');
+      log(
+        'Error: $e, Function: getBusinessReviews, File: business_details_cubit.dart',
+      );
       return [];
     }
   }
@@ -127,14 +143,20 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
 
       //We fetch the reviews from the database
       final rawReviews = await firestoreService.readActiveDocumentsByCondition(
-          reviewsCollection, 'business_id', businessId, 999);
+        reviewsCollection,
+        'business_id',
+        businessId,
+        999,
+      );
 
       final reviews = rawReviews.map((e) => UserReview.fromJson(e)).toList();
 
       //Then return the reviews
       emit(state.copyWith(allUserReviews: reviews));
     } catch (e) {
-      log('Error: $e, Function: getAllBusinessReviews, File: business_details_cubit.dart');
+      log(
+        'Error: $e, Function: getAllBusinessReviews, File: business_details_cubit.dart',
+      );
     }
   }
 
@@ -148,30 +170,31 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       final reviewsCollection = locator.get<AppConstants>().reviewsCollection;
 
       //We add the review to the database
-      await firestoreService.createDocument(
-        reviewsCollection,
-        review.toJson(),
-      );
+      await firestoreService.createDocument(reviewsCollection, review.toJson());
 
       //We update the state
-      emit(state.copyWith(
-        reviews: [review, ...state.reviews],
-        allUserReviews: state.allUserReviews.isNotEmpty
-            ? [review, ...state.allUserReviews]
-            : state.allUserReviews,
-      ));
+      emit(
+        state.copyWith(
+          reviews: [review, ...state.reviews],
+          allUserReviews:
+              state.allUserReviews.isNotEmpty
+                  ? [review, ...state.allUserReviews]
+                  : state.allUserReviews,
+        ),
+      );
     } catch (e) {
-      log('Error: $e, Function: setReviewToBusiness, File: business_details_cubit.dart');
+      log(
+        'Error: $e, Function: setReviewToBusiness, File: business_details_cubit.dart',
+      );
     }
   }
 
   //This method is used to set the business as favourite
   void setBusinessAsFavourite(String businessId) async {
     //We update the state
-    emit(state.copyWith(
-      favouriteIsLoading: true,
-      isFavourite: !state.isFavourite,
-    ));
+    emit(
+      state.copyWith(favouriteIsLoading: true, isFavourite: !state.isFavourite),
+    );
 
     try {
       //We get the user id and the user favourite businesses list
@@ -195,19 +218,18 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       }
 
       //We update the user favourite businesses list
-      await firestoreService.editDocumentById(
-        userCollection,
-        userId,
-        'uid',
-        {'favourite_businesses': copyOfUserFavouriteBusinesses},
-      );
+      await firestoreService.editDocumentById(userCollection, userId, 'uid', {
+        'favourite_businesses': copyOfUserFavouriteBusinesses,
+      });
 
       //We update the state
       emit(state.copyWith(isFavourite: state.isFavourite));
     } catch (e) {
       //If the update fails, we revert the state
       emit(state.copyWith(isFavourite: !state.isFavourite));
-      log('Error: $e, Function: setBusinessAsFavourite, File: business_details_cubit.dart');
+      log(
+        'Error: $e, Function: setBusinessAsFavourite, File: business_details_cubit.dart',
+      );
     }
   }
 
@@ -224,8 +246,10 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       if (Platform.isAndroid) {
         var intent = 'geo:';
 
+        // URL encode the address to handle spaces and special characters
+        var encodedAddress = Uri.encodeComponent(state.business!.address);
         var finalUrl =
-            '$intent${state.business!.location.latitude},${state.business!.location.longitude}?q=${state.business!.address}';
+            '$intent${state.business!.location.latitude},${state.business!.location.longitude}?q=$encodedAddress';
         Uri encodedUri = Uri.parse(finalUrl);
         await locator.get<AppMethods>().openAppFromUri(encodedUri);
       } else {
@@ -252,21 +276,25 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
                       var finalUrl =
                           '$appleIntent${state.business!.location.latitude},${state.business!.location.longitude}';
                       Uri encodedUri = Uri.parse(finalUrl);
-                      await locator
-                          .get<AppMethods>()
-                          .openAppFromUri(encodedUri);
+                      await locator.get<AppMethods>().openAppFromUri(
+                        encodedUri,
+                      );
                     },
                   ),
                   ListTile(
                     title: Text(texts["google-maps"]!),
                     trailing: const Icon(Ionicons.logo_google),
                     onTap: () async {
+                      // URL encode the address to handle spaces and special characters
+                      var encodedAddress = Uri.encodeComponent(
+                        state.business!.address,
+                      );
                       var finalUrl =
-                          '$googleMapsIntent${state.business!.location.latitude},${state.business!.location.longitude}&q=${state.business!.address}';
+                          '$googleMapsIntent${state.business!.location.latitude},${state.business!.location.longitude}&q=$encodedAddress';
                       Uri encodedUri = Uri.parse(finalUrl);
-                      await locator
-                          .get<AppMethods>()
-                          .openAppFromUri(encodedUri);
+                      await locator.get<AppMethods>().openAppFromUri(
+                        encodedUri,
+                      );
                     },
                   ),
                   ListTile(
@@ -276,9 +304,9 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
                       var finalUrl =
                           '$wazeIntent${state.business!.location.latitude},${state.business!.location.longitude}';
                       Uri encodedUri = Uri.parse(finalUrl);
-                      await locator
-                          .get<AppMethods>()
-                          .openAppFromUri(encodedUri);
+                      await locator.get<AppMethods>().openAppFromUri(
+                        encodedUri,
+                      );
                     },
                   ),
                 ],
