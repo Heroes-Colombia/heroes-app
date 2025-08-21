@@ -25,6 +25,7 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: SignUpView.page, path: 'signUp'),
         AutoRoute(page: RestorePassword.page, path: 'restorePassword'),
         AutoRoute(page: SignUpBusinessView.page, path: 'signUpBusiness'),
+        AutoRoute(page: MilitaryVerificationView.page, path: 'militaryVerification'),
       ],
     ),
 
@@ -96,6 +97,11 @@ class AppRouter extends RootStackRouter {
     CustomRoute(
       page: OwnedPromotionDetailsView.page,
       path: '/ownedPromotionDetails',
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute(
+      page: BusinessAnalyticsView.page,
+      path: '/businessAnalytics',
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
 

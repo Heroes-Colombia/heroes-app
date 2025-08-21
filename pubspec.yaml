@@ -41,6 +41,7 @@ dependencies:
   dart_geohash: ^2.1.0
   flutter_dotenv: ^5.2.1
   firebase_messaging: ^15.2.5
+  firebase_analytics: ^11.3.6
   flutter_local_notifications: ^19.0.0
   flutter_svg: ^2.0.17
   google_fonts: ^6.2.1
@@ -50,6 +51,9 @@ dependencies:
   geoflutterfire_plus: ^0.0.32
   file_picker: ^8.1.4
   uuid: ^4.5.1
+  google_mlkit_text_recognition: ^0.11.0
+  camera: ^0.10.5
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:

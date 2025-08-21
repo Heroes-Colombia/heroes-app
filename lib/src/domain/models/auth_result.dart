@@ -7,17 +7,19 @@ class AuthResult {
   final String? errorMessage;
   final String? errorCode;
   final AuthResultType type;
+  final String? userId;
 
   const AuthResult({
     required this.success,
     this.errorMessage,
     this.errorCode,
     this.type = AuthResultType.normal,
+    this.userId,
   });
 
   // Factory constructors for common scenarios
-  factory AuthResult.success({AuthResultType type = AuthResultType.normal}) {
-    return AuthResult(success: true, type: type);
+  factory AuthResult.success({AuthResultType type = AuthResultType.normal, String? userId}) {
+    return AuthResult(success: true, type: type, userId: userId);
   }
 
   factory AuthResult.failure({

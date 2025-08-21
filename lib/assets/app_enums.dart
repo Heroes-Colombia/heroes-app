@@ -6,8 +6,12 @@ enum UserPermissions {
 }
 
 enum UserStatus {
-  active, //If the user has verified the email
-  pending, //If the user has not verified the email
+  active,           // Verified and approved
+  pending,          // Initial signup, needs verification
+  verifying,        // OCR verification in progress
+  manualReview,     // Failed OCR, needs manual review
+  rejected,         // Manual review rejected
+  suspended,        // Account suspended
 }
 
 enum BusinessStatus {
@@ -40,6 +44,7 @@ enum AuthStatus {
   loading, //If the app is loading
   error, //If there is an error
   userLoggedInNotVerified, //If the user is logged in but not verified
+  userNeedsVerification, //If the user is logged in but needs to complete OCR verification
 }
 
 //This enum is used to manage the status of the some cubits in the app

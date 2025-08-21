@@ -113,6 +113,44 @@ class AuthService {
     }
   }
 
+  //This method is used to check if an email is already registered
+  //Uses Firebase Auth to check for existing emails by attempting account creation
+  Future<bool> isEmailRegistered(String email) async {
+    try {
+      // Attempt to create a temporary user to check if email exists
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: 'TempPassword123!',
+      );
+      
+      // If we get here, email was available, so delete the temporary user immediately
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        await currentUser.delete();
+      }
+      
+      return false; // Email is available (not registered)
+      
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        return true; // Email is already registered
+      } else if (e.code == 'weak-password') {
+        // This shouldn't happen with our temp password, but if it does,
+        // it means the email was available
+        return false;
+      } else if (e.code == 'invalid-email') {
+        // Invalid email format
+        throw Exception('Email format is invalid');
+      } else {
+        log("Error checking email: ${e.code} - ${e.message}, Function: isEmailRegistered, File: auth_service.dart");
+        return false; // For other errors, assume email is available
+      }
+    } catch (e) {
+      log("Unexpected error checking email: $e, Function: isEmailRegistered, File: auth_service.dart");
+      return false; // If there's an unexpected error, assume email is available
+    }
+  }
+
   Future<bool> deleteAccount() async {
     try {
       await FirebaseAuth.instance.currentUser!.getIdTokenResult(true);

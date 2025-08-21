@@ -93,11 +93,8 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  //This method is used to sign up the user or a business user with out a business
-  Future<AuthResult> signUp(
-    Map<String, dynamic> userData,
-    XFile? identification,
-  ) async {
+  //This method is used to sign up the user (no image needed - will be verified via OCR later)
+  Future<AuthResult> signUp(Map<String, dynamic> userData) async {
     try {
       //First we create the user in firebase auth
       final uid = await getIt<AuthService>().signUpWithEmailAndPassword(
@@ -110,14 +107,6 @@ class AuthCubit extends Cubit<AuthState> {
 
       await createUserInFirestore(userData);
 
-      //Then we save in firebase storage the identification image if the user is not a business
-      if (identification != null) {
-        await getIt.get<FireStorageService>().uploadUserIdentification(
-          identification,
-          uid,
-        );
-      }
-
       //Get user information from firestore
       final usersCollection = getIt.get<AppConstants>().usersCollection;
       //Set the new user device notification token
@@ -127,18 +116,11 @@ class AuthCubit extends Cubit<AuthState> {
         uid,
       );
 
-      //Check if the user is a business user
-      if (identification != null) {
-        //If is business user Then we suscribe the user to the business channel
-        final businessTopic = locator.get<AppConstants>().businessUserTopic;
-        locator.get<CloudMessageService>().subscribeToTopic(businessTopic);
-      } else {
-        //If is normal user Then we suscribe the user to the user channel
-        await setInitialTopicsForUser();
-      }
+      //Subscribe user to the regular user channel (they will be verified via OCR)
+      await setInitialTopicsForUser();
 
-      //And return success result
-      return AuthResult.success();
+      //Return success result with userId
+      return AuthResult.success(userId: uid);
     } catch (e) {
       log('Error: $e, Function: signUp, File: auth_cubit.dart');
       return AuthResult.fromFirebaseException(e);
@@ -191,11 +173,32 @@ class AuthCubit extends Cubit<AuthState> {
       final businessTopic = locator.get<AppConstants>().businessUserTopic;
       locator.get<CloudMessageService>().subscribeToTopic(businessTopic);
 
-      //And return success result
-      return AuthResult.success();
+      //And return success result with userId
+      return AuthResult.success(userId: uid);
     } catch (e) {
       log('Error: $e, Function: signUpBusiness, File: auth_cubit.dart');
       return AuthResult.fromFirebaseException(e);
+    }
+  }
+
+  //This method is used to delete a user account and cleanup data when signup fails
+  Future<void> deleteUserAccount(String userId) async {
+    try {
+      // Delete user document from Firestore
+      final usersCollection = getIt.get<AppConstants>().usersCollection;
+      await getIt.get<FirestoreService>().deleteDocumentByDocumentProperty(
+        usersCollection,
+        'uid',
+        userId,
+      );
+
+      // Delete user from Firebase Auth
+      await getIt<AuthService>().deleteAccount();
+      
+      log('Successfully cleaned up user account: $userId');
+    } catch (e) {
+      log('Error deleting user account $userId: $e');
+      throw Exception('Error limpiando cuenta de usuario');
     }
   }
 
@@ -323,15 +326,39 @@ class AuthCubit extends Cubit<AuthState> {
 
       //Check if the user status is active (Verified)
       final userUid = getIt.get<AuthService>().getUserId();
-      final userJson = await getIt.get<FirestoreService>().readDocumentById(
-        getIt.get<AppConstants>().usersCollection,
-        userUid,
-        "uid",
-      );
-      final user = User.fromJson(userJson);
-      if (!user.verified) {
-        emit(const AuthState(authStatus: AuthStatus.userLoggedInNotVerified));
+      
+      late final User user;
+      
+      try {
+        final userJson = await getIt.get<FirestoreService>().readDocumentById(
+          getIt.get<AppConstants>().usersCollection,
+          userUid,
+          "uid",
+        );
+        user = User.fromJson(userJson);
+      } catch (e) {
+        // User has Firebase Auth session but no Firestore document
+        // This can happen if signup was incomplete or account was partially deleted
+        log('User document not found for UID: $userUid. Cleaning up auth session.');
+        
+        // Sign out the orphaned auth session
+        await getIt<AuthService>().signOut();
+        emit(const AuthState(authStatus: AuthStatus.userNotLoggedIn));
         return;
+      }
+      if (!user.verified) {
+        // Check if user is in the middle of verification process
+        if (user.status == UserStatus.pending) {
+          // User just signed up and needs to complete verification
+          log('User $userUid is in pending verification status - redirecting to verification flow');
+          emit(const AuthState(authStatus: AuthStatus.userNeedsVerification));
+          return;
+        } else {
+          // User has failed verification or is in other non-verified state
+          // For existing users without status field, treat as legacy unverified
+          emit(const AuthState(authStatus: AuthStatus.userLoggedInNotVerified));
+          return;
+        }
       }
 
       //Check if the user is a business

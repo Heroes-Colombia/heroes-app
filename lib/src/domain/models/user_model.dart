@@ -13,6 +13,7 @@ class User extends Equatable {
   final String rank;
   final String email;
   final bool verified;
+  final UserStatus? status;
   final List<String> favouriteBusinesses;
   final String? deviceNotificationToken;
 
@@ -28,6 +29,7 @@ class User extends Equatable {
     required this.rank,
     required this.email,
     required this.verified,
+    this.status,
     required this.favouriteBusinesses,
     this.deviceNotificationToken,
   });
@@ -45,6 +47,7 @@ class User extends Equatable {
     permission,
     rank,
     verified,
+    status,
     favouriteBusinesses,
     deviceNotificationToken,
   ];
@@ -64,6 +67,10 @@ class User extends Equatable {
         (element) => element.toString().split('.').last == json['permission'],
       ),
       verified: json['verified'] as bool,
+      status: UserStatus.values.firstWhere(
+        (element) => element.toString().split('.').last == json['status'],
+        orElse: () => UserStatus.pending,
+      ),
       favouriteBusinesses:
           json['favourite_businesses'] != null
               ? List<String>.from(json['favourite_businesses'])
@@ -108,6 +115,7 @@ class User extends Equatable {
     String? email,
     String? rank,
     bool? verified,
+    UserStatus? status,
     List<String>? favouriteBusinesses,
     String? deviceNotificationToken,
   }) {
@@ -122,6 +130,7 @@ class User extends Equatable {
       secondLastName: secondLastName ?? this.secondLastName,
       permission: permission ?? this.permission,
       verified: verified ?? this.verified,
+      status: status ?? this.status,
       rank: rank ?? this.rank,
       favouriteBusinesses: favouriteBusinesses ?? this.favouriteBusinesses,
       deviceNotificationToken:
