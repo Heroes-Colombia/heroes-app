@@ -347,8 +347,49 @@ class _SignUpViewState extends State<SignUpView> {
                 label: texts['password-label']!,
                 hintText: texts['password-hint']!,
               ),
+              const SizedBox(height: 16),
+
+              // Terms and Privacy acceptance
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    'Al continuar, aceptas nuestros ',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  GestureDetector(
+                    onTap: () => context.router.push(const TermsAndConditionsView()),
+                    child: Text(
+                      'Términos y Condiciones',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    ' y ',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  GestureDetector(
+                    onTap: () => context.router.push(const PrivacyPolicyView()),
+                    child: Text(
+                      'Política de Privacidad',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '.',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
-              
+
               // Continue button
               ElevatedButton(
                 onPressed: _isLoading ? null : () => _proceedToVerification(texts),

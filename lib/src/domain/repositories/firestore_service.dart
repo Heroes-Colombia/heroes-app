@@ -30,6 +30,11 @@ class FirestoreService {
             .collection(collectionName)
             .where(property, isEqualTo: id)
             .get();
+    
+    if (docSnapshot.docs.isEmpty) {
+      throw Exception('No document found with $property: $id in collection $collectionName');
+    }
+    
     return docSnapshot.docs.first.data();
   }
 
@@ -459,5 +464,92 @@ class FirestoreService {
         );
 
     return stream;
+  }
+
+  /*
+   This method fetches all locations for a specific business
+   from the locations subcollection
+  */
+  Future<List<Map<String, dynamic>>> getBusinessLocations(
+    String businessId,
+  ) async {
+    try {
+      final locationsSnapshot = await _firestore
+          .collection('businesses')
+          .doc(businessId)
+          .collection('locations')
+          .where('status', isEqualTo: 'active')
+          .get();
+
+      return locationsSnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /*
+   This method fetches locations for multiple businesses
+   Used in map view to display all locations from nearby businesses
+  */
+  Future<Map<String, List<Map<String, dynamic>>>> getMultipleBusinessLocations(
+    List<String> businessIds,
+  ) async {
+    try {
+      final Map<String, List<Map<String, dynamic>>> businessLocationsMap = {};
+
+      // Fetch locations for each business
+      for (String businessId in businessIds) {
+        final locations = await getBusinessLocations(businessId);
+        if (locations.isNotEmpty) {
+          businessLocationsMap[businessId] = locations;
+        }
+      }
+
+      return businessLocationsMap;
+    } catch (e) {
+      return {};
+    }
+  }
+
+  /*
+   This method gets documents near a position and their locations subcollection
+   Returns a stream of businesses with their locations included
+  */
+  Stream<Map<String, dynamic>> getDocumentsNearPositionWithLocations(
+    GeoPoint position,
+    double maxDistance,
+    String collection,
+  ) async* {
+    // First get nearby businesses
+    final businessStream = getDocumentsNearPosition(position, maxDistance, collection);
+
+    await for (final businessDocs in businessStream) {
+      final Map<String, dynamic> result = {
+        'businesses': [],
+        'locations': {},
+      };
+
+      List<Map<String, dynamic>> businesses = [];
+      for (var doc in businessDocs) {
+        if (doc.exists) {
+          var data = doc.data() as Map<String, dynamic>;
+          data['id'] = doc.id;
+          businesses.add(data);
+        }
+      }
+
+      result['businesses'] = businesses;
+
+      // Fetch locations for all businesses
+      final businessIds = businesses.map((b) => b['id'] as String).toList();
+      final locationsMap = await getMultipleBusinessLocations(businessIds);
+      result['locations'] = locationsMap;
+
+      yield result;
+    }
   }
 }

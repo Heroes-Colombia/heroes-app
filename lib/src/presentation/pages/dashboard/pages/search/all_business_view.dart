@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
+import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
 import 'package:heroes_app/src/presentation/cubits/business/all_business/all_business_cubit.dart';
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/delegates/categories_header_delegate.dart';
@@ -193,6 +194,7 @@ class _AllBusinessViewState extends State<AllBusinessView> {
           ),
           itemCount: businesses.length,
           itemBuilder: (context, index) {
+            _trackBusinessImpression(businesses[index].id);
             return HorizontalCard(
               isOnGrid: true,
               image: businesses[index].featuredImage,
@@ -284,5 +286,16 @@ class _AllBusinessViewState extends State<AllBusinessView> {
   //Methods
   void getAllBusinesses(BuildContext context) {
     context.read<AllBusinessCubit>().getBusinesses();
+  }
+
+  // V2: Track business impression in search results
+  void _trackBusinessImpression(String businessId) {
+    final analyticsService = GetIt.instance.get<AnalyticsService>();
+    analyticsService.trackDashboardImpression(
+      entityType: 'business',
+      entityId: businessId,
+      businessId: businessId,
+      screen: 'home_feed',
+    );
   }
 }

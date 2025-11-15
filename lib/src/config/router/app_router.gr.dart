@@ -9,10 +9,10 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i26;
-import 'package:collection/collection.dart' as _i29;
-import 'package:flutter/material.dart' as _i27;
-import 'package:heroes_app/src/domain/models/promotion_model.dart' as _i30;
+import 'package:auto_route/auto_route.dart' as _i28;
+import 'package:collection/collection.dart' as _i31;
+import 'package:flutter/material.dart' as _i29;
+import 'package:heroes_app/src/domain/models/promotion_model.dart' as _i32;
 import 'package:heroes_app/src/presentation/pages/auth/auth_view.dart' as _i2;
 import 'package:heroes_app/src/presentation/pages/auth/pages/first_time_view.dart'
     as _i11;
@@ -21,11 +21,11 @@ import 'package:heroes_app/src/presentation/pages/auth/pages/login_view.dart'
 import 'package:heroes_app/src/presentation/pages/auth/pages/military_verification_view.dart'
     as _i15;
 import 'package:heroes_app/src/presentation/pages/auth/pages/restore_password_view.dart'
-    as _i21;
+    as _i22;
 import 'package:heroes_app/src/presentation/pages/auth/pages/signup_business.dart'
-    as _i23;
-import 'package:heroes_app/src/presentation/pages/auth/pages/signup_view.dart'
     as _i24;
+import 'package:heroes_app/src/presentation/pages/auth/pages/signup_view.dart'
+    as _i25;
 import 'package:heroes_app/src/presentation/pages/business_dashboard/business_dashboard_view.dart'
     as _i4;
 import 'package:heroes_app/src/presentation/pages/business_dashboard/pages/business_analytics_view.dart'
@@ -47,7 +47,7 @@ import 'package:heroes_app/src/presentation/pages/dashboard/pages/profile/detail
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/profile/edit_profile_view.dart'
     as _i8;
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/profile/profile_view.dart'
-    as _i19;
+    as _i20;
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/all_business_view.dart'
     as _i1;
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/business_details_view.dart'
@@ -55,22 +55,26 @@ import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/busines
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/home_search_view.dart'
     as _i12;
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/promotion_details_view.dart'
-    as _i20;
+    as _i21;
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/search_view.dart'
-    as _i22;
+    as _i23;
 import 'package:heroes_app/src/presentation/pages/entryPoint/entrypoint_view.dart'
     as _i9;
 import 'package:heroes_app/src/presentation/pages/entryPoint/pages/unverified_user_view.dart'
-    as _i25;
-import 'package:location/location.dart' as _i28;
+    as _i27;
+import 'package:heroes_app/src/presentation/pages/legal/privacy_policy_view.dart'
+    as _i19;
+import 'package:heroes_app/src/presentation/pages/legal/terms_and_conditions_view.dart'
+    as _i26;
+import 'package:location/location.dart' as _i30;
 
 /// generated route for
 /// [_i1.AllBusinessView]
-class AllBusinessView extends _i26.PageRouteInfo<AllBusinessViewArgs> {
+class AllBusinessView extends _i28.PageRouteInfo<AllBusinessViewArgs> {
   AllBusinessView({
-    _i27.Key? key,
+    _i29.Key? key,
     String? initialCategoryId,
-    List<_i26.PageRouteInfo>? children,
+    List<_i28.PageRouteInfo>? children,
   }) : super(
          AllBusinessView.name,
          args: AllBusinessViewArgs(
@@ -82,7 +86,7 @@ class AllBusinessView extends _i26.PageRouteInfo<AllBusinessViewArgs> {
 
   static const String name = 'AllBusinessView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<AllBusinessViewArgs>(
@@ -99,7 +103,7 @@ class AllBusinessView extends _i26.PageRouteInfo<AllBusinessViewArgs> {
 class AllBusinessViewArgs {
   const AllBusinessViewArgs({this.key, this.initialCategoryId});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   final String? initialCategoryId;
 
@@ -121,13 +125,13 @@ class AllBusinessViewArgs {
 
 /// generated route for
 /// [_i2.AuthView]
-class AuthView extends _i26.PageRouteInfo<void> {
-  const AuthView({List<_i26.PageRouteInfo>? children})
+class AuthView extends _i28.PageRouteInfo<void> {
+  const AuthView({List<_i28.PageRouteInfo>? children})
     : super(AuthView.name, initialChildren: children);
 
   static const String name = 'AuthView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       return const _i2.AuthView();
@@ -138,11 +142,11 @@ class AuthView extends _i26.PageRouteInfo<void> {
 /// generated route for
 /// [_i3.BusinessAnalyticsView]
 class BusinessAnalyticsView
-    extends _i26.PageRouteInfo<BusinessAnalyticsViewArgs> {
+    extends _i28.PageRouteInfo<BusinessAnalyticsViewArgs> {
   BusinessAnalyticsView({
-    _i27.Key? key,
+    _i29.Key? key,
     required String businessId,
-    List<_i26.PageRouteInfo>? children,
+    List<_i28.PageRouteInfo>? children,
   }) : super(
          BusinessAnalyticsView.name,
          args: BusinessAnalyticsViewArgs(key: key, businessId: businessId),
@@ -151,7 +155,7 @@ class BusinessAnalyticsView
 
   static const String name = 'BusinessAnalyticsView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<BusinessAnalyticsViewArgs>();
@@ -166,7 +170,7 @@ class BusinessAnalyticsView
 class BusinessAnalyticsViewArgs {
   const BusinessAnalyticsViewArgs({this.key, required this.businessId});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   final String businessId;
 
@@ -188,13 +192,13 @@ class BusinessAnalyticsViewArgs {
 
 /// generated route for
 /// [_i4.BusinessDashBoardView]
-class BusinessDashBoardView extends _i26.PageRouteInfo<void> {
-  const BusinessDashBoardView({List<_i26.PageRouteInfo>? children})
+class BusinessDashBoardView extends _i28.PageRouteInfo<void> {
+  const BusinessDashBoardView({List<_i28.PageRouteInfo>? children})
     : super(BusinessDashBoardView.name, initialChildren: children);
 
   static const String name = 'BusinessDashBoardView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       return const _i4.BusinessDashBoardView();
@@ -204,11 +208,11 @@ class BusinessDashBoardView extends _i26.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i5.BusinessDetailsView]
-class BusinessDetailsView extends _i26.PageRouteInfo<BusinessDetailsViewArgs> {
+class BusinessDetailsView extends _i28.PageRouteInfo<BusinessDetailsViewArgs> {
   BusinessDetailsView({
-    _i27.Key? key,
+    _i29.Key? key,
     required String businessId,
-    List<_i26.PageRouteInfo>? children,
+    List<_i28.PageRouteInfo>? children,
   }) : super(
          BusinessDetailsView.name,
          args: BusinessDetailsViewArgs(key: key, businessId: businessId),
@@ -217,7 +221,7 @@ class BusinessDetailsView extends _i26.PageRouteInfo<BusinessDetailsViewArgs> {
 
   static const String name = 'BusinessDetailsView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<BusinessDetailsViewArgs>();
@@ -232,7 +236,7 @@ class BusinessDetailsView extends _i26.PageRouteInfo<BusinessDetailsViewArgs> {
 class BusinessDetailsViewArgs {
   const BusinessDetailsViewArgs({this.key, required this.businessId});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   final String businessId;
 
@@ -254,8 +258,8 @@ class BusinessDetailsViewArgs {
 
 /// generated route for
 /// [_i6.DashBoardView]
-class DashBoardView extends _i26.PageRouteInfo<DashBoardViewArgs> {
-  DashBoardView({_i27.Key? key, List<_i26.PageRouteInfo>? children})
+class DashBoardView extends _i28.PageRouteInfo<DashBoardViewArgs> {
+  DashBoardView({_i29.Key? key, List<_i28.PageRouteInfo>? children})
     : super(
         DashBoardView.name,
         args: DashBoardViewArgs(key: key),
@@ -264,7 +268,7 @@ class DashBoardView extends _i26.PageRouteInfo<DashBoardViewArgs> {
 
   static const String name = 'DashBoardView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<DashBoardViewArgs>(
@@ -278,7 +282,7 @@ class DashBoardView extends _i26.PageRouteInfo<DashBoardViewArgs> {
 class DashBoardViewArgs {
   const DashBoardViewArgs({this.key});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   @override
   String toString() {
@@ -298,8 +302,8 @@ class DashBoardViewArgs {
 
 /// generated route for
 /// [_i7.DetailsProfileView]
-class DetailsProfileView extends _i26.PageRouteInfo<DetailsProfileViewArgs> {
-  DetailsProfileView({_i27.Key? key, List<_i26.PageRouteInfo>? children})
+class DetailsProfileView extends _i28.PageRouteInfo<DetailsProfileViewArgs> {
+  DetailsProfileView({_i29.Key? key, List<_i28.PageRouteInfo>? children})
     : super(
         DetailsProfileView.name,
         args: DetailsProfileViewArgs(key: key),
@@ -308,7 +312,7 @@ class DetailsProfileView extends _i26.PageRouteInfo<DetailsProfileViewArgs> {
 
   static const String name = 'DetailsProfileView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<DetailsProfileViewArgs>(
@@ -322,7 +326,7 @@ class DetailsProfileView extends _i26.PageRouteInfo<DetailsProfileViewArgs> {
 class DetailsProfileViewArgs {
   const DetailsProfileViewArgs({this.key});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   @override
   String toString() {
@@ -342,8 +346,8 @@ class DetailsProfileViewArgs {
 
 /// generated route for
 /// [_i8.EditProfileView]
-class EditProfileView extends _i26.PageRouteInfo<EditProfileViewArgs> {
-  EditProfileView({_i27.Key? key, List<_i26.PageRouteInfo>? children})
+class EditProfileView extends _i28.PageRouteInfo<EditProfileViewArgs> {
+  EditProfileView({_i29.Key? key, List<_i28.PageRouteInfo>? children})
     : super(
         EditProfileView.name,
         args: EditProfileViewArgs(key: key),
@@ -352,7 +356,7 @@ class EditProfileView extends _i26.PageRouteInfo<EditProfileViewArgs> {
 
   static const String name = 'EditProfileView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<EditProfileViewArgs>(
@@ -366,7 +370,7 @@ class EditProfileView extends _i26.PageRouteInfo<EditProfileViewArgs> {
 class EditProfileViewArgs {
   const EditProfileViewArgs({this.key});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   @override
   String toString() {
@@ -386,13 +390,13 @@ class EditProfileViewArgs {
 
 /// generated route for
 /// [_i9.EntryPointView]
-class EntryPointView extends _i26.PageRouteInfo<void> {
-  const EntryPointView({List<_i26.PageRouteInfo>? children})
+class EntryPointView extends _i28.PageRouteInfo<void> {
+  const EntryPointView({List<_i28.PageRouteInfo>? children})
     : super(EntryPointView.name, initialChildren: children);
 
   static const String name = 'EntryPointView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       return const _i9.EntryPointView();
@@ -402,13 +406,13 @@ class EntryPointView extends _i26.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i10.FavoritesView]
-class FavoritesView extends _i26.PageRouteInfo<void> {
-  const FavoritesView({List<_i26.PageRouteInfo>? children})
+class FavoritesView extends _i28.PageRouteInfo<void> {
+  const FavoritesView({List<_i28.PageRouteInfo>? children})
     : super(FavoritesView.name, initialChildren: children);
 
   static const String name = 'FavoritesView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       return const _i10.FavoritesView();
@@ -418,8 +422,8 @@ class FavoritesView extends _i26.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i11.FirstTimeView]
-class FirstTimeView extends _i26.PageRouteInfo<FirstTimeViewArgs> {
-  FirstTimeView({_i27.Key? key, List<_i26.PageRouteInfo>? children})
+class FirstTimeView extends _i28.PageRouteInfo<FirstTimeViewArgs> {
+  FirstTimeView({_i29.Key? key, List<_i28.PageRouteInfo>? children})
     : super(
         FirstTimeView.name,
         args: FirstTimeViewArgs(key: key),
@@ -428,7 +432,7 @@ class FirstTimeView extends _i26.PageRouteInfo<FirstTimeViewArgs> {
 
   static const String name = 'FirstTimeView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<FirstTimeViewArgs>(
@@ -442,7 +446,7 @@ class FirstTimeView extends _i26.PageRouteInfo<FirstTimeViewArgs> {
 class FirstTimeViewArgs {
   const FirstTimeViewArgs({this.key});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   @override
   String toString() {
@@ -462,13 +466,13 @@ class FirstTimeViewArgs {
 
 /// generated route for
 /// [_i12.HomeSearchView]
-class HomeSearchView extends _i26.PageRouteInfo<void> {
-  const HomeSearchView({List<_i26.PageRouteInfo>? children})
+class HomeSearchView extends _i28.PageRouteInfo<void> {
+  const HomeSearchView({List<_i28.PageRouteInfo>? children})
     : super(HomeSearchView.name, initialChildren: children);
 
   static const String name = 'HomeSearchView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       return const _i12.HomeSearchView();
@@ -478,11 +482,11 @@ class HomeSearchView extends _i26.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i13.LoginView]
-class LoginView extends _i26.PageRouteInfo<LoginViewArgs> {
+class LoginView extends _i28.PageRouteInfo<LoginViewArgs> {
   LoginView({
-    _i27.Key? key,
+    _i29.Key? key,
     required dynamic Function(bool?) onResult,
-    List<_i26.PageRouteInfo>? children,
+    List<_i28.PageRouteInfo>? children,
   }) : super(
          LoginView.name,
          args: LoginViewArgs(key: key, onResult: onResult),
@@ -491,7 +495,7 @@ class LoginView extends _i26.PageRouteInfo<LoginViewArgs> {
 
   static const String name = 'LoginView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<LoginViewArgs>();
@@ -503,7 +507,7 @@ class LoginView extends _i26.PageRouteInfo<LoginViewArgs> {
 class LoginViewArgs {
   const LoginViewArgs({this.key, required this.onResult});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   final dynamic Function(bool?) onResult;
 
@@ -525,11 +529,11 @@ class LoginViewArgs {
 
 /// generated route for
 /// [_i14.MapView]
-class MapView extends _i26.PageRouteInfo<MapViewArgs> {
+class MapView extends _i28.PageRouteInfo<MapViewArgs> {
   MapView({
-    _i27.Key? key,
-    required _i28.LocationData? initialCameraLocation,
-    List<_i26.PageRouteInfo>? children,
+    _i29.Key? key,
+    required _i30.LocationData? initialCameraLocation,
+    List<_i28.PageRouteInfo>? children,
   }) : super(
          MapView.name,
          args: MapViewArgs(
@@ -541,7 +545,7 @@ class MapView extends _i26.PageRouteInfo<MapViewArgs> {
 
   static const String name = 'MapView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<MapViewArgs>();
@@ -556,9 +560,9 @@ class MapView extends _i26.PageRouteInfo<MapViewArgs> {
 class MapViewArgs {
   const MapViewArgs({this.key, required this.initialCameraLocation});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
-  final _i28.LocationData? initialCameraLocation;
+  final _i30.LocationData? initialCameraLocation;
 
   @override
   String toString() {
@@ -580,12 +584,12 @@ class MapViewArgs {
 /// generated route for
 /// [_i15.MilitaryVerificationView]
 class MilitaryVerificationView
-    extends _i26.PageRouteInfo<MilitaryVerificationViewArgs> {
+    extends _i28.PageRouteInfo<MilitaryVerificationViewArgs> {
   MilitaryVerificationView({
-    _i27.Key? key,
+    _i29.Key? key,
     required Map<String, String> userEnteredData,
     required String userId,
-    List<_i26.PageRouteInfo>? children,
+    List<_i28.PageRouteInfo>? children,
   }) : super(
          MilitaryVerificationView.name,
          args: MilitaryVerificationViewArgs(
@@ -598,7 +602,7 @@ class MilitaryVerificationView
 
   static const String name = 'MilitaryVerificationView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<MilitaryVerificationViewArgs>();
@@ -618,7 +622,7 @@ class MilitaryVerificationViewArgs {
     required this.userId,
   });
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   final Map<String, String> userEnteredData;
 
@@ -634,7 +638,7 @@ class MilitaryVerificationViewArgs {
     if (identical(this, other)) return true;
     if (other is! MilitaryVerificationViewArgs) return false;
     return key == other.key &&
-        const _i29.MapEquality().equals(
+        const _i31.MapEquality().equals(
           userEnteredData,
           other.userEnteredData,
         ) &&
@@ -644,18 +648,18 @@ class MilitaryVerificationViewArgs {
   @override
   int get hashCode =>
       key.hashCode ^
-      const _i29.MapEquality().hash(userEnteredData) ^
+      const _i31.MapEquality().hash(userEnteredData) ^
       userId.hashCode;
 }
 
 /// generated route for
 /// [_i16.OwnedBusinessDetailsView]
 class OwnedBusinessDetailsView
-    extends _i26.PageRouteInfo<OwnedBusinessDetailsViewArgs> {
+    extends _i28.PageRouteInfo<OwnedBusinessDetailsViewArgs> {
   OwnedBusinessDetailsView({
-    _i27.Key? key,
+    _i29.Key? key,
     required String businessId,
-    List<_i26.PageRouteInfo>? children,
+    List<_i28.PageRouteInfo>? children,
   }) : super(
          OwnedBusinessDetailsView.name,
          args: OwnedBusinessDetailsViewArgs(key: key, businessId: businessId),
@@ -664,7 +668,7 @@ class OwnedBusinessDetailsView
 
   static const String name = 'OwnedBusinessDetailsView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<OwnedBusinessDetailsViewArgs>();
@@ -679,7 +683,7 @@ class OwnedBusinessDetailsView
 class OwnedBusinessDetailsViewArgs {
   const OwnedBusinessDetailsViewArgs({this.key, required this.businessId});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   final String businessId;
 
@@ -701,8 +705,8 @@ class OwnedBusinessDetailsViewArgs {
 
 /// generated route for
 /// [_i17.OwnedBusinessesView]
-class OwnedBusinessesView extends _i26.PageRouteInfo<OwnedBusinessesViewArgs> {
-  OwnedBusinessesView({_i27.Key? key, List<_i26.PageRouteInfo>? children})
+class OwnedBusinessesView extends _i28.PageRouteInfo<OwnedBusinessesViewArgs> {
+  OwnedBusinessesView({_i29.Key? key, List<_i28.PageRouteInfo>? children})
     : super(
         OwnedBusinessesView.name,
         args: OwnedBusinessesViewArgs(key: key),
@@ -711,7 +715,7 @@ class OwnedBusinessesView extends _i26.PageRouteInfo<OwnedBusinessesViewArgs> {
 
   static const String name = 'OwnedBusinessesView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<OwnedBusinessesViewArgs>(
@@ -725,7 +729,7 @@ class OwnedBusinessesView extends _i26.PageRouteInfo<OwnedBusinessesViewArgs> {
 class OwnedBusinessesViewArgs {
   const OwnedBusinessesViewArgs({this.key});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   @override
   String toString() {
@@ -746,11 +750,11 @@ class OwnedBusinessesViewArgs {
 /// generated route for
 /// [_i18.OwnedPromotionDetailsView]
 class OwnedPromotionDetailsView
-    extends _i26.PageRouteInfo<OwnedPromotionDetailsViewArgs> {
+    extends _i28.PageRouteInfo<OwnedPromotionDetailsViewArgs> {
   OwnedPromotionDetailsView({
-    _i27.Key? key,
-    required _i30.Promotion promotion,
-    List<_i26.PageRouteInfo>? children,
+    _i29.Key? key,
+    required _i32.Promotion promotion,
+    List<_i28.PageRouteInfo>? children,
   }) : super(
          OwnedPromotionDetailsView.name,
          args: OwnedPromotionDetailsViewArgs(key: key, promotion: promotion),
@@ -759,7 +763,7 @@ class OwnedPromotionDetailsView
 
   static const String name = 'OwnedPromotionDetailsView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<OwnedPromotionDetailsViewArgs>();
@@ -774,9 +778,9 @@ class OwnedPromotionDetailsView
 class OwnedPromotionDetailsViewArgs {
   const OwnedPromotionDetailsViewArgs({this.key, required this.promotion});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
-  final _i30.Promotion promotion;
+  final _i32.Promotion promotion;
 
   @override
   String toString() {
@@ -795,30 +799,46 @@ class OwnedPromotionDetailsViewArgs {
 }
 
 /// generated route for
-/// [_i19.ProfileView]
-class ProfileView extends _i26.PageRouteInfo<void> {
-  const ProfileView({List<_i26.PageRouteInfo>? children})
-    : super(ProfileView.name, initialChildren: children);
+/// [_i19.PrivacyPolicyView]
+class PrivacyPolicyView extends _i28.PageRouteInfo<void> {
+  const PrivacyPolicyView({List<_i28.PageRouteInfo>? children})
+    : super(PrivacyPolicyView.name, initialChildren: children);
 
-  static const String name = 'ProfileView';
+  static const String name = 'PrivacyPolicyView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
-      return const _i19.ProfileView();
+      return const _i19.PrivacyPolicyView();
     },
   );
 }
 
 /// generated route for
-/// [_i20.PromotionDetailsView]
+/// [_i20.ProfileView]
+class ProfileView extends _i28.PageRouteInfo<void> {
+  const ProfileView({List<_i28.PageRouteInfo>? children})
+    : super(ProfileView.name, initialChildren: children);
+
+  static const String name = 'ProfileView';
+
+  static _i28.PageInfo page = _i28.PageInfo(
+    name,
+    builder: (data) {
+      return const _i20.ProfileView();
+    },
+  );
+}
+
+/// generated route for
+/// [_i21.PromotionDetailsView]
 class PromotionDetailsView
-    extends _i26.PageRouteInfo<PromotionDetailsViewArgs> {
+    extends _i28.PageRouteInfo<PromotionDetailsViewArgs> {
   PromotionDetailsView({
-    _i27.Key? key,
-    required _i30.Promotion? promotion,
+    _i29.Key? key,
+    required _i32.Promotion? promotion,
     required String? promotionId,
-    List<_i26.PageRouteInfo>? children,
+    List<_i28.PageRouteInfo>? children,
   }) : super(
          PromotionDetailsView.name,
          args: PromotionDetailsViewArgs(
@@ -831,11 +851,11 @@ class PromotionDetailsView
 
   static const String name = 'PromotionDetailsView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<PromotionDetailsViewArgs>();
-      return _i20.PromotionDetailsView(
+      return _i21.PromotionDetailsView(
         key: args.key,
         promotion: args.promotion,
         promotionId: args.promotionId,
@@ -851,9 +871,9 @@ class PromotionDetailsViewArgs {
     required this.promotionId,
   });
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
-  final _i30.Promotion? promotion;
+  final _i32.Promotion? promotion;
 
   final String? promotionId;
 
@@ -876,9 +896,9 @@ class PromotionDetailsViewArgs {
 }
 
 /// generated route for
-/// [_i21.RestorePassword]
-class RestorePassword extends _i26.PageRouteInfo<RestorePasswordArgs> {
-  RestorePassword({_i27.Key? key, List<_i26.PageRouteInfo>? children})
+/// [_i22.RestorePassword]
+class RestorePassword extends _i28.PageRouteInfo<RestorePasswordArgs> {
+  RestorePassword({_i29.Key? key, List<_i28.PageRouteInfo>? children})
     : super(
         RestorePassword.name,
         args: RestorePasswordArgs(key: key),
@@ -887,13 +907,13 @@ class RestorePassword extends _i26.PageRouteInfo<RestorePasswordArgs> {
 
   static const String name = 'RestorePassword';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<RestorePasswordArgs>(
         orElse: () => const RestorePasswordArgs(),
       );
-      return _i21.RestorePassword(key: args.key);
+      return _i22.RestorePassword(key: args.key);
     },
   );
 }
@@ -901,7 +921,7 @@ class RestorePassword extends _i26.PageRouteInfo<RestorePasswordArgs> {
 class RestorePasswordArgs {
   const RestorePasswordArgs({this.key});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   @override
   String toString() {
@@ -920,9 +940,9 @@ class RestorePasswordArgs {
 }
 
 /// generated route for
-/// [_i22.SearchView]
-class SearchView extends _i26.PageRouteInfo<SearchViewArgs> {
-  SearchView({_i27.Key? key, List<_i26.PageRouteInfo>? children})
+/// [_i23.SearchView]
+class SearchView extends _i28.PageRouteInfo<SearchViewArgs> {
+  SearchView({_i29.Key? key, List<_i28.PageRouteInfo>? children})
     : super(
         SearchView.name,
         args: SearchViewArgs(key: key),
@@ -931,13 +951,13 @@ class SearchView extends _i26.PageRouteInfo<SearchViewArgs> {
 
   static const String name = 'SearchView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<SearchViewArgs>(
         orElse: () => const SearchViewArgs(),
       );
-      return _i22.SearchView(key: args.key);
+      return _i23.SearchView(key: args.key);
     },
   );
 }
@@ -945,7 +965,7 @@ class SearchView extends _i26.PageRouteInfo<SearchViewArgs> {
 class SearchViewArgs {
   const SearchViewArgs({this.key});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   @override
   String toString() {
@@ -964,28 +984,28 @@ class SearchViewArgs {
 }
 
 /// generated route for
-/// [_i23.SignUpBusinessView]
-class SignUpBusinessView extends _i26.PageRouteInfo<void> {
-  const SignUpBusinessView({List<_i26.PageRouteInfo>? children})
+/// [_i24.SignUpBusinessView]
+class SignUpBusinessView extends _i28.PageRouteInfo<void> {
+  const SignUpBusinessView({List<_i28.PageRouteInfo>? children})
     : super(SignUpBusinessView.name, initialChildren: children);
 
   static const String name = 'SignUpBusinessView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
-      return const _i23.SignUpBusinessView();
+      return const _i24.SignUpBusinessView();
     },
   );
 }
 
 /// generated route for
-/// [_i24.SignUpView]
-class SignUpView extends _i26.PageRouteInfo<SignUpViewArgs> {
+/// [_i25.SignUpView]
+class SignUpView extends _i28.PageRouteInfo<SignUpViewArgs> {
   SignUpView({
-    _i27.Key? key,
+    _i29.Key? key,
     required dynamic Function(bool?) onResult,
-    List<_i26.PageRouteInfo>? children,
+    List<_i28.PageRouteInfo>? children,
   }) : super(
          SignUpView.name,
          args: SignUpViewArgs(key: key, onResult: onResult),
@@ -994,11 +1014,11 @@ class SignUpView extends _i26.PageRouteInfo<SignUpViewArgs> {
 
   static const String name = 'SignUpView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<SignUpViewArgs>();
-      return _i24.SignUpView(key: args.key, onResult: args.onResult);
+      return _i25.SignUpView(key: args.key, onResult: args.onResult);
     },
   );
 }
@@ -1006,7 +1026,7 @@ class SignUpView extends _i26.PageRouteInfo<SignUpViewArgs> {
 class SignUpViewArgs {
   const SignUpViewArgs({this.key, required this.onResult});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   final dynamic Function(bool?) onResult;
 
@@ -1027,9 +1047,25 @@ class SignUpViewArgs {
 }
 
 /// generated route for
-/// [_i25.UnverifiedUserView]
-class UnverifiedUserView extends _i26.PageRouteInfo<UnverifiedUserViewArgs> {
-  UnverifiedUserView({_i27.Key? key, List<_i26.PageRouteInfo>? children})
+/// [_i26.TermsAndConditionsView]
+class TermsAndConditionsView extends _i28.PageRouteInfo<void> {
+  const TermsAndConditionsView({List<_i28.PageRouteInfo>? children})
+    : super(TermsAndConditionsView.name, initialChildren: children);
+
+  static const String name = 'TermsAndConditionsView';
+
+  static _i28.PageInfo page = _i28.PageInfo(
+    name,
+    builder: (data) {
+      return const _i26.TermsAndConditionsView();
+    },
+  );
+}
+
+/// generated route for
+/// [_i27.UnverifiedUserView]
+class UnverifiedUserView extends _i28.PageRouteInfo<UnverifiedUserViewArgs> {
+  UnverifiedUserView({_i29.Key? key, List<_i28.PageRouteInfo>? children})
     : super(
         UnverifiedUserView.name,
         args: UnverifiedUserViewArgs(key: key),
@@ -1038,13 +1074,13 @@ class UnverifiedUserView extends _i26.PageRouteInfo<UnverifiedUserViewArgs> {
 
   static const String name = 'UnverifiedUserView';
 
-  static _i26.PageInfo page = _i26.PageInfo(
+  static _i28.PageInfo page = _i28.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<UnverifiedUserViewArgs>(
         orElse: () => const UnverifiedUserViewArgs(),
       );
-      return _i25.UnverifiedUserView(key: args.key);
+      return _i27.UnverifiedUserView(key: args.key);
     },
   );
 }
@@ -1052,7 +1088,7 @@ class UnverifiedUserView extends _i26.PageRouteInfo<UnverifiedUserViewArgs> {
 class UnverifiedUserViewArgs {
   const UnverifiedUserViewArgs({this.key});
 
-  final _i27.Key? key;
+  final _i29.Key? key;
 
   @override
   String toString() {

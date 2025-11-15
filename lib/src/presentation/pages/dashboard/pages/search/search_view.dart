@@ -8,10 +8,12 @@ import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/business_category.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
+import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/presentation/cubits/business/business_home_view/business_home_view_cubit.dart';
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/delegates/search_business_delegate.dart';
 import 'package:heroes_app/src/presentation/widgets/horizontal_card_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/map_interactive_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/promotion_card_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 
 @RoutePage()
@@ -63,6 +65,11 @@ class SearchView extends StatelessWidget {
           ],
         ),
         logo(theme, texts),
+        // Featured promotions carousel (only show if there are promotions)
+        if (state.featuredPromotions.isNotEmpty) ...[
+          singleTitle(theme, "Ofertas Destacadas"),
+          featuredPromotionsCarousel(state.featuredPromotions, context),
+        ],
         singleTitle(theme, texts["categories"]),
         categoriesList(state.businessCategories),
         singleTitle(theme, texts["nearPromotions"]),
@@ -71,10 +78,17 @@ class SearchView extends StatelessWidget {
           AutoRouter.of(context).push(AllBusinessView(initialCategoryId: null));
         }),
         horizontalList(state.featuredBusinesses),
+        // Online businesses section (only show if there are online businesses)
+        if (state.onlineBusinesses.isNotEmpty) ...[
+          doubleTitle(theme, "Negocios en Línea", texts["seeAll"], () {
+            AutoRouter.of(context).push(AllBusinessView(initialCategoryId: null));
+          }),
+          horizontalList(state.onlineBusinesses),
+        ],
         doubleTitle(theme, texts["business"], texts["seeAll"], () {
           AutoRouter.of(context).push(AllBusinessView(initialCategoryId: null));
         }),
-        verticalList(state.normalBusinesses),
+        verticalList(state.normalBusinesses, state.businessPromotions),
         const SliverToBoxAdapter(child: SizedBox(height: 16))
       ],
     );
@@ -322,6 +336,7 @@ class SearchView extends StatelessWidget {
               id: featuredBusinesses[index].id,
               isOnGrid: true,
               category: featuredBusinesses[index].category,
+              businessType: featuredBusinesses[index].type,
               callback: () {
                 AutoRouter.of(context).push(BusinessDetailsView(
                     businessId: featuredBusinesses[index].id));
@@ -337,7 +352,10 @@ class SearchView extends StatelessWidget {
     );
   }
 
-  SliverList verticalList(List<ListableBusiness> businesses) {
+  SliverList verticalList(
+    List<ListableBusiness> businesses,
+    Map<String, dynamic> businessPromotions,
+  ) {
     return SliverList.separated(
       itemBuilder: (context, index) {
         return VerticalCard(
@@ -345,6 +363,8 @@ class SearchView extends StatelessWidget {
           title: businesses[index].name,
           id: businesses[index].id,
           category: businesses[index].category,
+          businessType: businesses[index].type,
+          urgentPromotion: businessPromotions[businesses[index].id],
           callback: () {
             AutoRouter.of(context).push(
               BusinessDetailsView(businessId: businesses[index].id),
@@ -356,6 +376,37 @@ class SearchView extends StatelessWidget {
       separatorBuilder: (context, index) {
         return const SizedBox(height: 16);
       },
+    );
+  }
+
+  Widget featuredPromotionsCarousel(
+    List<dynamic> promotions,
+    BuildContext context,
+  ) {
+    return SliverToBoxAdapter(
+      child: Container(
+        height: 220,
+        margin: const EdgeInsets.symmetric(horizontal: 12),
+        child: ListView.builder(
+          padding: const EdgeInsets.all(0.0),
+          scrollDirection: Axis.horizontal,
+          itemBuilder: (context, index) {
+            final promotion = promotions[index] as Promotion;
+            return PromotionCard(
+              promotion: promotion,
+              callback: () {
+                AutoRouter.of(context).push(
+                  PromotionDetailsView(
+                    promotionId: promotion.documentId ?? '',
+                    promotion: promotion,
+                  ),
+                );
+              },
+            );
+          },
+          itemCount: promotions.length,
+        ),
+      ),
     );
   }
 }

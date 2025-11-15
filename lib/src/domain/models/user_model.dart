@@ -9,13 +9,17 @@ class User extends Equatable {
   final String secondName;
   final String firstLastName;
   final String secondLastName;
-  final UserPermissions permission;
+  final UserPermissions permission; // V1 field - kept for backward compatibility
   final String rank;
   final String email;
   final bool verified;
   final UserStatus? status;
   final List<String> favouriteBusinesses;
+  final List<String> favouritePromotions;
   final String? deviceNotificationToken;
+
+  // V2 Schema Fields (consumer-only)
+  final String? userType; // "admin" | "consumer" | "business_team"
 
   const User({
     required this.uid,
@@ -31,7 +35,9 @@ class User extends Equatable {
     required this.verified,
     this.status,
     required this.favouriteBusinesses,
+    required this.favouritePromotions,
     this.deviceNotificationToken,
+    this.userType, // V2 field
   });
 
   @override
@@ -49,7 +55,9 @@ class User extends Equatable {
     verified,
     status,
     favouriteBusinesses,
+    favouritePromotions,
     deviceNotificationToken,
+    userType,
   ];
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -75,7 +83,13 @@ class User extends Equatable {
           json['favourite_businesses'] != null
               ? List<String>.from(json['favourite_businesses'])
               : [],
+      favouritePromotions:
+          json['favourite_promotions'] != null
+              ? List<String>.from(json['favourite_promotions'])
+              : [],
       deviceNotificationToken: json['device_notification_token'] as String?,
+      // V2 field with backward compatibility
+      userType: json['user_type'] as String?,
     );
   }
 
@@ -98,6 +112,7 @@ class User extends Equatable {
               : UserPermissions.user.toString().split(".").last,
       "status": UserStatus.pending.toString().split('.').last,
       "favourite_businesses": [],
+      "favourite_promotions": [],
       "password": json['password'],
       "identification_card": json['identification_card'] ?? "",
     };
@@ -117,7 +132,9 @@ class User extends Equatable {
     bool? verified,
     UserStatus? status,
     List<String>? favouriteBusinesses,
+    List<String>? favouritePromotions,
     String? deviceNotificationToken,
+    String? userType,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -133,8 +150,23 @@ class User extends Equatable {
       status: status ?? this.status,
       rank: rank ?? this.rank,
       favouriteBusinesses: favouriteBusinesses ?? this.favouriteBusinesses,
+      favouritePromotions: favouritePromotions ?? this.favouritePromotions,
       deviceNotificationToken:
           deviceNotificationToken ?? this.deviceNotificationToken,
+      userType: userType ?? this.userType,
     );
+  }
+
+  /// Helper: Check if user is a business team member
+  bool get isBusinessUser {
+    // Check both V1 and V2 schemas
+    return permission == UserPermissions.business || userType == 'business_team';
+  }
+
+  /// Helper: Check if user is a consumer (military personnel or beneficiary)
+  bool get isConsumer {
+    return userType == 'consumer' ||
+           permission == UserPermissions.user ||
+           permission == UserPermissions.beneficiary;
   }
 }

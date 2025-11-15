@@ -1,8 +1,5 @@
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.dart';
@@ -44,14 +41,8 @@ Future<void> initializeDependencies() async {
 
   locator.registerSingleton<PlacesService>(PlacesService());
 
-  // Register AnalyticsService with dependencies
-  locator.registerSingleton<AnalyticsService>(
-    AnalyticsService(
-      analytics: FirebaseAnalytics.instance,
-      firestore: FirebaseFirestore.instance,
-      auth: FirebaseAuth.instance,
-    ),
-  );
+  // Register AnalyticsService
+  locator.registerSingleton<AnalyticsService>(AnalyticsService());
 
   // Register Military Verification Services
   locator.registerSingleton<MilitaryIDOCRService>(MilitaryIDOCRService());

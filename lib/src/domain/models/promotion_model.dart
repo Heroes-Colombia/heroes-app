@@ -13,6 +13,11 @@ class Promotion extends Equatable {
   final String featuredImage;
   final String? documentId;
 
+  // V2 Schema Fields
+  final List<String> locationIds; // Empty array = applies to all locations
+  final int? viewsCount; // Analytics tracking
+  final int? savesCount; // Favorites tracking
+
   const Promotion({
     required this.businessId,
     required this.description,
@@ -23,6 +28,9 @@ class Promotion extends Equatable {
     required this.title,
     required this.featuredImage,
     required this.documentId,
+    this.locationIds = const [], // Default to empty (applies to all locations)
+    this.viewsCount,
+    this.savesCount,
   });
 
   @override
@@ -36,6 +44,9 @@ class Promotion extends Equatable {
         title,
         featuredImage,
         documentId,
+        locationIds,
+        viewsCount,
+        savesCount,
       ];
 
   factory Promotion.fromJson(Map<String, dynamic> json) {
@@ -51,6 +62,12 @@ class Promotion extends Equatable {
       title: json['title'] as String,
       featuredImage: json['featured_image'] as String,
       documentId: json['id'] as String?,
+      // V2 fields with backward compatibility
+      locationIds: json['location_ids'] != null
+          ? List<String>.from(json['location_ids'])
+          : [],
+      viewsCount: json['views_count'] as int?,
+      savesCount: json['saves_count'] as int?,
     );
   }
 
@@ -64,6 +81,10 @@ class Promotion extends Equatable {
       'status': status.toString().split('.').last,
       'title': title,
       'featured_image': featuredImage,
+      // V2 fields
+      'location_ids': locationIds,
+      'views_count': viewsCount,
+      'saves_count': savesCount,
     };
   }
 
@@ -77,6 +98,9 @@ class Promotion extends Equatable {
     String? title,
     String? featuredImage,
     String? documentId,
+    List<String>? locationIds,
+    int? viewsCount,
+    int? savesCount,
   }) {
     return Promotion(
       businessId: businessId ?? this.businessId,
@@ -91,6 +115,48 @@ class Promotion extends Equatable {
       title: title ?? this.title,
       featuredImage: featuredImage ?? this.featuredImage,
       documentId: documentId ?? this.documentId,
+      locationIds: locationIds ?? this.locationIds,
+      viewsCount: viewsCount ?? this.viewsCount,
+      savesCount: savesCount ?? this.savesCount,
     );
   }
+
+  /// Helper method: Check if promotion applies to a specific location
+  bool appliesToLocation(String locationId) {
+    return locationIds.isEmpty || locationIds.contains(locationId);
+  }
+
+  /// Helper method: Check if promotion applies to all locations
+  bool get appliesToAllLocations => locationIds.isEmpty;
+
+  /// Returns the number of days until promotion expires
+  int get daysUntilExpiration {
+    final now = DateTime.now();
+    return expiredAt.difference(now).inDays;
+  }
+
+  /// Returns urgency level: critical (0-2 days), urgent (3-7 days), normal (8+ days)
+  String get urgencyLevel {
+    final days = daysUntilExpiration;
+    if (days <= 2) return 'critical';
+    if (days <= 7) return 'urgent';
+    return 'normal';
+  }
+
+  /// Returns human-readable urgency text
+  String get urgencyText {
+    final days = daysUntilExpiration;
+    if (days < 0) return 'Expirada';
+    if (days == 0) return 'Expira hoy';
+    if (days == 1) return 'Expira mañana';
+    if (days <= 2) return 'Quedan $days días';
+    if (days <= 7) return '$days días restantes';
+    return '';
+  }
+
+  /// Whether to show urgency badge (only show if < 8 days)
+  bool get shouldShowUrgencyBadge => daysUntilExpiration >= 0 && daysUntilExpiration < 8;
+
+  /// Check if promotion is expired
+  bool get isExpired => DateTime.now().isAfter(expiredAt);
 }

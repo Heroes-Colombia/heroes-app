@@ -6,7 +6,7 @@ class AppConstants {
   final String usersCollection = 'users';
   final String reviewsCollection = 'reviews';
   final String businessCollection = 'businesses';
-  final String advertisementCollection = 'advertisements';
+  final String advertisementCollection = 'promotions'; // V2: Renamed from 'advertisements' to 'promotions'
   final String paymentMethodsCollection = 'payment_methods';
   final String transactionsCollection = 'business_transactions';
   final String businessCategoryCollection = 'business_categories';

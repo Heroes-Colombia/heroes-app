@@ -19,8 +19,6 @@ import 'package:heroes_app/src/presentation/widgets/location_picker_widget.dart'
 import 'package:ionicons/ionicons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-final _formKeySignUpBusiness = GlobalKey<FormBuilderState>();
-
 @RoutePage()
 class SignUpBusinessView extends StatefulWidget {
   const SignUpBusinessView({super.key});
@@ -30,6 +28,7 @@ class SignUpBusinessView extends StatefulWidget {
 }
 
 class _SignUpBusinessViewState extends State<SignUpBusinessView> {
+  final _formKeySignUpBusiness = GlobalKey<FormBuilderState>();
   final locator = GetIt.instance;
   bool _isCreatingANewBusiness = false;
 
@@ -422,10 +421,16 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
     final formIsValid = _formKeySignUpBusiness.currentState!.saveAndValidate();
     if (!formIsValid) return;
 
-    //create a modifiable copy of the form data
-    var formData = Map<String, dynamic>.from(
-      _formKeySignUpBusiness.currentState!.value,
-    );
+    //create a modifiable copy of the form data safely
+    final rawFormData = _formKeySignUpBusiness.currentState!.value;
+    var formData = <String, dynamic>{};
+    
+    // Safely copy form data, filtering out problematic values
+    for (final entry in rawFormData.entries) {
+      if (entry.value != null && entry.value.toString().isNotEmpty) {
+        formData[entry.key] = entry.value;
+      }
+    }
 
     //If the user wants to create a new business attached to the new account
     if (_isCreatingANewBusiness) {
@@ -508,10 +513,7 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
       );
 
       if (!context.mounted) return;
-      final userCreationResult = await context.read<AuthCubit>().signUp(
-        userData,
-        null,
-      );
+      final userCreationResult = await context.read<AuthCubit>().signUp(userData);
 
       //If the user is not created, we show a specific error message
       if (!userCreationResult.success) {

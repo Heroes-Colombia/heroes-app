@@ -105,6 +105,18 @@ class AppRouter extends RootStackRouter {
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
 
+    //Legal routes (no auth required)
+    CustomRoute(
+      page: TermsAndConditionsView.page,
+      path: '/terms',
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute(
+      page: PrivacyPolicyView.page,
+      path: '/privacy',
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+
     //Individual map hero routes
     CustomRoute(
       page: MapView.page,

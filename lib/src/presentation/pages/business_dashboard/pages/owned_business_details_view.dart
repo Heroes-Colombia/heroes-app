@@ -24,6 +24,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:heroes_app/src/presentation/widgets/location_picker_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/location_picker_field.dart';
+import 'package:heroes_app/src/presentation/pages/business_dashboard/pages/business_analytics_view.dart' as analytics;
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -206,6 +207,11 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
           ),
           actions: [
             IconButton(
+              onPressed: () => navigateToAnalytics(),
+              icon: const Icon(Ionicons.analytics_outline),
+              tooltip: 'Business Analytics',
+            ),
+            IconButton(
               onPressed: () => seeAllBusinessManagers(theme, texts),
               icon: const Icon(Ionicons.people_outline),
             ),
@@ -218,6 +224,59 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
               icon: const Icon(Ionicons.settings_outline),
             ),
           ],
+        ),
+        // V2: Dashboard migration banner
+        SliverToBoxAdapter(
+          child: Container(
+            margin: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.colorScheme.primary,
+                width: 2,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.desktop_windows,
+                  size: 32,
+                  color: theme.colorScheme.onPrimaryContainer,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Gestiona tu negocio en la web',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Ahora disponible en app.heroescolombia.com',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: theme.colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: theme.colorScheme.onPrimaryContainer,
+                ),
+              ],
+            ),
+          ),
         ),
         mainCard(state.business!, theme, texts),
         const SliverToBoxAdapter(child: SizedBox(height: 16)),
@@ -2291,5 +2350,14 @@ class _OwnedBusinessDetailsViewState extends State<OwnedBusinessDetailsView> {
       }
       return false;
     }
+  }
+
+  // Navigate to business analytics dashboard
+  void navigateToAnalytics() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => analytics.BusinessAnalyticsView(businessId: widget.businessId),
+      ),
+    );
   }
 }

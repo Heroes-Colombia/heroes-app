@@ -23,6 +23,7 @@ import 'package:heroes_app/src/presentation/cubits/map/map_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:heroes_app/src/presentation/cubits/promotion/promotion_details_cubit.dart';
+import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'src/config/router/app_router.dart';
@@ -49,6 +50,7 @@ Future<void> main() async {
   }
   //DIO dependencies
   await initializeDependencies();
+
   //Cloud messaging dependencies
   final userAcceptNotifications =
       await GetIt.instance
@@ -124,7 +126,10 @@ class MyApp extends StatelessWidget {
         //We obtain the theme and darkTheme from the AdaptiveTheme builder
         theme: theme,
         darkTheme: darkTheme,
-        routerConfig: _appRouter.config(),
+        routerConfig: _appRouter.config(
+          navigatorObservers:
+              () => [GetIt.instance.get<AnalyticsService>().observer],
+        ),
       ),
     );
   }

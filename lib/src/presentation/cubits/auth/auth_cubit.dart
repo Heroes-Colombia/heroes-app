@@ -16,6 +16,7 @@ import 'package:heroes_app/src/domain/repositories/cloud_message_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestorage_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 import 'package:heroes_app/src/domain/repositories/shared_preferences_service.dart';
+import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:heroes_app/src/locator.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -365,6 +366,20 @@ class AuthCubit extends Cubit<AuthState> {
       if (user.permission == UserPermissions.business) {
         emit(const AuthState(authStatus: AuthStatus.businessLoggedIn));
         return;
+      }
+
+      // V2: Initialize analytics session with user context
+      try {
+        final analyticsService = locator.get<AnalyticsService>();
+        analyticsService.initializeSession(
+          userId: user.uid,
+          userContext: {
+            'rank': user.rank,
+            'city': '', // Add city if available in user model
+          },
+        );
+      } catch (e) {
+        log('Error initializing analytics session: $e');
       }
 
       //If the user is logged in and verified, we emit the userLoggedIn state

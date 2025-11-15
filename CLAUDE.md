@@ -1,22 +1,45 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with code in this repository.
 
-## PLan & Review
+## Plan & Review
 - Always in plan mode to make a plan.
-- After get the plan, make sure you write the plan to .claude/tasks/TASK_NAME.md.
+- After getting the plan, make sure you write the plan to .claude/tasks/TASK_NAME.md.
 - The plan should be a detailed implementation plan and the reasoning behind them, as well as tasks broken down.
-- If the task require external knowledge or certain package, also research to get latest knowledge (use Task tool for research)
+- If the task requires external knowledge or certain package, also research to get latest knowledge (use Task tool for research)
 - Do not over plan it, always think MVP.
 - Once you write the plan, firstly ask me to review it. Do not continue until I approve the plan.
 
 ### While implementing
 - You should update the plan as you work.
-- After you complete tasks in the plan, you should update and append detailed descriptions of the changes you made, so following tasks can be easily hand over to other engineers.
+- After you complete tasks in the plan, you should update and append detailed descriptions of the changes you made, so following tasks can be easily handed over to other engineers.
+
+---
 
 ## Project Overview
 
-Heroes Colombia is a Flutter mobile application that enables military personnel and government employees in Colombia to discover local businesses offering special promotions and discounts. The app features location-based business discovery with Google Maps integration and business management tools for owners.
+**Heroes Colombia Mobile App** is a Flutter application that serves as the **consumer-facing platform** for military personnel and government employees in Colombia to discover local businesses offering special promotions and discounts. The app features location-based business discovery with Google Maps integration.
+
+**Role Evolution:**
+- **Previous (V1)**: Attempted to handle both consumer browsing AND business management
+- **Current (V2)**: **Consumer-only focus** - Browse, view, favorite, and redeem promotions
+- **Future (V3)**: Will add team member redemption processing (staff use app to scan/verify)
+
+**⚠️ IMPORTANT - Business Management:**
+Business owners now use the **Dashboard** (Next.js web app) to manage their businesses. The Flutter app NO LONGER handles business CRUD operations. However, **DO NOT REMOVE existing business management code** - it will be enhanced later for staff redemption features.
+
+---
+
+## Source of Truth
+
+**This app's data structure MUST match:**
+1. **Website** ([heroes-colombia-website](../heroes-colombia-website)) - Handles trial sign-ups and marketing
+2. **Dashboard** ([heroes-colombia-dashboard](../heroes-colombia-dashboard)) - Handles business management
+3. **Firebase Schema V2** - See `dashboard/.claude/FIREBASE_SCHEMA_V2.md`
+
+**Key principle:** Dashboard and Website are authoritative for business data. Flutter app is read-only consumer of that data.
+
+---
 
 ## Development Commands
 
@@ -29,16 +52,18 @@ Heroes Colombia is a Flutter mobile application that enables military personnel 
 - `flutter pub deps` - Show dependency tree
 
 ### Code Quality
-- `flutter analyze` - Run static analysis (currently shows 165 issues)
+- `flutter analyze` - Run static analysis
 - `flutter test` - Run unit tests
 - `flutter pub run build_runner build` - Generate code (auto_route, freezed, etc.)
 
 ### Version Management
 - `./ios/update_version.sh` - Script to sync iOS version with pubspec.yaml version
 
+---
+
 ## Architecture Overview
 
-### Clean Architecture Structure
+### Clean Architecture Structure (Maintained)
 The project follows clean architecture principles with these main layers:
 
 - **Domain Layer** (`lib/src/domain/`):
@@ -68,76 +93,355 @@ The project follows clean architecture principles with these main layers:
 ### Navigation
 - **Router**: AutoRoute with nested routes
 - **Guards**: AuthGuard for protected routes
-- **Structure**: 
+- **Structure**:
   - Entry point (`/`)
   - Auth flows (`/welcome`)
-  - User dashboard (`/dashboard`) - protected
-  - Business dashboard (`/businessDashboard`) - protected
+  - User dashboard (`/dashboard`) - protected (CONSUMER VIEW)
+  - Business dashboard (`/businessDashboard`) - DEPRECATED (use web dashboard instead)
   - Individual pages with custom transitions
 
-### Key Dependencies
-- **State Management**: `flutter_bloc`, `provider`
-- **Navigation**: `auto_route`
-- **Backend**: Firebase (Auth, Firestore, Storage, Analytics, Messaging)
-- **Maps**: `google_maps_flutter`, `flutter_map`
-- **Location**: `geolocator`, `location`, `geocoding`
-- **UI**: `adaptive_theme`, `flutter_form_builder`, `ionicons`
-- **Networking**: `dio`
-- **Storage**: `shared_preferences`
-- **Utilities**: `get_it`, `equatable`, `intl`
+---
 
-## Code Organization
+## Firebase Integration (Schema V2)
 
-### Feature Modules
-1. **Authentication** - Login, signup, password recovery
-2. **Dashboard** - Main user interface with search, favorites, profile
-3. **Business Management** - Business owner tools and analytics
-4. **Maps & Location** - Interactive maps with business markers
-5. **Search & Discovery** - Business and promotion search
+### Collections Used by Flutter App
 
-### Key Files
-- `main.dart` - App entry point with Firebase and BLoC setup
-- `lib/src/locator.dart` - Dependency injection configuration
-- `lib/src/config/router/app_router.dart` - Route definitions
-- `firebase_options.dart` - Firebase configuration
-- `.env` - Environment variables (not in version control)
+**READ-ONLY Collections (consume data created by Dashboard/Website):**
 
-## Development Guidelines
+#### 1. `businesses/`
+```dart
+{
+  name: String
+  identification: String
+  email: String
+  phone_number: String
+  address: String
+  location: GeoPoint
+  geo_hash: { geohash: String, geopoint: GeoPoint }
+  category_ids: List<String>  // ⚠️ CHANGED: Was string array, now IDs
+  status: String  // "pending" | "active" | "inactive"
+  featured: bool
+  featured_image: String
+  owner_name: String
+  owner_uid: String
+  plan: String  // "gratis" | "basico" | "pro" | "enterprise"
+}
+```
 
-### Following Cursor Rules
-The project has specific Flutter development guidelines in `.cursor/rules/flutter.mdc`:
-- Use clean architecture with repository pattern
-- Prefer BLoC/Cubit for state management over Riverpod (as specified in rules)
-- Use GetIt for dependency injection
-- AutoRoute for navigation
-- Break down complex widgets to avoid deep nesting
-- Use const constructors where possible
-- Follow SOLID principles
+**Subcollection:** `businesses/{businessId}/locations/`
+```dart
+{
+  name: String
+  is_primary: bool
+  type: String  // "physical" | "online"
+  address: String?
+  location: GeoPoint?
+  geo_hash: Map?
+  status: String
+  created_at: Timestamp
+}
+```
 
-### Code Style
-- Uses `flutter_lints` for linting rules
-- PascalCase for classes, camelCase for variables/methods
-- Avoid deep widget nesting - extract to smaller components
-- Use early returns to reduce nesting
+#### 2. `promotions/` (previously `advertisements`)
+```dart
+{
+  business_id: String
+  title: String
+  description: String
+  instructions: String
+  percentage: int
+  featured_image: String
+  location_ids: List<String>  // ⚠️ NEW: Targets specific locations or [] = all
+  expired_at: Timestamp
+  status: String  // "draft" | "pending" | "active" | "inactive" | "expired"
+  is_featured: bool
+  views_count: int?
+  saves_count: int?
+  created_at: Timestamp
+}
+```
 
-### Firebase Integration
-- Configured for both iOS and Android
-- Services: Authentication, Firestore, Storage, Analytics, Cloud Messaging
-- Environment-specific configuration via DefaultFirebaseOptions
+#### 3. `business_categories/`
+```dart
+{
+  category_id: String  // e.g., "restaurant"
+  name: String
+  icon_url: String
+  status: String
+  sort_order: int
+}
+```
 
-### Known Issues
-- Currently 165 static analysis issues (mostly deprecated API usage)
-- Many `deprecated_member_use` warnings for Theme properties
-- Some `use_build_context_synchronously` warnings in async operations
-- Unused imports in some files
+**READ-WRITE Collections (user actions):**
 
-## Testing
-- Standard Flutter widget testing framework
-- Run tests with `flutter test`
-- No specific test configuration found - uses Flutter defaults
+#### 4. `users/`
+```dart
+{
+  uid: String
+  email: String
+  user_type: String  // "consumer" | "business_team"
 
-## Platform Support
-- **Primary**: iOS and Android
-- **Secondary**: macOS, Linux, Windows (configured but not primary targets)
-- Minimum Android SDK: 21
-- iOS deployment target configured in project settings
+  // Consumer fields (military personnel)
+  first_name: String?
+  second_name: String?
+  first_last_name: String?
+  second_last_name: String?
+  identification_card: String?
+  license: String?
+  rank: String?
+  favourite_businesses: List<String>  // Business IDs
+  device_notification_token: String?
+
+  // Business team fields (for future redemption processing)
+  business_roles: List<Map>?  // [{ business_id, role, permissions }]
+
+  status: String  // "pending" | "active" | "rejected"
+  verified: bool
+  created_at: Timestamp
+}
+```
+
+#### 5. `redemptions/` (Phase 2 - Future)
+```dart
+{
+  promotion_id: String
+  business_id: String
+  location_id: String?
+  user_id: String
+  user_military_id: String
+  redeemed_at: Timestamp
+  redemption_method: String  // "manual" | "qr_code"
+  processed_by: String?  // Staff user ID
+  status: String
+}
+```
+
+---
+
+## Feature Modules & Implementation Status
+
+### ✅ Phase 1: Consumer Features (IMPLEMENT NOW - Week 2)
+
+#### 1. **Authentication** (`lib/src/presentation/pages/auth/`)
+- ✅ Login for military personnel
+- ✅ Signup with military ID verification
+- ✅ Password recovery
+- ⚠️ Business signup - KEEP CODE but redirect to website in UI
+
+#### 2. **Dashboard** (`lib/src/presentation/pages/dashboard/`)
+**Consumer-facing features:**
+- ✅ Home feed with featured businesses/promotions
+- ✅ Search businesses by name, category, location
+- ✅ Browse by categories
+- ✅ View business details
+- ✅ View promotion details
+- ✅ Favorite businesses (save to user profile)
+- ✅ Map view with nearby businesses (geospatial queries)
+- ✅ Profile management (update military info)
+
+#### 3. **Maps & Location** (`lib/src/presentation/pages/dashboard/pages/map/`)
+- ✅ Interactive map with business markers
+- ✅ Geospatial queries (find nearby businesses)
+- ✅ Navigate to business location (Google Maps/Waze integration)
+- ✅ Filter by category on map
+
+#### 4. **Search & Discovery** (`lib/src/presentation/pages/dashboard/pages/search/`)
+- ✅ Search delegate for businesses
+- ✅ Category filtering
+- ✅ Sort by distance, rating, newest
+- ✅ View all businesses list
+- ✅ View business details with multiple locations
+
+---
+
+### 🔒 Phase 2: Enhanced Consumer Features (PLANNED - Future)
+
+#### 5. **Redemption System** (Future Implementation)
+- ⏳ View QR code for promotion redemption
+- ⏳ Show digital military ID card
+- ⏳ Redemption history
+- ⏳ Track savings/benefits
+
+#### 6. **Social Features** (Future Implementation)
+- ⏳ Review businesses (write, view)
+- ⏳ Rate businesses
+- ⏳ Share promotions with friends
+- ⏳ Report issues
+
+#### 7. **Notifications** (Partially Implemented)
+- ✅ Push notification setup (FCM token storage)
+- ⏳ Receive promotion notifications
+- ⏳ Favorite business alerts
+- ⏳ Nearby business notifications
+
+---
+
+### 🚫 Deprecated: Business Management Features
+
+**⚠️ IMPORTANT:** These features are NOW handled by the **web dashboard**. Do NOT remove code, but mark as deprecated and guide users to dashboard.
+
+#### Business Dashboard Pages (`lib/src/presentation/pages/business_dashboard/`)
+- ❌ `owned_businesses_view.dart` - List businesses (redirect to dashboard)
+- ❌ `owned_business_details_view.dart` - Manage business (redirect to dashboard)
+- ❌ `business_analytics_view.dart` - View analytics (redirect to dashboard)
+- ⏳ **FUTURE USE:** Staff will use these pages for in-store redemption processing
+
+**Migration Strategy:**
+1. Show banner: "Manage your business on the web dashboard at app.heroescolombia.com"
+2. Provide deep link to dashboard
+3. Keep code but disable editing features
+4. In future, repurpose for staff redemption workflow
+
+---
+
+## Data Model Updates (V1 → V2 Migration)
+
+### ⚠️ CRITICAL: User Permission/Type Schema
+
+**IMPORTANT:** The user schema uses BOTH `permission` (V1) and `user_type` (V2) for backward compatibility:
+
+#### Current V1 Schema (Flutter App - DO NOT REMOVE):
+```dart
+{
+  "permission": "admin" | "beneficiary" | "business" | "user"  // KEEP THIS
+}
+```
+
+#### New V2 Schema (Dashboard + Flutter - ADD THIS):
+```dart
+{
+  "permission": "admin" | "beneficiary" | "business" | "user"  // V1 - Keep for compatibility
+  "user_type": "admin" | "consumer" | "business_team"          // V2 - New field
+  "business_roles"?: [                                          // V2 - Only for business_team
+    {
+      business_id: String
+      role: "owner" | "manager" | "staff"
+      permissions: List<String>
+      added_at: Timestamp
+    }
+  ]
+}
+```
+
+#### Migration Mapping:
+- `permission: "admin"` → `user_type: "admin"`
+- `permission: "beneficiary"` → `user_type: "consumer"`
+- `permission: "user"` → `user_type: "consumer"`
+- `permission: "business"` → `user_type: "business_team"` (+ add `business_roles` array)
+
+**Migration Script:** Run `node scripts/migrate-user-types.js` in the dashboard project.
+
+**Flutter App Changes Needed:**
+1. ✅ Keep reading `permission` field (existing code works)
+2. ⏳ Add `user_type` field to User model (optional, for future use)
+3. ⏳ Add `business_roles` field to User model (for staff features in Phase 2)
+
+### Breaking Changes
+
+#### 1. **Collection Rename: `advertisements` → `promotions`**
+```dart
+// OLD (V1)
+final ads = await firestore.collection('advertisements').get();
+
+// NEW (V2)
+final promotions = await firestore.collection('promotions').get();
+```
+
+#### 2. **Business Categories: Strings → IDs**
+```dart
+// OLD (V1)
+class Business {
+  final List<String> categories; // ["restaurant", "gym"]
+}
+
+// NEW (V2)
+class Business {
+  final List<String> categoryIds; // ["cat_restaurant_001", "cat_gym_002"]
+
+  // Helper to resolve category names
+  Future<List<BusinessCategory>> getCategories() async {
+    final cats = await firestore
+      .collection('business_categories')
+      .where(FieldPath.documentId, whereIn: categoryIds)
+      .get();
+    return cats.docs.map((doc) => BusinessCategory.fromJson(doc.data())).toList();
+  }
+}
+```
+
+#### 3. **Multiple Locations per Business**
+```dart
+// OLD (V1) - Single location in business document
+class Business {
+  final GeoPoint location;
+  final String address;
+}
+
+// NEW (V2) - Locations subcollection
+class Business {
+  final GeoPoint location;  // Primary location (denormalized for performance)
+  final String address;     // Primary location address
+
+  // Fetch all locations
+  Future<List<BusinessLocation>> getLocations() async {
+    final locs = await firestore
+      .collection('businesses')
+      .doc(id)
+      .collection('locations')
+      .get();
+    return locs.docs.map((doc) => BusinessLocation.fromJson(doc.data())).toList();
+  }
+}
+
+class BusinessLocation {
+  final String id;
+  final String name;
+  final bool isPrimary;
+  final String type; // "physical" | "online"
+  final String? address;
+  final GeoPoint? location;
+  final String status;
+}
+```
+
+#### 4. **Promotion Location Targeting**
+```dart
+// OLD (V1) - Promotion belonged to single business
+class Promotion {
+  final String businessId;
+}
+
+// NEW (V2) - Promotion can target specific locations
+class Promotion {
+  final String businessId;
+  final List<String> locationIds; // Empty = all locations
+
+  bool appliesToLocation(String locationId) {
+    return locationIds.isEmpty || locationIds.contains(locationId);
+  }
+}
+```
+
+---
+
+## Week 2 Implementation Plan
+
+**See:** `.claude/tasks/WEEK2_FLUTTER_APP_MIGRATION.md` (will be created next)
+
+**Priority Tasks:**
+1. Update models to match Schema V2
+2. Migrate queries from `advertisements` to `promotions`
+3. Add location subcollection support
+4. Implement category ID resolution
+5. Add "Managed on Dashboard" banners
+6. Test consumer features thoroughly
+
+**Timeline:** January 20-24, 2026
+
+---
+
+**Last Updated:** January 20, 2026
+**Schema Version:** V2 (Backend migrated, Flutter app pending update)
+**Dashboard Alignment:** ✅ Complete
+**Backend Migrations:** ✅ All Complete (users, locations, promotions, security rules)
+**Flutter Migration Status:** ⏳ Pending - See `.claude/tasks/SCHEMA_V2_MIGRATION_GUIDE.md`

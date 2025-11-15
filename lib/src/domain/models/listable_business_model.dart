@@ -7,6 +7,7 @@ class ListableBusiness extends Equatable {
   final String id;
   final String featuredImage;
   final List<String> categoryIds;
+  final String type; // "physical" | "online" | "hybrid"
   BusinessCategory? category;
 
   ListableBusiness({
@@ -14,6 +15,7 @@ class ListableBusiness extends Equatable {
     required this.id,
     required this.featuredImage,
     required this.categoryIds,
+    this.type = 'physical', // Default to physical for backward compatibility
     this.category,
   });
 
@@ -29,10 +31,20 @@ class ListableBusiness extends Equatable {
           json['categories'] != null
               ? List<String>.from(json['categories'])
               : [],
+      type: json['type'] as String? ?? 'physical', // Default to physical for backward compatibility
       category: null, // Will be populated later by a repository or service
     );
   }
 
+  /// Check if this is a physical business
+  bool get isPhysical => type == 'physical' || type == 'hybrid';
+
+  /// Check if this is an online business
+  bool get isOnline => type == 'online' || type == 'hybrid';
+
+  /// Check if this is a hybrid business (both physical and online)
+  bool get isHybrid => type == 'hybrid';
+
   @override
-  List<Object?> get props => [name, id, featuredImage, categoryIds, category];
+  List<Object?> get props => [name, id, featuredImage, categoryIds, type, category];
 }

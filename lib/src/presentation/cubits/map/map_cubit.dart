@@ -12,6 +12,7 @@ import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/business_marker.dart';
+import 'package:heroes_app/src/domain/models/business_location.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 import 'package:location/location.dart';
 
@@ -64,7 +65,7 @@ class MapCubit extends Cubit<MapState> {
             businessCollection,
           );
 
-      businessRawInfoStream.listen((event) {
+      businessRawInfoStream.listen((event) async {
         List<Map<String, dynamic>> businessesRawInfo = [];
 
         for (var docs in event) {
@@ -81,37 +82,79 @@ class MapCubit extends Cubit<MapState> {
                 .map((business) => BusinessMarker.fromJson(business))
                 .toList();
 
-        //Then we create a list of markers from the business markers
-        final markers =
-            businessMarkers
-                .map(
-                  (business) => Marker(
-                    markerId: MarkerId(business.businessId),
-                    position: LatLng(
-                      business.location.latitude,
-                      business.location.longitude,
-                    ),
-                    infoWindow: InfoWindow(
-                      title: business.name,
-                      snippet: business.address,
-                    ),
-                    icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
-                    onTap: () {
-                      AutoRouter.of(context).push(
-                        BusinessDetailsView(businessId: business.businessId),
-                      );
-                    },
+        // NEW: Fetch all locations for all businesses
+        final businessIds = businessesRawInfo.map((b) => b['id'] as String).toList();
+        final locationsMap = await locator<FirestoreService>()
+            .getMultipleBusinessLocations(businessIds);
+
+        // Create markers for all locations (not just primary business location)
+        final List<Marker> allMarkers = [];
+
+        for (var business in businessMarkers) {
+          final businessLocations = locationsMap[business.businessId];
+
+          if (businessLocations != null && businessLocations.isNotEmpty) {
+            // Create a marker for each physical location
+            for (var locationData in businessLocations) {
+              final location = BusinessLocation.fromJson(locationData, locationData['id']);
+
+              // Only create markers for physical locations with coordinates
+              if (location.isPhysical && location.location != null && location.isActive) {
+                final markerId = MarkerId('${business.businessId}_${location.id}');
+                final marker = Marker(
+                  markerId: markerId,
+                  position: LatLng(
+                    location.location!.latitude,
+                    location.location!.longitude,
                   ),
-                )
-                .toList();
+                  infoWindow: InfoWindow(
+                    title: business.name,
+                    snippet: location.isPrimary
+                        ? '${location.displayAddress} (Principal)'
+                        : location.displayAddress,
+                  ),
+                  icon: location.isPrimary
+                      ? BitmapDescriptor.defaultMarkerWithHue(84.62) // Green for primary
+                      : BitmapDescriptor.defaultMarkerWithHue(200), // Blue for secondary
+                  onTap: () {
+                    AutoRouter.of(context).push(
+                      BusinessDetailsView(businessId: business.businessId),
+                    );
+                  },
+                );
+                allMarkers.add(marker);
+              }
+            }
+          } else {
+            // Fallback to primary business location if no locations subcollection exists
+            final marker = Marker(
+              markerId: MarkerId(business.businessId),
+              position: LatLng(
+                business.location.latitude,
+                business.location.longitude,
+              ),
+              infoWindow: InfoWindow(
+                title: business.name,
+                snippet: business.address,
+              ),
+              icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
+              onTap: () {
+                AutoRouter.of(context).push(
+                  BusinessDetailsView(businessId: business.businessId),
+                );
+              },
+            );
+            allMarkers.add(marker);
+          }
+        }
 
         //Then we set the state with the new info
         emit(
           state.copyWith(
-            allMarkers: markers,
+            allMarkers: allMarkers,
             userLocation: userCurrentLocation,
             allBusinessMarkers: businessMarkers,
-            filtredMarkers: markers,
+            filtredMarkers: allMarkers,
             isMapLoading: false,
           ),
         );
@@ -214,7 +257,7 @@ class MapCubit extends Cubit<MapState> {
             businessCollection,
           );
 
-      businessRawInfoStream.listen((event) {
+      businessRawInfoStream.listen((event) async {
         log('Event: $event');
         List<Map<String, dynamic>> businessesRawInfo = [];
 
@@ -237,35 +280,77 @@ class MapCubit extends Cubit<MapState> {
         var currentBusinessMarkers = state.allBusinessMarkers.toSet();
         currentBusinessMarkers.addAll(businessMarkers);
 
-        //Then we create a list of markers from the business markers
-        final markers =
-            currentBusinessMarkers
-                .map(
-                  (business) => Marker(
-                    markerId: MarkerId(business.businessId),
-                    position: LatLng(
-                      business.location.latitude,
-                      business.location.longitude,
-                    ),
-                    infoWindow: InfoWindow(
-                      title: business.name,
-                      snippet: business.address,
-                    ),
-                    icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
-                    onTap: () {
-                      AutoRouter.of(context).push(
-                        BusinessDetailsView(businessId: business.businessId),
-                      );
-                    },
+        // NEW: Fetch all locations for all businesses
+        final businessIds = businessesRawInfo.map((b) => b['id'] as String).toList();
+        final locationsMap = await locator<FirestoreService>()
+            .getMultipleBusinessLocations(businessIds);
+
+        // Create markers for all locations
+        final Set<Marker> newMarkers = {};
+
+        for (var business in currentBusinessMarkers) {
+          final businessLocations = locationsMap[business.businessId];
+
+          if (businessLocations != null && businessLocations.isNotEmpty) {
+            // Create a marker for each physical location
+            for (var locationData in businessLocations) {
+              final location = BusinessLocation.fromJson(locationData, locationData['id']);
+
+              // Only create markers for physical locations with coordinates
+              if (location.isPhysical && location.location != null && location.isActive) {
+                final markerId = MarkerId('${business.businessId}_${location.id}');
+                final marker = Marker(
+                  markerId: markerId,
+                  position: LatLng(
+                    location.location!.latitude,
+                    location.location!.longitude,
                   ),
-                )
-                .toSet();
+                  infoWindow: InfoWindow(
+                    title: business.name,
+                    snippet: location.isPrimary
+                        ? '${location.displayAddress} (Principal)'
+                        : location.displayAddress,
+                  ),
+                  icon: location.isPrimary
+                      ? BitmapDescriptor.defaultMarkerWithHue(84.62) // Green for primary
+                      : BitmapDescriptor.defaultMarkerWithHue(200), // Blue for secondary
+                  onTap: () {
+                    AutoRouter.of(context).push(
+                      BusinessDetailsView(businessId: business.businessId),
+                    );
+                  },
+                );
+                newMarkers.add(marker);
+              }
+            }
+          } else {
+            // Fallback to primary business location
+            final marker = Marker(
+              markerId: MarkerId(business.businessId),
+              position: LatLng(
+                business.location.latitude,
+                business.location.longitude,
+              ),
+              infoWindow: InfoWindow(
+                title: business.name,
+                snippet: business.address,
+              ),
+              icon: BitmapDescriptor.defaultMarkerWithHue(84.62),
+              onTap: () {
+                AutoRouter.of(context).push(
+                  BusinessDetailsView(businessId: business.businessId),
+                );
+              },
+            );
+            newMarkers.add(marker);
+          }
+        }
 
         //Then we set the state with the new info
         emit(
           state.copyWith(
-            allMarkers: markers.toList(),
-            filtredMarkers: markers.toList(),
+            allMarkers: newMarkers.toList(),
+            filtredMarkers: newMarkers.toList(),
             allBusinessMarkers: currentBusinessMarkers.toList(),
             isMapLoading: false,
           ),

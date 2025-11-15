@@ -9,6 +9,7 @@ import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/domain/models/business_category.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
+import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 
@@ -85,6 +86,20 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
               .map((e) => BusinessCategory.fromJson(e))
               .toList();
 
+      //We get the online businesses from firestore
+      final onlineBusinessRaw = await locator
+          .get<FirestoreService>()
+          .readActiveDocumentsByCondition(
+            businessCollection,
+            "type",
+            "online",
+            5,
+          );
+
+      //we convert the raw data to a list of business
+      final onlineBusiness =
+          onlineBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
+
       //Then we add the first category data to the list of business categories
       for (var business in normalBusiness) {
         business.category = businessCategories.firstWhere(
@@ -98,12 +113,54 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
         );
       }
 
+      for (var business in onlineBusiness) {
+        business.category = businessCategories.firstWhere(
+          (category) => category.id == business.categoryIds.first,
+        );
+      }
+
+      // NEW: Fetch promotions for urgency badges and featured carousel
+      final promotionsCollection = locator.get<AppConstants>().advertisementCollection;
+      final rawPromotions = await locator<FirestoreService>()
+          .readAllActiveDocuments(promotionsCollection);
+
+      final allPromotions = rawPromotions
+          .map((e) => Promotion.fromJson(e))
+          .where((promo) => promo.status == PromotionStatus.active && !promo.isExpired)
+          .toList();
+
+      // Create map of businessId -> most urgent promotion (for badges)
+      final Map<String, Promotion> businessPromotions = {};
+      final urgentPromotions = allPromotions
+          .where((promo) => promo.shouldShowUrgencyBadge)
+          .toList();
+
+      // Sort by urgency (most urgent first)
+      urgentPromotions.sort((a, b) => a.daysUntilExpiration.compareTo(b.daysUntilExpiration));
+
+      for (var promo in urgentPromotions) {
+        if (!businessPromotions.containsKey(promo.businessId)) {
+          businessPromotions[promo.businessId] = promo;
+        }
+      }
+
+      // Create featured promotions list (top 10 by urgency + discount)
+      final featuredPromotionsList = List<Promotion>.from(allPromotions);
+      featuredPromotionsList.sort((a, b) {
+        final urgencyCompare = a.daysUntilExpiration.compareTo(b.daysUntilExpiration);
+        if (urgencyCompare != 0) return urgencyCompare;
+        return b.percentage.compareTo(a.percentage); // Higher discount first
+      });
+
       emit(
         state.copyWith(
           businessHomeViewState: BusinessViewCubitStatus.success,
           featuredBusinesses: featuredBusiness,
           normalBusinesses: normalBusiness,
+          onlineBusinesses: onlineBusiness,
           businessCategories: businessCategories,
+          businessPromotions: businessPromotions,
+          featuredPromotions: featuredPromotionsList.take(10).toList(),
         ),
       );
     } catch (e) {

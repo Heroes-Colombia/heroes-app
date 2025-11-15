@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:heroes_app/src/domain/models/business_category.dart';
+import 'package:heroes_app/src/domain/models/promotion_model.dart';
 
 class VerticalCard extends StatelessWidget {
-  const VerticalCard(
-      {super.key,
-      required this.image,
-      required this.title,
-      required this.id,
-      this.description,
-      required this.callback,
-      required this.category});
+  const VerticalCard({
+    super.key,
+    required this.image,
+    required this.title,
+    required this.id,
+    this.description,
+    required this.callback,
+    required this.category,
+    this.businessType = 'physical',
+    this.urgentPromotion,
+  });
 
   final String id;
   final String image;
@@ -18,6 +22,8 @@ class VerticalCard extends StatelessWidget {
   final String? description;
   final Function callback;
   final BusinessCategory? category;
+  final String businessType; // "physical" | "online" | "hybrid"
+  final Promotion? urgentPromotion; // NEW: Urgent promotion for badge
 
   @override
   Widget build(BuildContext context) {
@@ -94,15 +100,41 @@ class VerticalCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurfaceVariant,
-                    fontSize: theme.textTheme.labelLarge!.fontSize,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: theme.textTheme.labelLarge!.fontSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    // Business type badge
+                    if (businessType == 'online' || businessType == 'hybrid')
+                      Container(
+                        margin: const EdgeInsets.only(left: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          businessType == 'online'
+                              ? Icons.language
+                              : Icons.store_mall_directory,
+                          size: 12,
+                          color: theme.colorScheme.onPrimaryContainer,
+                        ),
+                      ),
+                  ],
                 ),
                 category != null
                     ? Text(
@@ -127,11 +159,57 @@ class VerticalCard extends StatelessWidget {
                           fontWeight: theme.textTheme.bodySmall!.fontWeight,
                         ),
                       ),
+                // Urgency badge for promotions
+                if (urgentPromotion != null &&
+                    urgentPromotion!.shouldShowUrgencyBadge) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _getUrgencyColor(theme, urgentPromotion!.urgencyLevel),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.access_time,
+                          size: 12,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          urgentPromotion!.urgencyText,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  Color _getUrgencyColor(ThemeData theme, String urgencyLevel) {
+    switch (urgencyLevel) {
+      case 'critical':
+        return theme.colorScheme.error;
+      case 'urgent':
+        return Colors.orange;
+      case 'normal':
+        return theme.colorScheme.primary;
+      default:
+        return theme.colorScheme.primary;
+    }
   }
 }

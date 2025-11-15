@@ -20,23 +20,26 @@ class Business extends Equatable {
   final List<PaymentMethod> paymentMethods;
   final String featuredImage;
   final String ownerUid;
+  final String type; // "physical" | "online" | "hybrid"
 
-  const Business(
-      {required this.status,
-      required this.subscriptionStatus,
-      required this.latestTransactionDocumentId,
-      required this.phoneNumber,
-      required this.ownerName,
-      required this.name,
-      required this.location,
-      required this.identification,
-      required this.email,
-      required this.categories,
-      required this.address,
-      required this.reviews,
-      required this.paymentMethods,
-      required this.featuredImage,
-      required this.ownerUid});
+  const Business({
+    required this.status,
+    required this.subscriptionStatus,
+    required this.latestTransactionDocumentId,
+    required this.phoneNumber,
+    required this.ownerName,
+    required this.name,
+    required this.location,
+    required this.identification,
+    required this.email,
+    required this.categories,
+    required this.address,
+    required this.reviews,
+    required this.paymentMethods,
+    required this.featuredImage,
+    required this.ownerUid,
+    this.type = 'physical', // Default to physical for backward compatibility
+  });
 
   @override
   List<Object?> get props => [
@@ -54,8 +57,18 @@ class Business extends Equatable {
         reviews,
         paymentMethods,
         featuredImage,
-        ownerUid
+        ownerUid,
+        type,
       ];
+
+  /// Check if this is a physical business
+  bool get isPhysical => type == 'physical' || type == 'hybrid';
+
+  /// Check if this is an online business
+  bool get isOnline => type == 'online' || type == 'hybrid';
+
+  /// Check if this is a hybrid business (both physical and online)
+  bool get isHybrid => type == 'hybrid';
 
   factory Business.fromJson(Map<String, dynamic> json) {
     return Business(
@@ -91,6 +104,7 @@ class Business extends Equatable {
       latestTransactionDocumentId: json["latest_transaction"] != null
           ? json['latest_transaction'] as String
           : "",
+      type: json['type'] as String? ?? 'physical', // Default to physical for backward compatibility
     );
   }
 
@@ -106,6 +120,7 @@ class Business extends Equatable {
       'categories': categories,
       'address': address,
       'reviews': reviews.map((e) => e.toJson()).toList(),
+      'type': type,
     };
   }
 
@@ -140,6 +155,7 @@ class Business extends Equatable {
     List<PaymentMethod>? paymentMethods,
     String? featuredImage,
     String? ownerUid,
+    String? type,
   }) {
     return Business(
       status: status ?? this.status,
@@ -158,6 +174,7 @@ class Business extends Equatable {
       paymentMethods: paymentMethods ?? this.paymentMethods,
       featuredImage: featuredImage ?? this.featuredImage,
       ownerUid: ownerUid ?? this.ownerUid,
+      type: type ?? this.type,
     );
   }
 }

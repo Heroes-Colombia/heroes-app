@@ -9,6 +9,7 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
+import 'package:heroes_app/src/domain/models/business_location.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
@@ -45,12 +46,16 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       //We fetch the reviews from the database
       final reviews = await getBusinessReviews(businessId);
 
+      //NEW: Fetch all locations for this business
+      final locations = await getBusinessLocations(businessId);
+
       //We update the state with the new business details
       emit(
         state.copyWith(
           businessId: businessId,
           business: business,
           promotions: promotions,
+          locations: locations,
           status: BusinessViewCubitStatus.success,
           isFavourite: state.isFavourite,
           favouriteIsLoading: state.favouriteIsLoading,
@@ -63,6 +68,36 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
         stackTrace: StackTrace.current,
       );
       emit(state.copyWith(status: BusinessViewCubitStatus.error));
+    }
+  }
+
+  //This method is used to get all locations for a business
+  Future<List<BusinessLocation>> getBusinessLocations(String businessId) async {
+    try {
+      final firestoreService = locator.get<FirestoreService>();
+
+      //Fetch locations from subcollection
+      final rawLocations = await firestoreService.getBusinessLocations(businessId);
+
+      final locations = rawLocations
+          .map((e) => BusinessLocation.fromJson(e, e['id']))
+          .toList();
+
+      // Sort locations: primary first, then by status (active before inactive)
+      locations.sort((a, b) {
+        if (a.isPrimary && !b.isPrimary) return -1;
+        if (!a.isPrimary && b.isPrimary) return 1;
+        if (a.isActive && !b.isActive) return -1;
+        if (!a.isActive && b.isActive) return 1;
+        return 0;
+      });
+
+      return locations;
+    } catch (e) {
+      log(
+        'Error: $e, Function: getBusinessLocations, File: business_details_cubit.dart',
+      );
+      return [];
     }
   }
 

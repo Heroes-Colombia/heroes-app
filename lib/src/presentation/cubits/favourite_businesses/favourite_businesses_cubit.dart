@@ -7,6 +7,7 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/domain/models/business_category.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
+import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 
@@ -17,7 +18,10 @@ class FavouriteBusinessesCubit extends Cubit<FavouriteBusinessesState> {
   final locator = GetIt.instance;
 
   void getInitial() {
-    emit(state.copyWith(status: BusinessViewCubitStatus.loading));
+    emit(state.copyWith(
+      status: BusinessViewCubitStatus.loading,
+      promotionsStatus: BusinessViewCubitStatus.loading,
+    ));
   }
 
   Future<void> getFavouriteBusinesses() async {
@@ -66,6 +70,37 @@ class FavouriteBusinessesCubit extends Cubit<FavouriteBusinessesState> {
     } catch (e) {
       emit(state.copyWith(status: BusinessViewCubitStatus.error));
       log('Error: $e, Function: getFavouriteBusinesses, File: favourite_business_cubit.dart');
+    }
+  }
+
+  Future<void> getFavouritePromotions() async {
+    try {
+      final promotionsCollectionName = locator.get<AppConstants>().advertisementCollection;
+      final user = await locator.get<AuthService>().getUser();
+      final favouritePromotions = user!.favouritePromotions;
+
+      if (favouritePromotions.isEmpty) {
+        emit(state.copyWith(
+          promotionsStatus: BusinessViewCubitStatus.success,
+          promotions: [],
+        ));
+        return;
+      }
+
+      final rawPromotions = await locator<FirestoreService>()
+          .readActiveDocumentsByDocumentIDs(
+              promotionsCollectionName, favouritePromotions);
+
+      final promotions =
+          rawPromotions.map((e) => Promotion.fromJson(e)).toList();
+
+      emit(state.copyWith(
+        promotionsStatus: BusinessViewCubitStatus.success,
+        promotions: promotions,
+      ));
+    } catch (e) {
+      emit(state.copyWith(promotionsStatus: BusinessViewCubitStatus.error));
+      log('Error: $e, Function: getFavouritePromotions, File: favourite_business_cubit.dart');
     }
   }
 }

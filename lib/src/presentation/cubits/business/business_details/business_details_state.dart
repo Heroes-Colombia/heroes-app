@@ -7,6 +7,7 @@ final class BusinessDetailsState extends Equatable {
   final List<Promotion> promotions;
   final List<UserReview> reviews;
   final List<UserReview> allUserReviews;
+  final List<BusinessLocation> locations;
   final bool isFavourite;
   final bool favouriteIsLoading;
   final bool isReviewLoading;
@@ -17,6 +18,7 @@ final class BusinessDetailsState extends Equatable {
     this.promotions = const [],
     this.reviews = const [],
     this.allUserReviews = const [],
+    this.locations = const [],
     this.status = BusinessViewCubitStatus.initial,
     this.isFavourite = false,
     this.favouriteIsLoading = false,
@@ -30,6 +32,7 @@ final class BusinessDetailsState extends Equatable {
     List<Promotion>? promotions,
     List<UserReview>? reviews,
     List<UserReview>? allUserReviews,
+    List<BusinessLocation>? locations,
     bool? isFavourite,
     bool favouriteIsLoading = false,
     bool isReviewLoading = false,
@@ -39,6 +42,7 @@ final class BusinessDetailsState extends Equatable {
       business: business ?? this.business,
       reviews: reviews ?? this.reviews,
       allUserReviews: allUserReviews ?? this.allUserReviews,
+      locations: locations ?? this.locations,
       status: status ?? this.status,
       promotions: promotions ?? this.promotions,
       isFavourite: isFavourite ?? this.isFavourite,
@@ -55,6 +59,7 @@ final class BusinessDetailsState extends Equatable {
         promotions,
         reviews,
         allUserReviews,
+        locations,
         isFavourite,
         favouriteIsLoading,
         isReviewLoading,
