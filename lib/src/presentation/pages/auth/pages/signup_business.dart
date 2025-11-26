@@ -16,6 +16,7 @@ import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/location_picker_field.dart';
 import 'package:heroes_app/src/presentation/widgets/location_picker_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/searchable_rank_selector.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -193,15 +194,21 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
               ],
             ),
             const SizedBox(height: 12),
-            FormBuilderTextField(
+            FormBuilderField<String>(
               name: 'rank',
               validator: (value) => validateEmptyString(value, texts),
               autovalidateMode: AutovalidateMode.onUserInteraction,
-              decoration: InputDecoration(
-                labelText: texts['rank-label']!,
-                hintText: texts['rank-hint']!,
-                border: const OutlineInputBorder(),
-              ),
+              builder: (field) {
+                return SearchableRankSelector(
+                  selectedRank: field.value,
+                  onRankSelected: (rank) {
+                    field.didChange(rank);
+                  },
+                  labelText: texts['rank-label']!,
+                  hintText: texts['rank-hint']!,
+                  validator: (value) => validateEmptyString(value, texts),
+                );
+              },
             ),
             const SizedBox(height: 12),
             EmailInputWidget(

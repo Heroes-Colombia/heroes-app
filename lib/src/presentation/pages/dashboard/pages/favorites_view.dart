@@ -135,7 +135,12 @@ class _FavoritesViewState extends State<FavoritesView>
             case BusinessViewCubitStatus.success:
               return _buildPromotionsList(state.promotions, theme, texts);
             case BusinessViewCubitStatus.error:
-              return _buildErrorView(texts, theme, context, isBusinesses: false);
+              return _buildErrorView(
+                texts,
+                theme,
+                context,
+                isBusinesses: false,
+              );
             default:
               return const Center(child: CircularProgressIndicator());
           }
@@ -190,21 +195,23 @@ class _FavoritesViewState extends State<FavoritesView>
                     ),
                   ),
                   const SizedBox(height: 16),
-                  ...recommendations.map((business) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: HorizontalCard(
-                      isOnGrid: false,
-                      image: business.featuredImage,
-                      title: business.name,
-                      id: business.id,
-                      category: business.category,
-                      callback: () {
-                        AutoRouter.of(context).push(
-                          BusinessDetailsView(businessId: business.id),
-                        );
-                      },
+                  ...recommendations.map(
+                    (business) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: HorizontalCard(
+                        isOnGrid: false,
+                        image: business.featuredImage,
+                        title: business.name,
+                        id: business.id,
+                        category: business.category,
+                        callback: () {
+                          AutoRouter.of(
+                            context,
+                          ).push(BusinessDetailsView(businessId: business.id));
+                        },
+                      ),
                     ),
-                  )),
+                  ),
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     icon: const Icon(Ionicons.search),
@@ -233,11 +240,9 @@ class _FavoritesViewState extends State<FavoritesView>
           id: businesses[index].id,
           category: businesses[index].category,
           callback: () {
-            AutoRouter.of(context).push(
-              BusinessDetailsView(
-                businessId: businesses[index].id,
-              ),
-            );
+            AutoRouter.of(
+              context,
+            ).push(BusinessDetailsView(businessId: businesses[index].id));
           },
         );
       },
@@ -359,19 +364,20 @@ class _FavoritesViewState extends State<FavoritesView>
             SizedBox(
               height: 180,
               width: double.infinity,
-              child: promotion.featuredImage.isNotEmpty
-                  ? Image.network(
-                      promotion.featuredImage,
-                      fit: BoxFit.cover,
-                    )
-                  : Container(
-                      color: theme.colorScheme.surfaceVariant,
-                      child: Icon(
-                        Ionicons.image_outline,
-                        size: 48,
-                        color: theme.colorScheme.onSurfaceVariant,
+              child:
+                  promotion.featuredImage.isNotEmpty
+                      ? Image.network(
+                        promotion.featuredImage,
+                        fit: BoxFit.cover,
+                      )
+                      : Container(
+                        color: theme.colorScheme.surfaceVariant,
+                        child: Icon(
+                          Ionicons.image_outline,
+                          size: 48,
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
             ),
             // Promotion Details
             Padding(

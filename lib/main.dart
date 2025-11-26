@@ -22,6 +22,7 @@ import 'package:heroes_app/src/presentation/cubits/manage_business/owned_busines
 import 'package:heroes_app/src/presentation/cubits/map/map_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:heroes_app/src/presentation/cubits/promotion/all_promotions/all_promotions_cubit.dart';
 import 'package:heroes_app/src/presentation/cubits/promotion/promotion_details_cubit.dart';
 import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -109,6 +110,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => BusinessDetailsCubit()..getInitial()),
         BlocProvider(create: (context) => BusinessSearchResutlsCubit()),
         BlocProvider(create: (context) => AllBusinessCubit()..getInitial()),
+        BlocProvider(create: (context) => AllPromotionsCubit()..getInitial()),
         BlocProvider(
           create: (context) => FavouriteBusinessesCubit()..getInitial(),
         ),

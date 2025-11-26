@@ -4,6 +4,8 @@ import 'package:heroes_app/assets/app_enums.dart';
 
 class Promotion extends Equatable {
   final String businessId;
+  final String? businessName; // Populated via JOIN from business document
+  final List<String>? businessCategories; // Populated via JOIN from business document
   final String description;
   final DateTime expiredAt;
   final String instructions;
@@ -20,6 +22,8 @@ class Promotion extends Equatable {
 
   const Promotion({
     required this.businessId,
+    this.businessName,
+    this.businessCategories,
     required this.description,
     required this.expiredAt,
     required this.instructions,
@@ -36,6 +40,8 @@ class Promotion extends Equatable {
   @override
   List<Object?> get props => [
         businessId,
+        businessName,
+        businessCategories,
         description,
         expiredAt,
         instructions,
@@ -90,6 +96,8 @@ class Promotion extends Equatable {
 
   Promotion copyWith({
     String? businessId,
+    String? businessName,
+    List<String>? businessCategories,
     String? description,
     DateTime? expiredAt,
     String? instructions,
@@ -104,6 +112,8 @@ class Promotion extends Equatable {
   }) {
     return Promotion(
       businessId: businessId ?? this.businessId,
+      businessName: businessName ?? this.businessName,
+      businessCategories: businessCategories ?? this.businessCategories,
       description: description ?? this.description,
       expiredAt: expiredAt ?? this.expiredAt,
       instructions: instructions ?? this.instructions,

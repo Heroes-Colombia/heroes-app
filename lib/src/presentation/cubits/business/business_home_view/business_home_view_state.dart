@@ -7,7 +7,17 @@ final class BusinessHomeViewState extends Equatable {
   final List<ListableBusiness> onlineBusinesses;
   final List<BusinessCategory> businessCategories;
   final Map<String, dynamic> businessPromotions; // businessId -> most urgent promotion
-  final List<dynamic> featuredPromotions; // Top featured promotions for carousel
+  final List<dynamic> featuredPromotions; // Promotions for carousel with pagination
+
+  // Pagination fields for infinite scroll (normal businesses)
+  final DocumentSnapshot? lastNormalBusinessDoc; // Cursor for next page
+  final bool hasMoreNormalBusinesses; // Are there more businesses to load?
+  final bool isLoadingMore; // Loading indicator for pagination
+
+  // Pagination fields for promotions carousel
+  final DocumentSnapshot? lastPromotionDoc; // Cursor for next promotion page
+  final bool hasMorePromotions; // Are there more promotions to load?
+  final bool isLoadingMorePromotions; // Loading indicator for promotions pagination
 
   const BusinessHomeViewState({
     this.businessHomeViewState = BusinessViewCubitStatus.initial,
@@ -17,6 +27,14 @@ final class BusinessHomeViewState extends Equatable {
     this.businessCategories = const [],
     this.businessPromotions = const {}, // NEW
     this.featuredPromotions = const [], // NEW
+    // Pagination defaults (normal businesses)
+    this.lastNormalBusinessDoc,
+    this.hasMoreNormalBusinesses = true,
+    this.isLoadingMore = false,
+    // Pagination defaults (promotions)
+    this.lastPromotionDoc,
+    this.hasMorePromotions = true,
+    this.isLoadingMorePromotions = false,
   });
 
   BusinessHomeViewState copyWith({
@@ -27,6 +45,14 @@ final class BusinessHomeViewState extends Equatable {
     List<BusinessCategory>? businessCategories,
     Map<String, dynamic>? businessPromotions,
     List<dynamic>? featuredPromotions,
+    // Pagination fields (normal businesses)
+    DocumentSnapshot? lastNormalBusinessDoc,
+    bool? hasMoreNormalBusinesses,
+    bool? isLoadingMore,
+    // Pagination fields (promotions)
+    DocumentSnapshot? lastPromotionDoc,
+    bool? hasMorePromotions,
+    bool? isLoadingMorePromotions,
   }) {
     return BusinessHomeViewState(
       businessHomeViewState:
@@ -37,6 +63,14 @@ final class BusinessHomeViewState extends Equatable {
       businessCategories: businessCategories ?? this.businessCategories,
       businessPromotions: businessPromotions ?? this.businessPromotions,
       featuredPromotions: featuredPromotions ?? this.featuredPromotions,
+      // Pagination (normal businesses)
+      lastNormalBusinessDoc: lastNormalBusinessDoc ?? this.lastNormalBusinessDoc,
+      hasMoreNormalBusinesses: hasMoreNormalBusinesses ?? this.hasMoreNormalBusinesses,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      // Pagination (promotions)
+      lastPromotionDoc: lastPromotionDoc ?? this.lastPromotionDoc,
+      hasMorePromotions: hasMorePromotions ?? this.hasMorePromotions,
+      isLoadingMorePromotions: isLoadingMorePromotions ?? this.isLoadingMorePromotions,
     );
   }
 
@@ -49,5 +83,13 @@ final class BusinessHomeViewState extends Equatable {
         businessCategories,
         businessPromotions,
         featuredPromotions,
+        // Pagination (normal businesses)
+        lastNormalBusinessDoc,
+        hasMoreNormalBusinesses,
+        isLoadingMore,
+        // Pagination (promotions)
+        lastPromotionDoc,
+        hasMorePromotions,
+        isLoadingMorePromotions,
       ];
 }

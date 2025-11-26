@@ -13,6 +13,7 @@ import 'package:heroes_app/src/domain/models/verification_models.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/searchable_rank_selector.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:heroes_app/src/domain/services/military_verification_service.dart';
@@ -313,20 +314,24 @@ class _SignUpViewState extends State<SignUpView> {
                 ],
               ),
               const SizedBox(height: 12),
-              
-              // Rank dropdown
-              FormBuilderDropdown(
+
+              // Rank selector
+              FormBuilderField<String>(
                 name: 'rank',
                 key: const Key('_register_rank'),
-                dropdownColor: theme.colorScheme.surface,
-                decoration: InputDecoration(
-                  labelText: texts['rank-label']!,
-                  hintText: texts['rank-hint']!,
-                  border: const OutlineInputBorder(),
-                ),
-                items: getRanks(context),
                 validator: (value) => validateInputs(context, value),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
+                builder: (field) {
+                  return SearchableRankSelector(
+                    selectedRank: field.value,
+                    onRankSelected: (rank) {
+                      field.didChange(rank);
+                    },
+                    labelText: texts['rank-label']!,
+                    hintText: texts['rank-hint']!,
+                    validator: (value) => validateInputs(context, value),
+                  );
+                },
               ),
               const SizedBox(height: 12),
               
@@ -1036,86 +1041,4 @@ class _SignUpViewState extends State<SignUpView> {
     );
     return message;
   }
-
-  //This method is used to get the ranks from the constants file
-  List<DropdownMenuItem<String>> getRanks(BuildContext context) {
-    List<DropdownMenuItem<String>> dropdownItems = [];
-    var theme = Theme.of(context);
-    var locator = GetIt.instance;
-    var ranksMap = locator.get<AppConstants>().ranks;
-
-    ranksMap.forEach((category, subCategories) {
-      String categoryValue = "Category_$category";
-      dropdownItems.add(
-        DropdownMenuItem(
-          enabled: false,
-          value: categoryValue,
-          child: Text(
-            locator.get<AppMethods>().capitalize(category),
-            style: TextStyle(
-              fontSize: theme.textTheme.bodyLarge!.fontSize,
-              fontWeight: theme.textTheme.labelLarge!.fontWeight,
-              color: theme.colorScheme.primary,
-            ),
-          ),
-        ),
-      );
-
-      subCategories.forEach((subCategory, options) {
-        String subCategoryValue = "SubCategory_$subCategory";
-        dropdownItems.add(
-          DropdownMenuItem(
-            enabled: false,
-            value: subCategoryValue,
-            child: Container(
-              padding: const EdgeInsets.only(left: 0),
-              child: Text(
-                locator.get<AppMethods>().capitalize(subCategory),
-                style: TextStyle(
-                  fontSize: theme.textTheme.labelMedium!.fontSize,
-                  fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                  color: theme.colorScheme.primary.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-          ),
-        );
-
-        for (var option in options) {
-          String optionValue = option;
-          dropdownItems.add(
-            DropdownMenuItem(
-              value: "${category}_${subCategory}_$optionValue",
-              child: Container(
-                padding: const EdgeInsets.only(left: 12),
-                child: Text(
-                  locator.get<AppMethods>().capitalize(option),
-                  style: TextStyle(
-                    fontSize: theme.textTheme.labelMedium!.fontSize,
-                    fontWeight: theme.textTheme.labelLarge!.fontWeight,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }
-      });
-
-      dropdownItems.add(
-        DropdownMenuItem(
-          value: "",
-          enabled: false,
-          child: Container(
-            width: double.infinity,
-            height: 1,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      );
-    });
-
-    return dropdownItems;
-  }
-
 }

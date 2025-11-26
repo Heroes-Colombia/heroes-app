@@ -24,7 +24,6 @@ class ColombianMilitaryRanks {
   static const Map<String, List<String>> armyRanks = {
     'oficiales': [
       'GENERAL',
-      'TENIENTE GENERAL',
       'MAYOR GENERAL',
       'BRIGADIER GENERAL',
       'CORONEL',
@@ -68,7 +67,6 @@ class ColombianMilitaryRanks {
   static const Map<String, List<String>> airForceRanks = {
     'oficiales': [
       'GENERAL',
-      'TENIENTE GENERAL',
       'MAYOR GENERAL',
       'BRIGADIER GENERAL',
       'CORONEL',

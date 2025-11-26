@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -9,6 +8,7 @@ import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
+import 'package:heroes_app/src/domain/models/business_location.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
@@ -17,8 +17,10 @@ import 'package:heroes_app/src/presentation/cubits/business/business_details/bus
 import 'package:form_builder_extra_fields/form_builder_extra_fields.dart';
 import 'package:heroes_app/src/presentation/widgets/map_preview_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/business_location_item.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
 class BusinessDetailsView extends StatefulWidget {
@@ -154,6 +156,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
           texts,
           state.isFavourite,
           state.favouriteIsLoading,
+          state.locations,
         ),
         SliverFillRemaining(
           child: DefaultTabController(
@@ -163,16 +166,27 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                 TabBar(
                   tabs: [
                     Tab(text: texts["promotions-title"]),
+                    Tab(
+                      text:
+                          state.business!.isOnline &&
+                                  !state.business!.isPhysical
+                              ? texts["online-access-title"] ?? "Acceso"
+                              : texts["locations-title"] ?? "Ubicaciones",
+                    ),
                     Tab(text: texts["information-title"]),
-                    Tab(text: texts["comments-title"]),
                   ],
                 ),
                 Expanded(
                   child: TabBarView(
                     children: [
                       promotionsList(state.promotions, texts, theme),
-                      informationList(state.business, theme, texts),
-                      allCommentsBottomModalBody(),
+                      locationsTab(
+                        state.business,
+                        state.locations,
+                        theme,
+                        texts,
+                      ),
+                      informationTab(state.business, theme, texts),
                     ],
                   ),
                 ),
@@ -191,6 +205,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     texts,
     bool isFavourite,
     bool favouriteIsLoading,
+    List<BusinessLocation> locations,
   ) {
     return SliverToBoxAdapter(
       child: Container(
@@ -208,7 +223,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
                     business.featuredImage,
-                    height: 220,
+                    height: 180,
                     width: double.infinity,
                     fit: BoxFit.fitWidth,
                   ),
@@ -224,16 +239,54 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                   fit: BoxFit.cover,
                 ),
               ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 1),
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                OutlinedButton(
-                  onPressed: () => navigateToBusiness(context, texts),
-                  child: Text(texts["navigation-title"]),
-                ),
-                const SizedBox(width: 8),
+                if (business.website != "" && business.website != null)
+                  SizedBox(
+                    width: 40,
+                    child: IconButton.filledTonal(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          theme.colorScheme.background,
+                        ),
+                      ),
+                      onPressed: () => openWebsite(business.website!),
+                      icon: const Icon(Icons.language),
+                    ),
+                  ),
+                const SizedBox(width: 5),
+                if ((business.phoneNumber != "" && business.isOnline) ||
+                    (business.isPhysical && business.phoneNumber != "")) ...[
+                  SizedBox(
+                    width: 40,
+                    child: IconButton.filledTonal(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          theme.colorScheme.background,
+                        ),
+                      ),
+                      onPressed: () => callBusiness(business.phoneNumber),
+                      icon: const Icon(Ionicons.call_outline),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  SizedBox(
+                    width: 40,
+                    child: IconButton.filledTonal(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(
+                          theme.colorScheme.background,
+                        ),
+                      ),
+                      onPressed: () => openWhatsApp(business.phoneNumber),
+                      icon: const Icon(Ionicons.logo_whatsapp),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                ],
                 SizedBox(
                   width: 40,
                   child:
@@ -366,7 +419,7 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                 },
                 errorBuilder: (context, error, stackTrace) {
                   return Image.asset(
-                    height: 108,
+                    height: 90,
                     "assets/images/file-not-found.png",
                     fit: BoxFit.cover,
                   );
@@ -400,16 +453,18 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
               ],
             ),
             const SizedBox(height: 8),
-            Text(
-              promotion.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: theme.textTheme.labelLarge!.fontSize,
-                fontWeight: FontWeight.normal,
+            Expanded(
+              child: Text(
+                promotion.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: theme.textTheme.labelLarge!.fontSize,
+                  fontWeight: FontWeight.normal,
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Text(
               promotion.expiredAt.difference(DateTime.now()).inDays < 2
                   ? texts["expires-today"]
@@ -426,258 +481,141 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     );
   }
 
-  Widget informationList(Business? business, ThemeData theme, texts) {
-    return BlocBuilder<BusinessDetailsCubit, BusinessDetailsState>(
-      builder: (context, state) {
-        final locations = state.locations;
-
-        // If no locations subcollection, show primary business location (backward compatibility)
-        if (locations.isEmpty) {
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            itemCount: 1,
-            itemBuilder: (context, index) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    texts["address-title"]!,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: theme.textTheme.labelLarge!.fontSize,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(business!.address),
-                  const SizedBox(height: 16),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-                    ),
-                    height: 200,
-                    child: MapPreviewWidget(
-                      borderRadius: 20,
-                      latitude: business.location.latitude,
-                      longitude: business.location.longitude,
-                    ),
-                  ),
-                ],
-              );
-            },
-          );
-        }
-
-        // Show all locations
-        return ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          itemCount: locations.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 24),
-          itemBuilder: (context, index) {
-            final location = locations[index];
-
-            return Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: location.isPrimary
-                      ? theme.colorScheme.primary.withOpacity(0.3)
-                      : theme.colorScheme.outline.withOpacity(0.2),
-                  width: location.isPrimary ? 2 : 1,
+  Widget informationTab(Business? business, ThemeData theme, texts) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      itemCount: 1,
+      itemBuilder: (context, index) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Description section
+            if (business!.description != null &&
+                business.description!.isNotEmpty) ...[
+              _buildDescriptionSection(business.description!, theme, texts),
+              const SizedBox(height: 24),
+            ],
+            // Email section
+            if (business.email != null && business.email!.isNotEmpty) ...[
+              Text(
+                texts["email-title"] ?? "Correo electrónico",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: theme.textTheme.labelLarge!.fontSize,
                 ),
-                borderRadius: BorderRadius.circular(12),
-                color: location.isPrimary
-                    ? theme.colorScheme.primaryContainer.withOpacity(0.1)
-                    : theme.colorScheme.surface,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Location name with badge
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          location.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: theme.textTheme.titleMedium!.fontSize,
-                            color: location.isPrimary
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                      if (location.isPrimary)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Principal',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: theme.colorScheme.onPrimary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                    ],
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => openEmail(business.email!),
+                child: Text(
+                  business.email!,
+                  style: TextStyle(
+                    fontSize: theme.textTheme.bodyMedium!.fontSize,
+                    color: theme.colorScheme.primary,
+                    decoration: TextDecoration.underline,
                   ),
-                  const SizedBox(height: 8),
-
-                  // Location type badge
-                  Row(
-                    children: [
-                      Icon(
-                        location.isPhysical
-                            ? Icons.store
-                            : Icons.language,
-                        size: 16,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        location.isPhysical ? 'Ubicación física' : 'En línea',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Physical location: address + map
-                  if (location.isPhysical && location.address != null) ...[
-                    Text(
-                      'Dirección',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: theme.textTheme.labelMedium!.fontSize,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      location.address!,
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Map preview for physical locations
-                    if (location.location != null)
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-                        ),
-                        height: 200,
-                        child: MapPreviewWidget(
-                          borderRadius: 12,
-                          latitude: location.location!.latitude,
-                          longitude: location.location!.longitude,
-                        ),
-                      ),
-                  ],
-
-                  // Online location: delivery zones
-                  if (location.isOnline) ...[
-                    if (location.deliveryZones != null && location.deliveryZones!.isNotEmpty) ...[
-                      Text(
-                        'Zonas de cobertura',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: theme.textTheme.labelMedium!.fontSize,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: location.deliveryZones!.map((zone) {
-                          return Chip(
-                            label: Text(zone),
-                            labelStyle: theme.textTheme.labelSmall,
-                            backgroundColor: theme.colorScheme.secondaryContainer,
-                            side: BorderSide.none,
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    if (location.website != null) ...[
-                      Text(
-                        'Sitio web',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: theme.textTheme.labelMedium!.fontSize,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        location.website!,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.primary,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ],
-                  ],
-
-                  // Contact info (all locations)
-                  if (location.phone != null || location.email != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      'Contacto',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: theme.textTheme.labelMedium!.fontSize,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    if (location.phone != null)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.phone,
-                            size: 16,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            location.phone!,
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    if (location.email != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.email,
-                              size: 16,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              location.email!,
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ],
+                ),
               ),
-            );
-          },
+            ],
+          ],
         );
       },
+    );
+  }
+
+  Widget locationsTab(
+    Business? business,
+    List<BusinessLocation> locations,
+    ThemeData theme,
+    texts,
+  ) {
+    // If no locations subcollection, show primary business location (backward compatibility)
+    if (locations.isEmpty) {
+      return ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        itemCount: 1,
+        itemBuilder: (context, index) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                texts["address-title"]!,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: theme.textTheme.labelLarge!.fontSize,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(business!.address),
+              const SizedBox(height: 16),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                ),
+                height: 200,
+                child: MapPreviewWidget(
+                  borderRadius: 20,
+                  latitude: business.location.latitude,
+                  longitude: business.location.longitude,
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
+    // Show all locations using BusinessLocationItem widget
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      itemCount: locations.length,
+      itemBuilder: (context, index) {
+        final location = locations[index];
+
+        return BusinessLocationItem(
+          location: location,
+          onNavigate: () {
+            // Use shared navigation utility for physical locations
+            if (location.isPhysical && location.location != null) {
+              final locator = GetIt.instance;
+              locator.get<AppMethods>().navigateToLocation(
+                context: context,
+                latitude: location.location!.latitude,
+                longitude: location.location!.longitude,
+                address: location.address ?? '',
+                texts: texts,
+              );
+            } else if (location.isOnline && business!.website != "") {
+              // Open website for online locations
+              openWebsite(business.website!);
+            }
+          },
+          onCall:
+              location.phone != null && location.phone!.isNotEmpty
+                  ? () => callBusiness(location.phone!)
+                  : null,
+          onWhatsApp:
+              location.phone != null && location.phone!.isNotEmpty
+                  ? () => openWhatsApp(location.phone!)
+                  : null,
+          website: business!.website,
+        );
+      },
+    );
+  }
+
+  Widget _buildDescriptionSection(String description, ThemeData theme, texts) {
+    // Calculate word count
+    final words = description.split(RegExp(r'\s+'));
+    final shouldTruncate = words.length > 20;
+
+    return _DescriptionWidget(
+      description: description,
+      words: words,
+      shouldTruncate: shouldTruncate,
+      theme: theme,
+      texts: texts,
     );
   }
 
@@ -1189,6 +1127,58 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     context.read<BusinessDetailsCubit>().openUrl(context, texts);
   }
 
+  //This method is used to open the business website
+  void openWebsite(String website) async {
+    // Ensure the URL has a proper scheme (http:// or https://)
+    String url = website.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://$url';
+    }
+
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  //This method is used to call the business
+  void callBusiness(String phoneNumber) async {
+    final uri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
+  //This method is used to open WhatsApp with the business phone number
+  void openWhatsApp(String phoneNumber) async {
+    // Remove any spaces, dashes, or special characters from phone number
+    String cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+
+    // Check if phone number starts with a country code (starts with + or has more than 10 digits)
+    // If not, add Colombia country code (+57) by default
+    if (!cleanPhone.startsWith('+') && cleanPhone.length <= 10) {
+      cleanPhone = '57$cleanPhone';
+    } else if (cleanPhone.startsWith('+')) {
+      // Remove the + for wa.me URL
+      cleanPhone = cleanPhone.substring(1);
+    }
+
+    // Try WhatsApp URL first (works on both platforms)
+    final whatsappUrl = Uri.parse('https://wa.me/$cleanPhone');
+
+    if (await canLaunchUrl(whatsappUrl)) {
+      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  //This method is used to open email client
+  void openEmail(String email) async {
+    final uri = Uri(scheme: 'mailto', path: email);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
   // Analytics tracking methods - V2 Dashboard-compatible
   void _trackBusinessView(Business business) {
     final analyticsService = GetIt.instance.get<AnalyticsService>();
@@ -1214,5 +1204,65 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
       );
     }
     // Note: We don't track "unsave" events in V2 schema
+  }
+}
+
+class _DescriptionWidget extends StatefulWidget {
+  final String description;
+  final List<String> words;
+  final bool shouldTruncate;
+  final ThemeData theme;
+  final dynamic texts;
+
+  const _DescriptionWidget({
+    required this.description,
+    required this.words,
+    required this.shouldTruncate,
+    required this.theme,
+    required this.texts,
+  });
+
+  @override
+  State<_DescriptionWidget> createState() => _DescriptionWidgetState();
+}
+
+class _DescriptionWidgetState extends State<_DescriptionWidget> {
+  bool isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: widget.theme.colorScheme.surfaceVariant.withOpacity(0.3),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.shouldTruncate && !isExpanded
+                ? '${widget.words.take(20).join(' ')}...'
+                : widget.description,
+            style: TextStyle(
+              fontSize: widget.theme.textTheme.bodyMedium!.fontSize,
+              height: 1.5,
+            ),
+          ),
+          if (widget.shouldTruncate)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => setState(() => isExpanded = !isExpanded),
+                child: Text(
+                  isExpanded
+                      ? widget.texts["read-less"] ?? "Leer menos"
+                      : widget.texts["read-more"] ?? "Leer más",
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

@@ -14,6 +14,9 @@ class VerticalCard extends StatelessWidget {
     required this.category,
     this.businessType = 'physical',
     this.urgentPromotion,
+    this.formattedDistance,
+    this.isFeatured = false,
+    this.physicalLocationsCount,
   });
 
   final String id;
@@ -23,7 +26,10 @@ class VerticalCard extends StatelessWidget {
   final Function callback;
   final BusinessCategory? category;
   final String businessType; // "physical" | "online" | "hybrid"
-  final Promotion? urgentPromotion; // NEW: Urgent promotion for badge
+  final Promotion? urgentPromotion; // Urgent promotion for badge
+  final String? formattedDistance; // Distance from user (e.g., "1.2 km")
+  final bool isFeatured; // Enterprise plan businesses get premium badge
+  final int? physicalLocationsCount; // Count of physical locations
 
   @override
   Widget build(BuildContext context) {
@@ -38,30 +44,43 @@ class VerticalCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
           ),
-          padding: const EdgeInsets.only(left: 12),
-          height: 80,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(children: [
             content(theme, category),
             const SizedBox(width: 12),
+            // Use AspectRatio for consistent image display (square)
             SizedBox(
               height: 80,
-              width: 100,
-              child: ClipRRect(
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: ClipRRect(
                 borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(12),
                     bottomRight: Radius.circular(12)),
                 child: image.isNotEmpty
                     ? Image.network(
                         image,
-                        fit: BoxFit.fitWidth,
+                        fit: BoxFit.cover,
+                        // Performance optimizations
+                        cacheWidth: 160, // 2x resolution for sharp display
+                        cacheHeight: 160,
+                        filterQuality: FilterQuality.medium,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
+                          return Container(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            child: Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              ),
                             ),
                           );
                         },
@@ -76,6 +95,7 @@ class VerticalCard extends StatelessWidget {
                         "assets/images/file-not-found.png",
                         fit: BoxFit.cover,
                       ),
+                ),
               ),
             ),
           ]),
@@ -134,22 +154,51 @@ class VerticalCard extends StatelessWidget {
                           color: theme.colorScheme.onPrimaryContainer,
                         ),
                       ),
+                    // Premium badge for Enterprise businesses
+                    if (isFeatured)
+                      Container(
+                        margin: const EdgeInsets.only(left: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.amber.shade600,
+                              Colors.orange.shade700,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.workspace_premium,
+                              size: 10,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 2),
+                            Text(
+                              'PRO',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
-                category != null
-                    ? Text(
-                        category.name,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurfaceVariant
-                              .withOpacity(0.8),
-                          fontSize: theme.textTheme.labelMedium!.fontSize,
-                          fontWeight: theme.textTheme.bodySmall!.fontWeight,
-                        ),
-                      )
-                    : Text(
-                        description ?? "",
+                // Category and distance row
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        category?.name ?? description ?? "",
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: TextStyle(
@@ -159,6 +208,53 @@ class VerticalCard extends StatelessWidget {
                           fontWeight: theme.textTheme.bodySmall!.fontWeight,
                         ),
                       ),
+                    ),
+                    // Distance indicator (only for physical businesses)
+                    if (formattedDistance != null && businessType != 'online')
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            size: 12,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            'Sede Principal • $formattedDistance',
+                            style: TextStyle(
+                              color: theme.colorScheme.primary,
+                              fontSize: theme.textTheme.labelSmall!.fontSize,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          // Show location count badge if >1 physical location
+                          if (physicalLocationsCount != null && physicalLocationsCount! > 1) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.secondaryContainer,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: theme.colorScheme.secondary.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                '+${physicalLocationsCount! - 1}',
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSecondaryContainer,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                  ],
+                ),
                 // Urgency badge for promotions
                 if (urgentPromotion != null &&
                     urgentPromotion!.shouldShowUrgencyBadge) ...[

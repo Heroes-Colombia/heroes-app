@@ -6,7 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
+import 'package:heroes_app/src/config/router/app_router.gr.dart';
+import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
+import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:heroes_app/src/presentation/cubits/promotion/promotion_details_cubit.dart';
 // ignore: depend_on_referenced_packages
@@ -27,6 +30,9 @@ class PromotionDetailsView extends StatefulWidget {
 }
 
 class _PromotionDetailsViewState extends State<PromotionDetailsView> {
+  String? _businessName;
+  bool _isLoadingBusinessName = false;
+
   @override
   void initState() {
     super.initState();
@@ -37,10 +43,42 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
       context.read<PromotionDetailsCubit>().promotionIsMarkedAsFavorite(
         widget.promotionId!,
       );
-    } else if (widget.promotion != null && widget.promotion!.documentId != null) {
+    } else if (widget.promotion != null &&
+        widget.promotion!.documentId != null) {
       context.read<PromotionDetailsCubit>().promotionIsMarkedAsFavorite(
         widget.promotion!.documentId!,
       );
+      _fetchBusinessName(widget.promotion!.businessId);
+    }
+  }
+
+  Future<void> _fetchBusinessName(String businessId) async {
+    setState(() {
+      _isLoadingBusinessName = true;
+    });
+
+    try {
+      final locator = GetIt.instance;
+      final firestoreService = locator.get<FirestoreService>();
+      final businessCollection = locator.get<AppConstants>().businessCollection;
+
+      final rawBusiness = await firestoreService.readDocumentByDocId(
+        businessCollection,
+        businessId,
+      );
+
+      if (rawBusiness != null) {
+        final business = Business.fromJson(rawBusiness);
+        setState(() {
+          _businessName = business.name;
+          _isLoadingBusinessName = false;
+        });
+      }
+    } catch (e) {
+      log('Error fetching business name: $e');
+      setState(() {
+        _isLoadingBusinessName = false;
+      });
     }
   }
 
@@ -63,6 +101,10 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
                     case BusinessViewCubitStatus.loading:
                       return const Center(child: CircularProgressIndicator());
                     case BusinessViewCubitStatus.success:
+                      // Fetch business name when promotion is loaded
+                      if (_businessName == null && !_isLoadingBusinessName) {
+                        _fetchBusinessName(state.promotion!.businessId);
+                      }
                       return promotionBodyWidget(
                         texts,
                         theme,
@@ -110,23 +152,112 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                // Image section - show image or gradient placeholder
                 SizedBox(
                   height: 300,
+                  width: double.infinity,
                   child: ClipRRect(
                     borderRadius: const BorderRadius.all(Radius.circular(16)),
-                    child:
-                        promotion.featuredImage.isNotEmpty
-                            ? Image.network(
-                              promotion.featuredImage,
-                              fit: BoxFit.cover,
-                            )
-                            : Image.asset(
-                              'assets/images/placeholder.png',
-                              fit: BoxFit.cover,
+                    child: promotion.featuredImage.isNotEmpty
+                        ? Image.network(
+                            promotion.featuredImage,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            // Performance optimizations
+                            cacheWidth: 800,
+                            cacheHeight: 600,
+                            filterQuality: FilterQuality.medium,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                color: theme.colorScheme.surfaceContainerHighest,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    value:
+                                        loadingProgress.expectedTotalBytes != null
+                                            ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                loadingProgress.expectedTotalBytes!
+                                            : null,
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 300,
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.image_not_supported,
+                                      size: 64,
+                                      color: theme.colorScheme.onSurfaceVariant
+                                          .withValues(alpha: 0.5),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Imagen no disponible',
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.colorScheme.onSurfaceVariant
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  theme.colorScheme.primaryContainer,
+                                  theme.colorScheme.secondaryContainer,
+                                ],
+                              ),
                             ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.local_offer,
+                                  size: 80,
+                                  color: theme.colorScheme.onPrimaryContainer
+                                      .withValues(alpha: 0.8),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  '${promotion.percentage}% OFF',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onPrimaryContainer,
+                                    fontSize: 48,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Promoción Especial',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onPrimaryContainer
+                                        .withValues(alpha: 0.7),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 // Favorite button
                 BlocBuilder<PromotionDetailsCubit, PromotionDetailsState>(
                   builder: (context, state) {
@@ -197,6 +328,9 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
           getExpirationDate(promotion.expiredAt),
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 12)),
+        // Button to navigate to business
+        businessNavigationButton(theme, promotion),
+        const SliverToBoxAdapter(child: SizedBox(height: 16)),
       ],
     );
   }
@@ -269,6 +403,86 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
         child: Divider(
           height: 1,
           color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+        ),
+      ),
+    );
+  }
+
+  SliverToBoxAdapter businessNavigationButton(
+    ThemeData theme,
+    Promotion promotion,
+  ) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: InkWell(
+          onTap: () {
+            AutoRouter.of(
+              context,
+            ).push(BusinessDetailsView(businessId: promotion.businessId));
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.store,
+                  color: theme.colorScheme.onPrimaryContainer,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _isLoadingBusinessName
+                          ? SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: theme.colorScheme.onPrimaryContainer,
+                              ),
+                            )
+                          : Text(
+                              _businessName ?? 'Ver negocio',
+                              style: TextStyle(
+                                color: theme.colorScheme.onPrimaryContainer,
+                                fontSize: theme.textTheme.titleSmall!.fontSize,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Conoce más sobre este negocio',
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimaryContainer
+                              .withValues(alpha: 0.8),
+                          fontSize: theme.textTheme.bodySmall!.fontSize,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: theme.colorScheme.onPrimaryContainer,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

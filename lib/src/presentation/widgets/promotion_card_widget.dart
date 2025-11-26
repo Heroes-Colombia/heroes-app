@@ -6,81 +6,195 @@ class PromotionCard extends StatelessWidget {
     super.key,
     required this.promotion,
     required this.callback,
+    this.businessName, // Optional override (defaults to promotion.businessName)
+    this.categoryName,
+    this.isOnGrid = false, // Set to true when used in a grid layout
   });
 
   final Promotion promotion;
   final VoidCallback callback;
+  final String?
+  businessName; // Optional business name override (uses promotion.businessName if null)
+  final String? categoryName; // Optional category badge
+  final bool isOnGrid; // Whether the card is displayed in a grid
+
+  // Helper to get the business name (prioritizes parameter over model field)
+  String? get _businessName => businessName ?? promotion.businessName;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Container(
-      width: 280,
-      margin: const EdgeInsets.only(right: 12),
+      width: isOnGrid ? null : 280,
+      margin: isOnGrid ? EdgeInsets.zero : const EdgeInsets.only(right: 12),
       child: InkWell(
         onTap: callback,
         borderRadius: BorderRadius.circular(16),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+            color: theme.colorScheme.surfaceContainerHighest.withValues(
+              alpha: 0.5,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Image with discount badge overlay
               Stack(
                 children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
-                    child: promotion.featuredImage.isNotEmpty
-                        ? Image.network(
-                            promotion.featuredImage,
-                            height: 140,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                height: 140,
-                                color: theme.colorScheme.surfaceVariant,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
+                  // Use AspectRatio to maintain consistent proportions
+                  AspectRatio(
+                    aspectRatio: 2 / 1, // 2:1 ratio (landscape)
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                      child:
+                          promotion.featuredImage.isNotEmpty
+                              ? Container(
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
+                                child: Image.network(
+                                  promotion.featuredImage,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  // Performance optimizations
+                                  cacheWidth:
+                                      560, // 2x resolution for sharp display
+                                  cacheHeight: 280,
+                                  filterQuality: FilterQuality.medium,
+                                  loadingBuilder: (
+                                    context,
+                                    child,
+                                    loadingProgress,
+                                  ) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      width: double.infinity,
+                                      color:
+                                          theme
+                                              .colorScheme
+                                              .surfaceContainerHighest,
+                                      child: Center(
+                                        child: SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            value:
+                                                loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                    : null,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: double.infinity,
+                                      color:
+                                          theme
+                                              .colorScheme
+                                              .surfaceContainerHighest,
+                                      child: Icon(
+                                        Icons.image_not_supported,
+                                        size: 48,
+                                        color: theme
+                                            .colorScheme
+                                            .onSurfaceVariant
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              )
+                              : Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      theme.colorScheme.primaryContainer,
+                                      theme.colorScheme.secondaryContainer,
+                                    ],
                                   ),
                                 ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 140,
-                                color: theme.colorScheme.surfaceVariant,
-                                child: Icon(
-                                  Icons.image_not_supported,
-                                  size: 48,
-                                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.local_offer,
+                                      size: 40,
+                                      color: theme
+                                          .colorScheme
+                                          .onPrimaryContainer
+                                          .withValues(alpha: 0.8),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      '${promotion.percentage}% OFF',
+                                      style: TextStyle(
+                                        color:
+                                            theme
+                                                .colorScheme
+                                                .onPrimaryContainer,
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Promoción Especial',
+                                      style: TextStyle(
+                                        color: theme
+                                            .colorScheme
+                                            .onPrimaryContainer
+                                            .withValues(alpha: 0.7),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            },
-                          )
-                        : Container(
-                            height: 140,
-                            color: theme.colorScheme.surfaceVariant,
-                            child: Icon(
-                              Icons.image,
-                              size: 48,
-                              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
-                            ),
-                          ),
+                              ),
+                    ),
                   ),
-                  // Discount badge
+                  // Category badge (top-left)
+                  if (categoryName != null)
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          categoryName!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  // Discount badge (top-right)
                   Positioned(
                     top: 12,
                     right: 12,
@@ -117,28 +231,76 @@ class PromotionCard extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title
+                    // Business name (if available) - shown first
+                    if (_businessName != null) ...[
+                      Text(
+                        _businessName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: theme.textTheme.titleMedium!.fontSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                    ],
+                    // Title (secondary to business name)
                     Text(
                       promotion.title,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontSize: theme.textTheme.titleMedium!.fontSize,
-                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: _businessName != null ? 0.7 : 1.0,
+                        ),
+                        fontSize:
+                            _businessName != null
+                                ? theme.textTheme.labelMedium!.fontSize
+                                : theme.textTheme.titleMedium!.fontSize,
+                        fontWeight:
+                            _businessName != null
+                                ? FontWeight.normal
+                                : FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    // Urgency badge
-                    if (promotion.shouldShowUrgencyBadge)
+                    if (!promotion.shouldShowUrgencyBadge) ...[
+                      // Savings indicator
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.savings,
+                            size: 14,
+                            color: Colors.green.shade600,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Ahorra ${promotion.percentage}% en tu compra',
+                            style: TextStyle(
+                              color: Colors.green.shade600,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (promotion.shouldShowUrgencyBadge) ...[
+                      const SizedBox(height: 8),
+                      // Urgency badge
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: _getUrgencyColor(theme, promotion.urgencyLevel),
+                          color: _getUrgencyColor(
+                            theme,
+                            promotion.urgencyLevel,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -160,6 +322,7 @@ class PromotionCard extends StatelessWidget {
                           ],
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),

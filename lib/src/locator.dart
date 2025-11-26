@@ -13,6 +13,7 @@ import 'package:heroes_app/src/domain/services/places_service.dart';
 import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:heroes_app/src/domain/services/military_id_ocr_service.dart';
 import 'package:heroes_app/src/domain/services/military_verification_service.dart';
+import 'package:heroes_app/src/domain/services/cache_service.dart';
 
 final locator = GetIt.instance;
 
@@ -47,4 +48,7 @@ Future<void> initializeDependencies() async {
   // Register Military Verification Services
   locator.registerSingleton<MilitaryIDOCRService>(MilitaryIDOCRService());
   locator.registerSingleton<MilitaryVerificationService>(MilitaryVerificationService());
+
+  // Register Cache Service
+  locator.registerSingleton<CacheService>(CacheService());
 }

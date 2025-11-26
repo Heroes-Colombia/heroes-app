@@ -7,7 +7,9 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/business_category.dart';
+import 'package:heroes_app/src/domain/models/business_filter.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
+import 'package:heroes_app/src/domain/models/promotion_filter.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/presentation/cubits/business/business_home_view/business_home_view_cubit.dart';
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/delegates/search_business_delegate.dart';
@@ -17,28 +19,64 @@ import 'package:heroes_app/src/presentation/widgets/promotion_card_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
 
 @RoutePage()
-class SearchView extends StatelessWidget {
-  SearchView({super.key});
+class SearchView extends StatefulWidget {
+  const SearchView({super.key});
+
+  @override
+  State<SearchView> createState() => _SearchViewState();
+}
+
+class _SearchViewState extends State<SearchView> {
   final locator = GetIt.instance;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // Infinite scroll listener
+  void _onScroll() {
+    if (_isBottom) {
+      context.read<BusinessHomeViewCubit>().loadMoreNormalBusinesses();
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    final isBottom = currentScroll >= (maxScroll * 0.9);
+    return isBottom; // Trigger at 90% scroll
+  }
 
   @override
   Widget build(BuildContext context) {
     var texts = locator<AppConstants>().dashBoardTexts["searchView"];
     return Scaffold(
       body: BlocBuilder<BusinessHomeViewCubit, BusinessHomeViewState>(
-          builder: (context, state) {
-        switch (state.businessHomeViewState) {
-          case BusinessViewCubitStatus.initial:
-            context.read<BusinessHomeViewCubit>().getRequiredData();
-            return loadingView(texts, Theme.of(context));
-          case BusinessViewCubitStatus.loading:
-            return loadingView(texts, Theme.of(context));
-          case BusinessViewCubitStatus.success:
-            return successView(context, texts, state);
-          default:
-            return errorView(texts);
-        }
-      }),
+        builder: (context, state) {
+          switch (state.businessHomeViewState) {
+            case BusinessViewCubitStatus.initial:
+              context.read<BusinessHomeViewCubit>().getRequiredData();
+              return loadingView(texts, Theme.of(context));
+            case BusinessViewCubitStatus.loading:
+              return loadingView(texts, Theme.of(context));
+            case BusinessViewCubitStatus.success:
+              return successView(context, texts, state);
+            default:
+              return errorView(texts);
+          }
+        },
+      ),
     );
   }
 
@@ -46,14 +84,18 @@ class SearchView extends StatelessWidget {
   CustomScrollView successView(context, texts, BusinessHomeViewState state) {
     var theme = Theme.of(context);
     return CustomScrollView(
+      controller: _scrollController,
       slivers: [
         SliverAppBar(
           stretch: true,
           pinned: true,
           actions: [
             IconButton(
-              onPressed: () => showSearch(
-                  context: context, delegate: SearchBusinessDelegate()),
+              onPressed:
+                  () => showSearch(
+                    context: context,
+                    delegate: SearchBusinessDelegate(),
+                  ),
               icon: SvgPicture.asset(
                 "assets/icon/search.svg",
                 colorFilter: ColorFilter.mode(
@@ -61,13 +103,17 @@ class SearchView extends StatelessWidget {
                   BlendMode.srcIn,
                 ),
               ),
-            )
+            ),
           ],
         ),
         logo(theme, texts),
         // Featured promotions carousel (only show if there are promotions)
         if (state.featuredPromotions.isNotEmpty) ...[
-          singleTitle(theme, "Ofertas Destacadas"),
+          doubleTitle(theme, "Ofertas Destacadas", texts["seeAll"], () {
+            AutoRouter.of(context).push(
+              AllPromotionsView(filter: const PromotionFilter.featured()),
+            );
+          }),
           featuredPromotionsCarousel(state.featuredPromotions, context),
         ],
         singleTitle(theme, texts["categories"]),
@@ -75,21 +121,41 @@ class SearchView extends StatelessWidget {
         singleTitle(theme, texts["nearPromotions"]),
         mapPreview(theme, context),
         doubleTitle(theme, texts["featuredBusiness"], texts["seeAll"], () {
-          AutoRouter.of(context).push(AllBusinessView(initialCategoryId: null));
+          AutoRouter.of(
+            context,
+          ).push(AllBusinessView(filter: const BusinessFilter.featured()));
         }),
         horizontalList(state.featuredBusinesses),
         // Online businesses section (only show if there are online businesses)
         if (state.onlineBusinesses.isNotEmpty) ...[
           doubleTitle(theme, "Negocios en Línea", texts["seeAll"], () {
-            AutoRouter.of(context).push(AllBusinessView(initialCategoryId: null));
+            AutoRouter.of(
+              context,
+            ).push(AllBusinessView(filter: const BusinessFilter.online()));
           }),
           horizontalList(state.onlineBusinesses),
         ],
-        doubleTitle(theme, texts["business"], texts["seeAll"], () {
-          AutoRouter.of(context).push(AllBusinessView(initialCategoryId: null));
-        }),
-        verticalList(state.normalBusinesses, state.businessPromotions),
-        const SliverToBoxAdapter(child: SizedBox(height: 16))
+        if (state.normalBusinesses.isNotEmpty) ...[
+          doubleTitle(theme, "Negocios Físicos", texts["seeAll"], () {
+            AutoRouter.of(
+              context,
+            ).push(AllBusinessView(filter: const BusinessFilter.physical()));
+          }),
+          verticalList(state.normalBusinesses, state.businessPromotions),
+          // Loading indicator for pagination
+          if (state.isLoadingMore)
+            SliverToBoxAdapter(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                alignment: Alignment.center,
+                child: CircularProgressIndicator(
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
+          // Bottom spacing
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+        ],
       ],
     );
   }
@@ -110,13 +176,13 @@ class SearchView extends StatelessWidget {
                   BlendMode.srcIn,
                 ),
               ),
-            )
+            ),
           ],
         ),
         logo(theme, texts),
         const SliverFillRemaining(
           child: Center(child: CircularProgressIndicator()),
-        )
+        ),
       ],
     );
   }
@@ -124,15 +190,8 @@ class SearchView extends StatelessWidget {
   CustomScrollView errorView(texts) {
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(
-          pinned: true,
-          title: Text(texts["title"]),
-        ),
-        const SliverFillRemaining(
-          child: Center(
-            child: Text("Error"),
-          ),
-        )
+        SliverAppBar.large(pinned: true, title: Text(texts["title"])),
+        const SliverFillRemaining(child: Center(child: Text("Error"))),
       ],
     );
   }
@@ -141,16 +200,18 @@ class SearchView extends StatelessWidget {
   SliverToBoxAdapter logo(ThemeData theme, texts) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 60),
+        padding: const EdgeInsets.only(bottom: 10),
         child: Hero(
           tag: "loading-logo",
-          child: SvgPicture.asset("assets/images/heroes_white_logo.svg",
-              width: double.infinity,
-              height: 40,
-              colorFilter: ColorFilter.mode(
-                theme.colorScheme.primary,
-                BlendMode.srcIn,
-              )),
+          child: SvgPicture.asset(
+            "assets/images/heroes_white_logo.svg",
+            width: double.infinity,
+            height: 40,
+            colorFilter: ColorFilter.mode(
+              theme.colorScheme.primary,
+              BlendMode.srcIn,
+            ),
+          ),
         ),
       ),
     );
@@ -168,10 +229,7 @@ class SearchView extends StatelessWidget {
           borderRadius: const BorderRadius.all(Radius.circular(20)),
           onTap: () {
             //open search delegate
-            showSearch(
-              context: context,
-              delegate: SearchBusinessDelegate(),
-            );
+            showSearch(context: context, delegate: SearchBusinessDelegate());
           },
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -182,10 +240,7 @@ class SearchView extends StatelessWidget {
             child: Row(
               children: [
                 const SizedBox(width: 12),
-                Icon(
-                  Icons.search,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+                Icon(Icons.search, color: theme.colorScheme.onSurfaceVariant),
                 const SizedBox(width: 8),
                 Text(
                   texts["search-title"],
@@ -205,19 +260,20 @@ class SearchView extends StatelessWidget {
 
   SliverToBoxAdapter singleTitle(ThemeData theme, text) {
     return SliverToBoxAdapter(
-        child: Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: ListTile(
-        title: Text(
-          text,
-          style: TextStyle(
-            color: theme.colorScheme.onSurfaceVariant,
-            fontSize: theme.textTheme.labelLarge!.fontSize,
-            fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: ListTile(
+          title: Text(
+            text,
+            style: TextStyle(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontSize: theme.textTheme.labelLarge!.fontSize,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   SliverToBoxAdapter mapPreview(ThemeData theme, BuildContext context) {
@@ -281,20 +337,22 @@ class SearchView extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           itemBuilder: (context, index) {
             return InkWell(
-              onTap: () => AutoRouter.of(context).push(
-                AllBusinessView(
-                  initialCategoryId: businessCategories[index].id,
-                ),
-              ),
+              onTap:
+                  () => AutoRouter.of(context).push(
+                    AllBusinessView(
+                      initialCategoryId: businessCategories[index].id,
+                    ),
+                  ),
               child: Container(
                 height: 48,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .surfaceVariant
-                      .withOpacity(0.5),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.surfaceVariant.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -324,7 +382,7 @@ class SearchView extends StatelessWidget {
   Widget horizontalList(List<ListableBusiness> featuredBusinesses) {
     return SliverToBoxAdapter(
       child: Container(
-        height: 194,
+        height: 220,
         margin: const EdgeInsets.symmetric(horizontal: 12),
         child: ListView.separated(
           padding: const EdgeInsets.all(0.0),
@@ -338,8 +396,9 @@ class SearchView extends StatelessWidget {
               category: featuredBusinesses[index].category,
               businessType: featuredBusinesses[index].type,
               callback: () {
-                AutoRouter.of(context).push(BusinessDetailsView(
-                    businessId: featuredBusinesses[index].id));
+                AutoRouter.of(context).push(
+                  BusinessDetailsView(businessId: featuredBusinesses[index].id),
+                );
               },
             );
           },
@@ -365,10 +424,13 @@ class SearchView extends StatelessWidget {
           category: businesses[index].category,
           businessType: businesses[index].type,
           urgentPromotion: businessPromotions[businesses[index].id],
+          formattedDistance: businesses[index].formattedDistance,
+          isFeatured: businesses[index].featured,
+          physicalLocationsCount: businesses[index].physicalLocationsCount,
           callback: () {
-            AutoRouter.of(context).push(
-              BusinessDetailsView(businessId: businesses[index].id),
-            );
+            AutoRouter.of(
+              context,
+            ).push(BusinessDetailsView(businessId: businesses[index].id));
           },
         );
       },
@@ -383,14 +445,33 @@ class SearchView extends StatelessWidget {
     List<dynamic> promotions,
     BuildContext context,
   ) {
+    final cubit = context.read<BusinessHomeViewCubit>();
+    final state = context.watch<BusinessHomeViewCubit>().state;
+
     return SliverToBoxAdapter(
       child: Container(
-        height: 220,
+        height: 260,
         margin: const EdgeInsets.symmetric(horizontal: 12),
         child: ListView.builder(
           padding: const EdgeInsets.all(0.0),
           scrollDirection: Axis.horizontal,
           itemBuilder: (context, index) {
+            // Load more when reaching 3 items before the end
+            if (index == promotions.length - 3 &&
+                state.hasMorePromotions &&
+                !state.isLoadingMorePromotions) {
+              cubit.loadMorePromotions();
+            }
+
+            // Show loading indicator at the end
+            if (index == promotions.length) {
+              return Container(
+                width: 280,
+                margin: const EdgeInsets.only(right: 12),
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              );
+            }
+
             final promotion = promotions[index] as Promotion;
             return PromotionCard(
               promotion: promotion,
@@ -404,7 +485,12 @@ class SearchView extends StatelessWidget {
               },
             );
           },
-          itemCount: promotions.length,
+          // Add 1 to itemCount if loading more (for loading indicator)
+          itemCount:
+              promotions.length +
+              (state.isLoadingMorePromotions && state.hasMorePromotions
+                  ? 1
+                  : 0),
         ),
       ),
     );

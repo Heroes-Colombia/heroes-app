@@ -1,8 +1,10 @@
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 /// Represents a business location (physical or online) from the locations subcollection
 /// Schema V2: businesses/{businessId}/locations/{locationId}
+// ignore: must_be_immutable
 class BusinessLocation extends Equatable {
   final String id;
   final String name;
@@ -13,7 +15,6 @@ class BusinessLocation extends Equatable {
   // Contact information (all locations)
   final String? phone;
   final String? email;
-  final String? website;
 
   // Physical location fields (only if type = "physical")
   final String? address;
@@ -30,7 +31,10 @@ class BusinessLocation extends Equatable {
   final Timestamp? createdAt;
   final Timestamp? updatedAt;
 
-  const BusinessLocation({
+  // Mutable field for distance calculation
+  double? distanceKm;
+
+  BusinessLocation({
     required this.id,
     required this.name,
     required this.isPrimary,
@@ -38,7 +42,6 @@ class BusinessLocation extends Equatable {
     required this.status,
     this.phone,
     this.email,
-    this.website,
     this.address,
     this.location,
     this.geoHash,
@@ -48,6 +51,7 @@ class BusinessLocation extends Equatable {
     this.whatsapp,
     this.createdAt,
     this.updatedAt,
+    this.distanceKm,
   });
 
   @override
@@ -59,7 +63,6 @@ class BusinessLocation extends Equatable {
         status,
         phone,
         email,
-        website,
         address,
         location,
         geoHash,
@@ -69,6 +72,7 @@ class BusinessLocation extends Equatable {
         whatsapp,
         createdAt,
         updatedAt,
+        distanceKm,
       ];
 
   /// Check if this is a physical location (has address and coordinates)
@@ -92,6 +96,22 @@ class BusinessLocation extends Equatable {
   }
 
   factory BusinessLocation.fromJson(Map<String, dynamic> json, String documentId) {
+    // Handle GeoPoint conversion - it could be a GeoPoint or a Map
+    GeoPoint? geoPoint;
+    if (json['location'] != null) {
+      if (json['location'] is GeoPoint) {
+        geoPoint = json['location'] as GeoPoint;
+      } else if (json['location'] is Map) {
+        final locMap = json['location'] as Map<String, dynamic>;
+        if (locMap['latitude'] != null && locMap['longitude'] != null) {
+          geoPoint = GeoPoint(
+            (locMap['latitude'] as num).toDouble(),
+            (locMap['longitude'] as num).toDouble(),
+          );
+        }
+      }
+    }
+
     return BusinessLocation(
       id: documentId,
       name: json['name'] as String? ?? 'Sin nombre',
@@ -100,9 +120,8 @@ class BusinessLocation extends Equatable {
       status: json['status'] as String? ?? 'active',
       phone: json['phone'] as String?,
       email: json['email'] as String?,
-      website: json['website'] as String?,
       address: json['address'] as String?,
-      location: json['location'] as GeoPoint?,
+      location: geoPoint,
       geoHash: json['geo_hash'] as Map<String, dynamic>?,
       businessHours: json['business_hours'] as Map<String, dynamic>?,
       deliveryZones: json['delivery_zones'] != null
@@ -123,7 +142,6 @@ class BusinessLocation extends Equatable {
       'status': status,
       if (phone != null) 'phone': phone,
       if (email != null) 'email': email,
-      if (website != null) 'website': website,
       if (address != null) 'address': address,
       if (location != null) 'location': location,
       if (geoHash != null) 'geo_hash': geoHash,
@@ -144,7 +162,6 @@ class BusinessLocation extends Equatable {
     String? status,
     String? phone,
     String? email,
-    String? website,
     String? address,
     GeoPoint? location,
     Map<String, dynamic>? geoHash,
@@ -163,7 +180,6 @@ class BusinessLocation extends Equatable {
       status: status ?? this.status,
       phone: phone ?? this.phone,
       email: email ?? this.email,
-      website: website ?? this.website,
       address: address ?? this.address,
       location: location ?? this.location,
       geoHash: geoHash ?? this.geoHash,
@@ -174,5 +190,37 @@ class BusinessLocation extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
+  }
+
+  /// Calculate distance from user's location using Haversine formula
+  void calculateDistance(double userLat, double userLng) {
+    if (location == null) {
+      distanceKm = null;
+      return;
+    }
+
+    const double earthRadius = 6371; // km
+    final double dLat = _toRadians(location!.latitude - userLat);
+    final double dLng = _toRadians(location!.longitude - userLng);
+
+    final double a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(_toRadians(userLat)) *
+            cos(_toRadians(location!.latitude)) *
+            sin(dLng / 2) *
+            sin(dLng / 2);
+
+    final double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    distanceKm = earthRadius * c;
+  }
+
+  double _toRadians(double degree) => degree * pi / 180;
+
+  /// Get formatted distance string (e.g., "1.2 km" or "500 m")
+  String? get formattedDistance {
+    if (distanceKm == null) return null;
+    if (distanceKm! < 1) {
+      return '${(distanceKm! * 1000).round()} m';
+    }
+    return '${distanceKm!.toStringAsFixed(1)} km';
   }
 }

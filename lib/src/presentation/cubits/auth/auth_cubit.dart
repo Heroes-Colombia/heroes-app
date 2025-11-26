@@ -375,7 +375,7 @@ class AuthCubit extends Cubit<AuthState> {
           userId: user.uid,
           userContext: {
             'rank': user.rank,
-            'city': '', // Add city if available in user model
+            'city': user.city ?? 'Bogotá', // City from GPS or default to Bogotá
           },
         );
       } catch (e) {

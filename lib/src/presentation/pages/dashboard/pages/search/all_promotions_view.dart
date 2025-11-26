@@ -3,41 +3,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:heroes_app/assets/app_constants.dart';
-import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/services/analytics_service.dart';
-import 'package:heroes_app/src/domain/models/business_filter.dart';
-import 'package:heroes_app/src/domain/models/listable_business_model.dart';
-import 'package:heroes_app/src/presentation/cubits/business/all_business/all_business_cubit.dart';
+import 'package:heroes_app/src/domain/models/promotion_filter.dart';
+import 'package:heroes_app/src/domain/models/promotion_model.dart';
+import 'package:heroes_app/src/presentation/cubits/promotion/all_promotions/all_promotions_cubit.dart';
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/delegates/categories_header_delegate.dart';
-import 'package:heroes_app/src/presentation/widgets/horizontal_card_widget.dart';
+import 'package:heroes_app/src/presentation/widgets/promotion_card_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/searchable_category_selector.dart';
 import 'package:ionicons/ionicons.dart';
 
 @RoutePage()
-class AllBusinessView extends StatefulWidget {
+class AllPromotionsView extends StatefulWidget {
   final String? initialCategoryId;
-  final BusinessFilter? filter;
-  const AllBusinessView({super.key, this.initialCategoryId, this.filter});
+  final PromotionFilter? filter;
+  const AllPromotionsView({super.key, this.initialCategoryId, this.filter});
 
   @override
-  State<AllBusinessView> createState() => _AllBusinessViewState();
+  State<AllPromotionsView> createState() => _AllPromotionsViewState();
 }
 
-class _AllBusinessViewState extends State<AllBusinessView> {
+class _AllPromotionsViewState extends State<AllPromotionsView> {
   @override
   void initState() {
     super.initState();
 
-    if (context.read<AllBusinessCubit>().state.categories.isEmpty) {
-      context.read<AllBusinessCubit>().getBusinessCategories();
+    // Load categories for filtering
+    if (context.read<AllPromotionsCubit>().state.categories.isEmpty) {
+      context.read<AllPromotionsCubit>().getBusinessCategories();
     }
 
-    // Set the initial filter if provided, otherwise use the initialCategoryId
+    // Set the initial filter if provided
     if (widget.filter != null) {
-      context.read<AllBusinessCubit>().setInitialFilter(widget.filter);
+      context.read<AllPromotionsCubit>().setInitialFilter(widget.filter);
     } else if (widget.initialCategoryId != null) {
-      context.read<AllBusinessCubit>().setSelectedCategoryId(
+      context.read<AllPromotionsCubit>().setSelectedCategoryId(
         widget.initialCategoryId,
       );
     }
@@ -47,31 +47,29 @@ class _AllBusinessViewState extends State<AllBusinessView> {
   Widget build(BuildContext context) {
     var locator = GetIt.instance;
     var theme = Theme.of(context);
-    var texts = locator<AppConstants>().dashBoardTexts["allBusinessView"]!;
+    var texts = locator<AppConstants>().dashBoardTexts["allPromotionsView"]!;
 
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
-          context.read<AllBusinessCubit>().handleOnPop(context);
+          context.read<AllPromotionsCubit>().handleOnPop(context);
         }
       },
 
       child: Scaffold(
         backgroundColor: theme.colorScheme.background,
-        body: BlocBuilder<AllBusinessCubit, AllBusinessState>(
+        body: BlocBuilder<AllPromotionsCubit, AllPromotionsState>(
           builder: (context, state) {
             switch (state.status) {
-              case BusinessViewCubitStatus.initial:
+              case PromotionViewCubitStatus.initial:
                 return loadingView(theme, texts);
-              case BusinessViewCubitStatus.loading:
-                getAllBusinesses(context);
+              case PromotionViewCubitStatus.loading:
+                getAllPromotions(context);
                 return loadingView(theme, texts);
-              case BusinessViewCubitStatus.success:
-                return succesView(theme, texts, state.businesses, context);
-              case BusinessViewCubitStatus.error:
-                return errorView(theme, texts, context);
-              default:
+              case PromotionViewCubitStatus.success:
+                return succesView(theme, texts, state.promotions, context);
+              case PromotionViewCubitStatus.error:
                 return errorView(theme, texts, context);
             }
           },
@@ -94,7 +92,7 @@ class _AllBusinessViewState extends State<AllBusinessView> {
             ),
           ),
         ),
-        if (context.read<AllBusinessCubit>().state.categories.isNotEmpty)
+        if (context.read<AllPromotionsCubit>().state.categories.isNotEmpty)
           SliverPersistentHeader(
             pinned: true,
             delegate: PersistentHeader(
@@ -139,7 +137,7 @@ class _AllBusinessViewState extends State<AllBusinessView> {
                 const SizedBox(height: 20),
                 FilledButton.icon(
                   icon: const Icon(Ionicons.refresh),
-                  onPressed: () => getAllBusinesses(context),
+                  onPressed: () => getAllPromotions(context),
                   label: Text(texts["error-button"]),
                 ),
               ],
@@ -153,7 +151,7 @@ class _AllBusinessViewState extends State<AllBusinessView> {
   CustomScrollView succesView(
     ThemeData theme,
     texts,
-    List<ListableBusiness> businesses,
+    List<Promotion> promotions,
     BuildContext context,
   ) {
     return CustomScrollView(
@@ -181,37 +179,33 @@ class _AllBusinessViewState extends State<AllBusinessView> {
         ),
         SliverPadding(
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-          sliver: businessGrid(businesses, theme, texts),
+          sliver: promotionsList(promotions, theme, texts),
         ),
       ],
     );
   }
 
   //Widgets
-  Widget businessGrid(List<ListableBusiness> businesses, theme, texts) {
-    return businesses.isNotEmpty
-        ? SliverGrid.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 1,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            mainAxisExtent: 174,
-          ),
-          itemCount: businesses.length,
+  Widget promotionsList(List<Promotion> promotions, theme, texts) {
+    return promotions.isNotEmpty
+        ? SliverList.builder(
+          itemCount: promotions.length,
           itemBuilder: (context, index) {
-            _trackBusinessImpression(businesses[index].id);
-            return HorizontalCard(
-              isOnGrid: true,
-              image: businesses[index].featuredImage,
-              title: businesses[index].name,
-              id: businesses[index].id,
-              category: null,
-              callback: () {
-                AutoRouter.of(
-                  context,
-                ).push(BusinessDetailsView(businessId: businesses[index].id));
-              },
+            final promotion = promotions[index];
+            _trackPromotionImpression(promotion.documentId ?? '', promotion.businessId);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: PromotionCard(
+                promotion: promotion,
+                callback: () {
+                  AutoRouter.of(context).push(
+                    PromotionDetailsView(
+                      promotionId: promotion.documentId ?? '',
+                      promotion: promotion,
+                    ),
+                  );
+                },
+              ),
             );
           },
         )
@@ -226,7 +220,7 @@ class _AllBusinessViewState extends State<AllBusinessView> {
   }
 
   Widget categoriesDropDown(ThemeData theme, texts) {
-    return BlocBuilder<AllBusinessCubit, AllBusinessState>(
+    return BlocBuilder<AllPromotionsCubit, AllPromotionsState>(
       builder: (context, state) {
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -235,7 +229,7 @@ class _AllBusinessViewState extends State<AllBusinessView> {
             categories: state.categories,
             selectedCategoryId: state.selectedCategoryId,
             onCategorySelected: (categoryId) {
-              context.read<AllBusinessCubit>().setSelectedCategoryId(categoryId ?? '');
+              context.read<AllPromotionsCubit>().setSelectedCategoryId(categoryId ?? '');
             },
             allCategoriesText: texts["all-categories"],
           ),
@@ -245,18 +239,18 @@ class _AllBusinessViewState extends State<AllBusinessView> {
   }
 
   //Methods
-  void getAllBusinesses(BuildContext context) {
-    context.read<AllBusinessCubit>().getBusinesses();
+  void getAllPromotions(BuildContext context) {
+    context.read<AllPromotionsCubit>().getPromotions();
   }
 
-  // V2: Track business impression in search results
-  void _trackBusinessImpression(String businessId) {
+  // V2: Track promotion impression in search results
+  void _trackPromotionImpression(String promotionId, String businessId) {
     final analyticsService = GetIt.instance.get<AnalyticsService>();
     analyticsService.trackDashboardImpression(
-      entityType: 'business',
-      entityId: businessId,
+      entityType: 'promotion',
+      entityId: promotionId,
       businessId: businessId,
-      screen: 'home_feed',
+      screen: 'promotions_feed',
     );
   }
 }

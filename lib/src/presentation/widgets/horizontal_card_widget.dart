@@ -43,19 +43,52 @@ class HorizontalCard extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                  image.isNotEmpty
-                      ? Image.network(
-                        image,
-                        fit: BoxFit.fitWidth,
-                        width: double.infinity,
-                        height: !isOnGrid ? 180 : 130,
-                      )
-                      : Image.asset(
-                        "assets/images/file-not-found.png",
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: !isOnGrid ? 180 : 130,
-                      ),
+                  // Use AspectRatio to maintain consistent proportions (16:9)
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: image.isNotEmpty
+                        ? Image.network(
+                          image,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          // Performance optimizations
+                          cacheWidth: isOnGrid ? 500 : 800,
+                          cacheHeight: isOnGrid ? 280 : 450,
+                          filterQuality: FilterQuality.medium,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              width: double.infinity,
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              child: Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Image.asset(
+                              "assets/images/file-not-found.png",
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            );
+                          },
+                        )
+                        : Image.asset(
+                          "assets/images/file-not-found.png",
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        ),
+                  ),
                   // Business type badge
                   if (businessType == 'online' || businessType == 'hybrid')
                     Positioned(

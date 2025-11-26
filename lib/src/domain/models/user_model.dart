@@ -20,6 +20,7 @@ class User extends Equatable {
 
   // V2 Schema Fields (consumer-only)
   final String? userType; // "admin" | "consumer" | "business_team"
+  final String? city; // User's current city (auto-detected from GPS)
 
   const User({
     required this.uid,
@@ -38,6 +39,7 @@ class User extends Equatable {
     required this.favouritePromotions,
     this.deviceNotificationToken,
     this.userType, // V2 field
+    this.city, // V2 field - auto-detected from GPS
   });
 
   @override
@@ -58,6 +60,7 @@ class User extends Equatable {
     favouritePromotions,
     deviceNotificationToken,
     userType,
+    city,
   ];
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -88,8 +91,9 @@ class User extends Equatable {
               ? List<String>.from(json['favourite_promotions'])
               : [],
       deviceNotificationToken: json['device_notification_token'] as String?,
-      // V2 field with backward compatibility
+      // V2 fields with backward compatibility
       userType: json['user_type'] as String?,
+      city: json['city'] as String?,
     );
   }
 
@@ -135,6 +139,7 @@ class User extends Equatable {
     List<String>? favouritePromotions,
     String? deviceNotificationToken,
     String? userType,
+    String? city,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -154,6 +159,7 @@ class User extends Equatable {
       deviceNotificationToken:
           deviceNotificationToken ?? this.deviceNotificationToken,
       userType: userType ?? this.userType,
+      city: city ?? this.city,
     );
   }
 

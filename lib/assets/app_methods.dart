@@ -259,6 +259,86 @@ class AppMethods {
     }
   }
 
+  /// Navigate to a location using the user's preferred maps app
+  /// Shows a dialog on iOS to choose between Apple Maps, Google Maps, or Waze
+  /// On Android, uses the geo: intent which opens the default maps app
+  Future<void> navigateToLocation({
+    required BuildContext context,
+    required double latitude,
+    required double longitude,
+    required String address,
+    required Map<String, String> texts,
+  }) async {
+    try {
+      if (address.isEmpty) return;
+
+      if (Theme.of(context).platform == TargetPlatform.android) {
+        // Android: Use geo: intent - opens user's default maps app
+        var intent = 'geo:';
+        var encodedAddress = Uri.encodeComponent(address);
+        var finalUrl = '$intent$latitude,$longitude?q=$encodedAddress';
+        Uri encodedUri = Uri.parse(finalUrl);
+        await openAppFromUri(encodedUri);
+      } else {
+        // iOS: Show dialog with multiple map app options
+        final locator = GetIt.instance;
+        var appleIntent = locator.get<AppConstants>().appleIntent;
+        var googleMapsIntent = locator.get<AppConstants>().googleMapsIntent;
+        var wazeIntent = locator.get<AppConstants>().wazeIntent;
+
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(
+                texts["open-with"]!,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    title: Text(texts["apple-maps"]!),
+                    trailing: const Icon(Icons.map),
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      var finalUrl = '$appleIntent$latitude,$longitude';
+                      Uri encodedUri = Uri.parse(finalUrl);
+                      await openAppFromUri(encodedUri);
+                    },
+                  ),
+                  ListTile(
+                    title: Text(texts["google-maps"]!),
+                    trailing: const Icon(Icons.map_outlined),
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      var encodedAddress = Uri.encodeComponent(address);
+                      var finalUrl = '$googleMapsIntent$latitude,$longitude&q=$encodedAddress';
+                      Uri encodedUri = Uri.parse(finalUrl);
+                      await openAppFromUri(encodedUri);
+                    },
+                  ),
+                  ListTile(
+                    title: Text(texts["waze"]!),
+                    trailing: const Icon(Icons.navigation),
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      var finalUrl = '$wazeIntent$latitude,$longitude';
+                      Uri encodedUri = Uri.parse(finalUrl);
+                      await openAppFromUri(encodedUri);
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      }
+    } catch (e) {
+      log('Error navigating to location: $e');
+    }
+  }
+
   //This method is used to get a static map from coordinates
   String getStaticMapURL(
     int zoom,
@@ -322,6 +402,69 @@ class AppMethods {
       AutoRouter.of(context).pushNamed("/${message.data["route"]}");
     } else {
       log("No route found for: ${message.data}");
+    }
+  }
+
+  /// Get city name from GPS coordinates using reverse geocoding
+  ///
+  /// This method uses reverse geocoding to convert GPS coordinates into a city name.
+  /// It's used to automatically detect and update the user's city for analytics demographics.
+  ///
+  /// Returns:
+  /// - The detected city name if successful (e.g., "Bogotá", "Medellín")
+  /// - "Bogotá" as the default fallback if geocoding fails or no location provided
+  ///
+  /// Parameters:
+  /// - [latitude]: GPS latitude coordinate
+  /// - [longitude]: GPS longitude coordinate
+  Future<String> getCityFromLocation(double? latitude, double? longitude) async {
+    const String defaultCity = 'Bogotá'; // Default fallback city
+
+    try {
+      // Return default if coordinates are null
+      if (latitude == null || longitude == null) {
+        log('Location is null, using default city: $defaultCity');
+        return defaultCity;
+      }
+
+      log('Reverse geocoding location: ($latitude, $longitude)');
+
+      // Perform reverse geocoding
+      final List<geocoding.Placemark> placemarks = await geocoding.placemarkFromCoordinates(
+        latitude,
+        longitude,
+      );
+
+      if (placemarks.isEmpty) {
+        log('No placemarks found, using default city: $defaultCity');
+        return defaultCity;
+      }
+
+      // Get the first placemark
+      final placemark = placemarks.first;
+
+      // Try to get city from locality (most accurate)
+      // Examples: "Bogotá", "Medellín", "Cali", "Barranquilla"
+      String? city = placemark.locality;
+
+      // Fallback to subAdministrativeArea if locality is empty
+      // This handles cases where locality might not be set
+      city ??= placemark.subAdministrativeArea;
+
+      // Fallback to administrativeArea (state/department level)
+      city ??= placemark.administrativeArea;
+
+      if (city != null && city.isNotEmpty) {
+        log('City detected: $city');
+        return city;
+      } else {
+        log('City name is empty, using default: $defaultCity');
+        return defaultCity;
+      }
+    } catch (e) {
+      log('Error in reverse geocoding: $e');
+      log('Using default city: $defaultCity');
+      return defaultCity;
     }
   }
 }

@@ -9,6 +9,7 @@ class Business extends Equatable {
   final BusinessSubscriptionStatus subscriptionStatus;
   final String? latestTransactionDocumentId;
   final String phoneNumber;
+  final String? website;
   final String ownerName;
   final String name;
   final GeoPoint location;
@@ -21,12 +22,15 @@ class Business extends Equatable {
   final String featuredImage;
   final String ownerUid;
   final String type; // "physical" | "online" | "hybrid"
+  final bool featured; // Enterprise plan feature - priority placement in feeds
+  final String? description; // Business description
 
   const Business({
     required this.status,
     required this.subscriptionStatus,
     required this.latestTransactionDocumentId,
     required this.phoneNumber,
+    this.website,
     required this.ownerName,
     required this.name,
     required this.location,
@@ -39,27 +43,31 @@ class Business extends Equatable {
     required this.featuredImage,
     required this.ownerUid,
     this.type = 'physical', // Default to physical for backward compatibility
+    this.featured = false, // Default to false for backward compatibility
+    this.description, // Optional business description
   });
 
   @override
   List<Object?> get props => [
-        status,
-        subscriptionStatus,
-        latestTransactionDocumentId,
-        phoneNumber,
-        ownerName,
-        name,
-        location,
-        identification,
-        email,
-        categories,
-        address,
-        reviews,
-        paymentMethods,
-        featuredImage,
-        ownerUid,
-        type,
-      ];
+    status,
+    subscriptionStatus,
+    latestTransactionDocumentId,
+    phoneNumber,
+    ownerName,
+    name,
+    location,
+    identification,
+    email,
+    categories,
+    address,
+    reviews,
+    paymentMethods,
+    featuredImage,
+    ownerUid,
+    type,
+    featured,
+    description,
+  ];
 
   /// Check if this is a physical business
   bool get isPhysical => type == 'physical' || type == 'hybrid';
@@ -71,40 +79,78 @@ class Business extends Equatable {
   bool get isHybrid => type == 'hybrid';
 
   factory Business.fromJson(Map<String, dynamic> json) {
+    var location;
+    try {
+      if (json['geo_hash'] != null && json['geo_hash']['geopoint'] != null) {
+        final geopoint = json['geo_hash']['geopoint'];
+        // Handle both GeoPoint object and Map representation
+        if (geopoint is GeoPoint) {
+          location = geopoint;
+        } else if (geopoint is Map) {
+          location = GeoPoint(
+            (geopoint['latitude'] ?? geopoint['_latitude']) as double,
+            (geopoint['longitude'] ?? geopoint['_longitude']) as double,
+          );
+        }
+      } else if (json['location'] != null) {
+        final loc = json['location'];
+        if (loc is GeoPoint) {
+          location = loc;
+        } else if (loc is Map) {
+          location = GeoPoint(
+            (loc['latitude'] ?? loc['_latitude']) as double,
+            (loc['longitude'] ?? loc['_longitude']) as double,
+          );
+        }
+      }
+    } catch (e) {
+      // If location parsing fails, just set to null
+      location = null;
+    }
     return Business(
       status: BusinessStatus.values.firstWhere(
-          (element) => element.toString().split('.').last == json['status']),
+        (element) => element.toString().split('.').last == json['status'],
+      ),
       phoneNumber: json['phone_number'] as String,
+      website: json['website'] as String?,
       ownerName: json['owner_name'] as String,
       name: json['name'] as String,
-      location: json["location"] != null
-          ? json['location'] as GeoPoint
-          : const GeoPoint(0, 0),
+      location: location,
       identification: json['identification'] as String,
       email: json['email'] as String,
       categories: json["categories"] != null ? json['categories'] : [],
       address: json['address'] as String,
-      paymentMethods: json["payment_methods"] != null
-          ? json['payment_methods']
-              .map((e) => PaymentMethod.fromJson(e))
-              .toList()
-          : [],
-      reviews: json["revies"] != null
-          ? json['reviews'].map((e) => UserReview.fromJson(e)).toList()
-          : [],
-      featuredImage: json["featured_image"] != null
-          ? json['featured_image'] as String
-          : "",
+      paymentMethods:
+          json["payment_methods"] != null
+              ? json['payment_methods']
+                  .map((e) => PaymentMethod.fromJson(e))
+                  .toList()
+              : [],
+      reviews:
+          json["revies"] != null
+              ? json['reviews'].map((e) => UserReview.fromJson(e)).toList()
+              : [],
+      featuredImage:
+          json["featured_image"] != null
+              ? json['featured_image'] as String
+              : "",
       ownerUid: json["owner_uid"] != null ? json['owner_uid'] as String : "",
       subscriptionStatus: BusinessSubscriptionStatus.values.firstWhere(
         (element) =>
             element.toString().split('.').last == json['subscription_status'],
         orElse: () => BusinessSubscriptionStatus.inactive,
       ),
-      latestTransactionDocumentId: json["latest_transaction"] != null
-          ? json['latest_transaction'] as String
-          : "",
-      type: json['type'] as String? ?? 'physical', // Default to physical for backward compatibility
+      latestTransactionDocumentId:
+          json["latest_transaction"] != null
+              ? json['latest_transaction'] as String
+              : "",
+      type:
+          json['type'] as String? ??
+          'physical', // Default to physical for backward compatibility
+      featured:
+          json['featured'] as bool? ??
+          false, // Default to false for backward compatibility
+      description: json['description'] as String?,
     );
   }
 
@@ -112,6 +158,7 @@ class Business extends Equatable {
     return {
       'status': status.toString().split('.').last,
       'phone_number': phoneNumber,
+      'website': website,
       'owner_name': ownerName,
       'name': name,
       'location': location,
@@ -121,6 +168,7 @@ class Business extends Equatable {
       'address': address,
       'reviews': reviews.map((e) => e.toJson()).toList(),
       'type': type,
+      'description': description,
     };
   }
 
@@ -128,6 +176,7 @@ class Business extends Equatable {
     return {
       'status': BusinessStatus.pending.toString().split('.').last,
       'phone_number': json['phone_number'],
+      'website': json['website'],
       'owner_name': json['owner_name'],
       'name': json['name'],
       'location': json['location'],
@@ -144,6 +193,7 @@ class Business extends Equatable {
     BusinessSubscriptionStatus? subscriptionStatus,
     String? latestTransactionDocumentId,
     String? phoneNumber,
+    String? website,
     String? ownerName,
     String? name,
     GeoPoint? location,
@@ -156,6 +206,8 @@ class Business extends Equatable {
     String? featuredImage,
     String? ownerUid,
     String? type,
+    bool? featured,
+    String? description,
   }) {
     return Business(
       status: status ?? this.status,
@@ -163,6 +215,7 @@ class Business extends Equatable {
       latestTransactionDocumentId:
           latestTransactionDocumentId ?? this.latestTransactionDocumentId,
       phoneNumber: phoneNumber ?? this.phoneNumber,
+      website: website ?? this.website,
       ownerName: ownerName ?? this.ownerName,
       name: name ?? this.name,
       location: location ?? this.location,
@@ -175,6 +228,8 @@ class Business extends Equatable {
       featuredImage: featuredImage ?? this.featuredImage,
       ownerUid: ownerUid ?? this.ownerUid,
       type: type ?? this.type,
+      featured: featured ?? this.featured,
+      description: description ?? this.description,
     );
   }
 }

@@ -45,6 +45,11 @@ class AppRouter extends RootStackRouter {
               path: 'allBusinessView',
               transitionsBuilder: TransitionsBuilders.fadeIn,
             ),
+            CustomRoute(
+              page: AllPromotionsView.page,
+              path: 'allPromotionsView',
+              transitionsBuilder: TransitionsBuilders.fadeIn,
+            ),
           ],
         ),
         AutoRoute(page: FavoritesView.page, path: 'favorites'),

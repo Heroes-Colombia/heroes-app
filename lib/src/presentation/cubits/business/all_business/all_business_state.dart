@@ -5,12 +5,14 @@ final class AllBusinessState extends Equatable {
   final BusinessViewCubitStatus status;
   final String selectedCategoryId;
   final List<BusinessCategory> categories;
+  final BusinessFilter filter;
 
   const AllBusinessState({
     this.businesses = const [],
     this.status = BusinessViewCubitStatus.initial,
     this.selectedCategoryId = '',
     this.categories = const [],
+    this.filter = const BusinessFilter(),
   });
 
   AllBusinessState copyWith({
@@ -18,12 +20,14 @@ final class AllBusinessState extends Equatable {
     BusinessViewCubitStatus? status,
     String? selectedCategoryId,
     List<BusinessCategory>? categories,
+    BusinessFilter? filter,
   }) {
     return AllBusinessState(
       status: status ?? this.status,
       businesses: businesses ?? this.businesses,
       selectedCategoryId: selectedCategoryId ?? this.selectedCategoryId,
       categories: categories ?? this.categories,
+      filter: filter ?? this.filter,
     );
   }
 
@@ -33,5 +37,6 @@ final class AllBusinessState extends Equatable {
         status,
         selectedCategoryId,
         categories,
+        filter,
       ];
 }

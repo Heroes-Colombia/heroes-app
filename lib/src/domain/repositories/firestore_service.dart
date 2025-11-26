@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 
@@ -30,11 +32,13 @@ class FirestoreService {
             .collection(collectionName)
             .where(property, isEqualTo: id)
             .get();
-    
+
     if (docSnapshot.docs.isEmpty) {
-      throw Exception('No document found with $property: $id in collection $collectionName');
+      throw Exception(
+        'No document found with $property: $id in collection $collectionName',
+      );
     }
-    
+
     return docSnapshot.docs.first.data();
   }
 
@@ -151,7 +155,7 @@ class FirestoreService {
 
   /*
    This method is used to read all documents inside a collection,
-   where the condition of the property is equal to the propertyValue 
+   where the condition of the property is equal to the propertyValue
    passed as parameter and the status is active
   */
   Future<List<Map<String, dynamic>>> readActiveDocumentsByCondition(
@@ -177,8 +181,68 @@ class FirestoreService {
   }
 
   /*
+   This method is used to read active documents with pagination support.
+   Returns a map with 'documents', 'lastDocument' (cursor), and 'hasMore' flag.
+   Use this for infinite scroll implementations.
+  */
+  Future<Map<String, dynamic>> readActiveDocumentsWithPagination(
+    String collectionName, {
+    required String orderByField,
+    required int limit,
+    DocumentSnapshot? startAfterDocument,
+    String? whereField,
+    dynamic whereValue,
+  }) async {
+    try {
+      Query query = _firestore
+          .collection(collectionName)
+          .where('status', isEqualTo: 'active');
+
+      // Add optional where clause
+      if (whereField != null && whereValue != null) {
+        query = query.where(whereField, isEqualTo: whereValue);
+      }
+
+      // Order by field (required for pagination)
+      query = query.orderBy(orderByField, descending: true);
+
+      // Pagination: start after last document
+      if (startAfterDocument != null) {
+        query = query.startAfterDocument(startAfterDocument);
+      }
+
+      // Limit results
+      query = query.limit(limit);
+
+      final querySnapshot = await query.get();
+
+      // Extract documents and add id field
+      final documents =
+          querySnapshot.docs.map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            data['id'] = doc.id;
+            return data;
+          }).toList();
+
+      final lastDoc =
+          querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;
+
+      return {
+        'documents': documents,
+        'lastDocument': lastDoc,
+        'hasMore':
+            querySnapshot.docs.length ==
+            limit, // If we got full limit, there might be more
+      };
+    } catch (e) {
+      log('Error reading paginated documents: $e');
+      rethrow;
+    }
+  }
+
+  /*
    This method is used to read all documents inside a collection,
-   where the condition of the property is equal to the propertyValue 
+   where the condition of the property is equal to the propertyValue
    passed as parameter
   */
   Future<List<Map<String, dynamic>>> readAllDocumentsByCondition(
@@ -374,6 +438,44 @@ class FirestoreService {
   }
 
   /*
+   This method is used to batch read business names by document IDs
+   Optimized for promotions: returns only id and name fields
+   Note: Firestore whereIn queries are limited to 30 items per batch
+  */
+  Future<Map<String, String>> readBusinessNamesByIds(
+    String collectionName,
+    List<String> ids,
+  ) async {
+    if (ids.isEmpty) return {};
+
+    // Firestore whereIn limit is 30, so we need to batch if more than 30 ids
+    final Map<String, String> businessNames = {};
+    const batchSize = 30;
+
+    for (var i = 0; i < ids.length; i += batchSize) {
+      final batchIds = ids.sublist(
+        i,
+        i + batchSize > ids.length ? ids.length : i + batchSize,
+      );
+
+      final docSnapshot =
+          await _firestore
+              .collection(collectionName)
+              .where(FieldPath.documentId, whereIn: batchIds)
+              .get();
+
+      for (var doc in docSnapshot.docs) {
+        final data = doc.data();
+        if (data['name'] != null) {
+          businessNames[doc.id] = data['name'] as String;
+        }
+      }
+    }
+
+    return businessNames;
+  }
+
+  /*
    This method is used to read all documents inside a array property of a document,
    where the passed id are contained in the document passed property
   */
@@ -474,12 +576,13 @@ class FirestoreService {
     String businessId,
   ) async {
     try {
-      final locationsSnapshot = await _firestore
-          .collection('businesses')
-          .doc(businessId)
-          .collection('locations')
-          .where('status', isEqualTo: 'active')
-          .get();
+      final locationsSnapshot =
+          await _firestore
+              .collection('businesses')
+              .doc(businessId)
+              .collection('locations')
+              .where('status', isEqualTo: 'active')
+              .get();
 
       return locationsSnapshot.docs.map((doc) {
         final data = doc.data();
@@ -525,13 +628,14 @@ class FirestoreService {
     String collection,
   ) async* {
     // First get nearby businesses
-    final businessStream = getDocumentsNearPosition(position, maxDistance, collection);
+    final businessStream = getDocumentsNearPosition(
+      position,
+      maxDistance,
+      collection,
+    );
 
     await for (final businessDocs in businessStream) {
-      final Map<String, dynamic> result = {
-        'businesses': [],
-        'locations': {},
-      };
+      final Map<String, dynamic> result = {'businesses': [], 'locations': {}};
 
       List<Map<String, dynamic>> businesses = [];
       for (var doc in businessDocs) {
