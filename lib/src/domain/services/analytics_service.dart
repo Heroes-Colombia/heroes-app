@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io' show Platform;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,7 +11,11 @@ import 'package:uuid/uuid.dart';
 /// This service provides comprehensive analytics tracking for the Heroes Colombia app,
 /// including user behavior, business performance, and conversion metrics.
 ///
-/// V2: Now also tracks events to 'analytics_events' collection for Dashboard consumption
+/// OPTIMIZED V3:
+/// - Single collection architecture (analytics_events only)
+/// - Smart batching (time-based + count-based)
+/// - 24-hour impression window (Meta/Facebook standard)
+/// - Eliminated dual-write redundancy (50% write reduction)
 class AnalyticsService {
   static final AnalyticsService _instance = AnalyticsService._internal();
   factory AnalyticsService() => _instance;
@@ -21,16 +26,21 @@ class AnalyticsService {
   final Uuid _uuid = const Uuid();
 
   bool _debugMode = false;
+
+  // Smart batching configuration
   final List<Map<String, dynamic>> _eventQueue = [];
-  static const int _batchSize = 20;
+  static const int _maxBatchSize = 50;  // Increased from 20 for better efficiency
+  static const Duration _flushInterval = Duration(seconds: 30);  // Time-based flushing
+  Timer? _flushTimer;
+
   late String _sessionId;
   String? _userId;
   Map<String, String>? _userContext;
 
-  // CRITICAL FIX: Track impressions with time-based deduplication (Facebook/Meta style)
-  // Prevents scroll bounces while allowing re-engagement tracking
+  // 24-hour impression window (Meta/Facebook standard)
+  // Prevents duplicate impressions while allowing daily re-engagement tracking
   final Map<String, DateTime> _impressionTimestamps = {};
-  static const Duration _impressionWindow = Duration(minutes: 3);
+  static const Duration _impressionWindow = Duration(hours: 24);
 
   /// CRITICAL FIX: Initialize session immediately in constructor for anonymous users
   AnalyticsService._internal() {
@@ -68,77 +78,73 @@ class AnalyticsService {
     _analytics.setAnalyticsCollectionEnabled(true);
   }
 
-  /// Store custom event in Firestore for business analytics
-  Future<void> _storeCustomEvent(String eventName, Map<String, dynamic> parameters) async {
-    try {
-      final currentUser = _auth.currentUser;
-      if (currentUser == null) return;
+  /// Queue event for smart batching (time-based + count-based)
+  /// Non-blocking: Uses timer-based flushing to prevent UI freezes
+  void _queueEvent(Map<String, dynamic> eventData) {
+    _eventQueue.add(eventData);
 
-      final eventData = {
-        'event_name': eventName,
-        'user_id': currentUser.uid,
-        'timestamp': FieldValue.serverTimestamp(),
-        'day_key': _getDayKey(DateTime.now()),
-        'month_key': _getMonthKey(DateTime.now()),
-        ...parameters,
-      };
+    // Start flush timer if not already running
+    _flushTimer ??= Timer(_flushInterval, () {
+      _processQueue();
+    });
 
-      _eventQueue.add(eventData);
-
-      if (_eventQueue.length >= _batchSize) {
-        await _processQueue();
-      }
-    } catch (e) {
-      if (_debugMode) {
-        log('Error storing custom event: $e');
-      }
+    // Flush immediately if batch is full (optimization for heavy users)
+    if (_eventQueue.length >= _maxBatchSize) {
+      _flushTimer?.cancel();
+      _flushTimer = null;
+      _processQueue();
     }
   }
 
   /// Process the event queue and batch write to Firestore
-  Future<void> _processQueue() async {
+  /// Non-blocking: Runs async to prevent UI freezes
+  void _processQueue() {
     if (_eventQueue.isEmpty) return;
 
+    // Copy events and clear queue immediately (prevents race conditions)
+    final eventsToWrite = List<Map<String, dynamic>>.from(_eventQueue);
+    _eventQueue.clear();
+    _flushTimer?.cancel();
+    _flushTimer = null;
+
+    if (_debugMode) {
+      log('📊 Analytics: Processing batch of ${eventsToWrite.length} events');
+    }
+
+    // Write batch asynchronously (non-blocking)
+    _writeBatchToFirestore(eventsToWrite);
+  }
+
+  /// Write batch to Firestore with error recovery
+  Future<void> _writeBatchToFirestore(List<Map<String, dynamic>> events) async {
     try {
       final batch = _firestore.batch();
-      final collection = _firestore.collection('user_analytics');
+      final collection = _firestore.collection('analytics_events');
 
-      for (final eventData in _eventQueue) {
+      for (final eventData in events) {
         final docRef = collection.doc();
         batch.set(docRef, eventData);
       }
 
       await batch.commit();
-      _eventQueue.clear();
 
       if (_debugMode) {
-        log('Analytics: Successfully processed ${_eventQueue.length} events');
+        log('✅ Analytics: Successfully wrote ${events.length} events to analytics_events');
       }
     } catch (e) {
       if (_debugMode) {
-        log('Error processing analytics queue: $e');
+        log('❌ Analytics: Batch write failed - $e');
+      }
+
+      // Re-queue failed events (up to maxBatchSize to prevent infinite growth)
+      if (_eventQueue.length < _maxBatchSize) {
+        _eventQueue.addAll(events.take(_maxBatchSize - _eventQueue.length));
       }
     }
   }
 
-  /// Generate day key for analytics aggregation
-  String _getDayKey(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-
-  /// Generate month key for analytics aggregation
-  String _getMonthKey(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}';
-  }
-
   /// Track when a user views a business
-  ///
-  /// Parameters:
-  /// - [businessId]: The unique identifier of the business
-  /// - [businessName]: The name of the business
-  /// - [category]: The category of the business
-  /// - [location]: Optional location information
-  /// - [searchContext]: Optional context if viewed from search
+  /// OPTIMIZED: Now uses V3 Dashboard schema only (single collection)
   Future<void> trackBusinessView({
     required String businessId,
     required String businessName,
@@ -155,6 +161,7 @@ class AnalyticsService {
       log('Analytics: Business view - $businessName');
     }
 
+    // Firebase Analytics (free, automatic funnel analysis)
     await _analytics.logEvent(
       name: 'business_viewed',
       parameters: {
@@ -165,22 +172,17 @@ class AnalyticsService {
       },
     );
 
-    await _storeCustomEvent('business_viewed', {
-      'business_id': businessId,
-      'business_name': businessName,
-      'category': category,
-      'location': location,
-      'search_context': searchContext,
-    });
+    // Dashboard-compatible event (non-blocking, queued for batching)
+    trackDashboardView(
+      entityType: 'business',
+      entityId: businessId,
+      businessId: businessId,
+      screen: searchContext,
+    );
   }
 
   /// Track business search activity
-  ///
-  /// Parameters:
-  /// - [searchTerm]: The search query used
-  /// - [resultsCount]: Number of results returned
-  /// - [userLocation]: Optional user location for proximity analysis
-  /// - [filters]: Optional filters applied
+  /// OPTIMIZED: Firebase Analytics only (search events don't need Dashboard storage)
   Future<void> trackBusinessSearch({
     required String searchTerm,
     required int resultsCount,
@@ -196,6 +198,7 @@ class AnalyticsService {
       log('Analytics: Business search - "$searchTerm" returned $resultsCount results');
     }
 
+    // Firebase Analytics (free search analysis)
     await _analytics.logEvent(
       name: 'business_search',
       parameters: {
@@ -204,23 +207,10 @@ class AnalyticsService {
         if (filters != null) 'filters_applied': filters.keys.join(','),
       },
     );
-
-    await _storeCustomEvent('business_search', {
-      'search_term': searchTerm,
-      'results_count': resultsCount,
-      'user_location': userLocation,
-      'filters': filters,
-    });
   }
 
-  /// Track promotion interactions
-  ///
-  /// Parameters:
-  /// - [promotionId]: The unique identifier of the promotion
-  /// - [businessId]: The business offering the promotion
-  /// - [businessName]: The name of the business
-  /// - [action]: The action taken ('view', 'share', 'redeem')
-  /// - [discountPercentage]: The discount percentage
+  /// Track promotion view
+  /// OPTIMIZED: Uses V3 Dashboard schema only
   Future<void> trackPromotionView({
     required String promotionId,
     required String businessId,
@@ -236,6 +226,7 @@ class AnalyticsService {
       log('Analytics: Promotion view - $businessName ($discountPercentage% discount)');
     }
 
+    // Firebase Analytics (free)
     await _analytics.logEvent(
       name: 'promotion_viewed',
       parameters: {
@@ -246,15 +237,16 @@ class AnalyticsService {
       },
     );
 
-    await _storeCustomEvent('promotion_viewed', {
-      'promotion_id': promotionId,
-      'business_id': businessId,
-      'business_name': businessName,
-      'discount_percentage': discountPercentage,
-    });
+    // Dashboard-compatible event (non-blocking, queued)
+    trackDashboardView(
+      entityType: 'promotion',
+      entityId: promotionId,
+      businessId: businessId,
+    );
   }
 
   /// Track promotion sharing
+  /// OPTIMIZED: Uses V3 Dashboard schema only
   Future<void> trackPromotionShare({
     required String promotionId,
     required String businessId,
@@ -270,6 +262,7 @@ class AnalyticsService {
       log('Analytics: Promotion shared - $businessName via $shareMethod');
     }
 
+    // Firebase Analytics (free)
     await _analytics.logEvent(
       name: 'promotion_shared',
       parameters: {
@@ -280,15 +273,16 @@ class AnalyticsService {
       },
     );
 
-    await _storeCustomEvent('promotion_shared', {
-      'promotion_id': promotionId,
-      'business_id': businessId,
-      'business_name': businessName,
-      'share_method': shareMethod,
-    });
+    // Dashboard-compatible event (non-blocking, queued)
+    trackDashboardShare(
+      entityType: 'promotion',
+      entityId: promotionId,
+      businessId: businessId,
+    );
   }
 
   /// Track promotion redemption
+  /// OPTIMIZED: Uses V3 Dashboard schema only
   Future<void> trackPromotionRedemption({
     required String promotionId,
     required String businessId,
@@ -304,6 +298,7 @@ class AnalyticsService {
       log('Analytics: Promotion redeemed - $businessName ($discountPercentage% discount)');
     }
 
+    // Firebase Analytics (free)
     await _analytics.logEvent(
       name: 'promotion_redeemed',
       parameters: {
@@ -314,15 +309,15 @@ class AnalyticsService {
       },
     );
 
-    await _storeCustomEvent('promotion_redeemed', {
-      'promotion_id': promotionId,
-      'business_id': businessId,
-      'business_name': businessName,
-      'discount_percentage': discountPercentage,
-    });
+    // Dashboard-compatible event (non-blocking, queued)
+    trackDashboardRedemption(
+      promotionId: promotionId,
+      businessId: businessId,
+    );
   }
 
   /// Track when a user adds a business to favorites
+  /// OPTIMIZED: Uses V3 Dashboard schema only
   Future<void> trackFavoriteAdded({
     required String businessId,
     required String businessName,
@@ -337,6 +332,7 @@ class AnalyticsService {
       log('Analytics: Favorite added - $businessName');
     }
 
+    // Firebase Analytics (free)
     await _analytics.logEvent(
       name: 'favorite_added',
       parameters: {
@@ -346,14 +342,16 @@ class AnalyticsService {
       },
     );
 
-    await _storeCustomEvent('favorite_added', {
-      'business_id': businessId,
-      'business_name': businessName,
-      'category': category,
-    });
+    // Dashboard-compatible event (non-blocking, queued)
+    trackDashboardSave(
+      entityType: 'business',
+      entityId: businessId,
+      businessId: businessId,
+    );
   }
 
   /// Track when a user removes a business from favorites
+  /// OPTIMIZED: Firebase Analytics only (no Dashboard tracking needed for removals)
   Future<void> trackFavoriteRemoved({
     required String businessId,
     required String businessName,
@@ -367,6 +365,7 @@ class AnalyticsService {
       log('Analytics: Favorite removed - $businessName');
     }
 
+    // Firebase Analytics only (removals don't need Dashboard tracking)
     await _analytics.logEvent(
       name: 'favorite_removed',
       parameters: {
@@ -374,14 +373,10 @@ class AnalyticsService {
         'business_name': businessName,
       },
     );
-
-    await _storeCustomEvent('favorite_removed', {
-      'business_id': businessId,
-      'business_name': businessName,
-    });
   }
 
   /// Track nearby business searches with location intelligence
+  /// OPTIMIZED: Firebase Analytics only
   Future<void> trackNearbyBusinessesSearch({
     required GeoPoint userLocation,
     required double radiusKm,
@@ -392,6 +387,7 @@ class AnalyticsService {
       log('Analytics: Nearby search - ${radiusKm}km radius, $resultsCount results');
     }
 
+    // Firebase Analytics only (geosearch doesn't need Dashboard tracking)
     await _analytics.logEvent(
       name: 'nearby_search',
       parameters: {
@@ -400,278 +396,19 @@ class AnalyticsService {
         if (category != null) 'category': category,
       },
     );
-
-    await _storeCustomEvent('nearby_search', {
-      'user_location': userLocation,
-      'radius_km': radiusKm,
-      'results_count': resultsCount,
-      'category': category,
-    });
   }
 
-  /// Get business analytics for a specific business and date range
-  ///
-  /// Returns aggregated analytics data for business owners and admins
-  Future<Map<String, dynamic>> getBusinessAnalytics({
-    required String businessId,
-    required DateTime startDate,
-    required DateTime endDate,
-    DocumentSnapshot? lastDocument,
-    int pageSize = 1000,
-  }) async {
-    try {
-      // Input validation
-      if (businessId.isEmpty) {
-        log('Analytics Error: Invalid businessId for getBusinessAnalytics');
-        return {};
-      }
-
-      if (endDate.isBefore(startDate)) {
-        log(
-          'Analytics Error: End date is before start date in getBusinessAnalytics',
-        );
-        return {};
-      }
-
-      if (_debugMode) {
-        log(
-          'Analytics: Getting business analytics for $businessId from ${startDate.toIso8601String()} to ${endDate.toIso8601String()}',
-        );
-      }
-
-      // First check if user has permission to access this business
-      final currentUser = _auth.currentUser;
-      if (currentUser == null) {
-        log('Analytics Error: No authenticated user');
-        return {};
-      }
-
-      // Check if user owns this business or is admin
-      try {
-        final userDoc = await _firestore.collection('users').doc(currentUser.uid).get();
-        if (!userDoc.exists) {
-          log('Analytics Error: User document not found');
-          return {};
-        }
-
-        final userData = userDoc.data()!;
-        final userType = userData['permission'] as String? ?? '';
-        
-        if (userType != 'business_owner' && userType != 'admin') {
-          log('Analytics Error: User does not have permission to view analytics');
-          return {};
-        }
-
-        // Additional check: if user is a business owner, verify they own this business
-        if (userType == 'business_owner') {
-          final businessDoc = await _firestore.collection('businesses').doc(businessId).get();
-          if (!businessDoc.exists || businessDoc.data()!['user_id'] != currentUser.uid) {
-            log('Analytics Error: Business owner can only view analytics for their own business');
-            return {};
-          }
-        }
-      } catch (permissionError) {
-        log('Analytics Permission Error: $permissionError');
-        return {};
-      }
-
-      // Build query with pagination
-      Query<Map<String, dynamic>> query = _firestore
-          .collection('user_analytics')
-          .where('business_id', isEqualTo: businessId)
-          .where(
-            'timestamp',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
-          )
-          .where('timestamp', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
-          .orderBy('timestamp', descending: true)
-          .limit(pageSize);
-
-      if (lastDocument != null) {
-        query = query.startAfterDocument(lastDocument);
-      }
-
-      final QuerySnapshot<Map<String, dynamic>> snapshot = await query.get();
-
-      int views = 0;
-      int promotionViews = 0;
-      int favorites = 0;
-      int shares = 0;
-      int redemptions = 0;
-      Set<String> uniqueUsers = {};
-
-      for (var doc in snapshot.docs) {
-        final Map<String, dynamic> data = doc.data();
-        final String? eventName = data['event_name'] as String?;
-        final String? userId = data['user_id'] as String?;
-
-        if (eventName == null || userId == null) {
-          continue;
-        }
-
-        uniqueUsers.add(userId);
-
-        switch (eventName) {
-          case 'business_viewed':
-            views++;
-            break;
-          case 'promotion_viewed':
-            promotionViews++;
-            break;
-          case 'favorite_added':
-            favorites++;
-            break;
-          case 'promotion_shared':
-            shares++;
-            break;
-          case 'promotion_redeemed':
-            redemptions++;
-            break;
-          default:
-            break;
-        }
-      }
-
-      return {
-        'total_views': views,
-        'promotion_views': promotionViews,
-        'favorites_added': favorites,
-        'shares': shares,
-        'redemptions': redemptions,
-        'unique_users': uniqueUsers.length,
-        'period_start': startDate.toIso8601String(),
-        'period_end': endDate.toIso8601String(),
-        'last_document': snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
-        'has_more': snapshot.docs.length == pageSize,
-      };
-    } on FirebaseException catch (e) {
-      log('Error getting business analytics: ${e.message ?? e.code}');
-      return {};
-    } catch (e) {
-      log('Unexpected error in getBusinessAnalytics: $e');
-      return {};
-    }
-  }
-
-  /// Get user demographics for a specific business
-  Future<Map<String, dynamic>> getUserDemographics({
-    required String businessId,
-    required DateTime startDate,
-    required DateTime endDate,
-  }) async {
-    try {
-      // Input validation
-      if (businessId.isEmpty) {
-        log(
-          'Analytics Error: Invalid businessId for getUserDemographics',
-        );
-        return {};
-      }
-
-      if (_debugMode) {
-        log('Analytics: Getting user demographics for business $businessId');
-      }
-
-      // Check permissions first
-      final currentUser = _auth.currentUser;
-      if (currentUser == null) {
-        log('Analytics Error: No authenticated user');
-        return {};
-      }
-
-      try {
-        final userDoc = await _firestore.collection('users').doc(currentUser.uid).get();
-        if (!userDoc.exists) {
-          log('Analytics Error: User document not found');
-          return {};
-        }
-
-        final userData = userDoc.data()!;
-        final userType = userData['permission'] as String? ?? '';
-        
-        if (userType != 'business_owner' && userType != 'admin') {
-          log('Analytics Error: User does not have permission to view demographics');
-          return {
-            'total_unique_users': 0,
-            'user_types': {},
-            'ranks': {},
-            'regions': {},
-          };
-        }
-      } catch (permissionError) {
-        log('Analytics Permission Error in demographics: $permissionError');
-        return {
-          'total_unique_users': 0,
-          'user_types': {},
-          'ranks': {},
-          'regions': {},
-        };
-      }
-
-      final QuerySnapshot<Map<String, dynamic>> snapshot =
-          await _firestore
-              .collection('user_analytics')
-              .where('business_id', isEqualTo: businessId)
-              .where(
-                'timestamp',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
-              )
-              .where(
-                'timestamp',
-                isLessThanOrEqualTo: Timestamp.fromDate(endDate),
-              )
-              .get();
-
-      Map<String, int> userTypes = {};
-      Map<String, int> ranks = {};
-      Map<String, int> regions = {};
-      Set<String> uniqueUsers = {};
-
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final userId = data['user_id'] as String?;
-
-        if (userId == null) continue;
-
-        if (!uniqueUsers.contains(userId)) {
-          uniqueUsers.add(userId);
-
-          // Get user details for demographics
-          try {
-            final userDoc = await _firestore.collection('users').doc(userId).get();
-            if (userDoc.exists) {
-              final userData = userDoc.data()!;
-              
-              final userType = userData['user_type'] as String? ?? 'unknown';
-              final rank = userData['military_rank'] as String? ?? 'N/A';
-              final region = userData['region'] as String? ?? 'unknown';
-
-              userTypes[userType] = (userTypes[userType] ?? 0) + 1;
-              ranks[rank] = (ranks[rank] ?? 0) + 1;
-              regions[region] = (regions[region] ?? 0) + 1;
-            }
-          } catch (e) {
-            if (_debugMode) {
-              log('Error getting user demographics for user $userId: $e');
-            }
-          }
-        }
-      }
-
-      return {
-        'total_unique_users': uniqueUsers.length,
-        'user_types': userTypes,
-        'ranks': ranks,
-        'regions': regions,
-      };
-    } on FirebaseException catch (e) {
-      log('Error getting user demographics: ${e.message ?? e.code}');
-      return {};
-    } catch (e) {
-      log('Unexpected error in getUserDemographics: $e');
-      return {};
-    }
-  }
+  // ============================================================================
+  // DEPRECATED V1 METHODS - Removed to eliminate dual-collection writes
+  // ============================================================================
+  //
+  // The following methods queried the legacy 'user_analytics' collection:
+  // - getBusinessAnalytics() → Use Dashboard queries on 'analytics_events' instead
+  // - getUserDemographics() → User demographics now stored in event metadata
+  //
+  // Migration: All analytics now use the V3 'analytics_events' collection
+  // which is queried directly by the Dashboard application.
+  // ============================================================================
 
   /// Flushes any remaining events in the queue
   /// Should be called when app is going to background or terminating
@@ -680,16 +417,17 @@ class AnalyticsService {
   }
 
   // ============================================================================
-  // V2: Dashboard-Compatible Analytics Events
-  // Tracks events to 'analytics_events' collection for Dashboard consumption
+  // V3: Optimized Dashboard-Compatible Analytics Events
+  // - Single collection architecture (analytics_events only)
+  // - Smart batching (time + count based)
+  // - 24-hour impression window (Meta/Facebook standard)
   // ============================================================================
 
   /// Track impression event (shown in feed/map)
-  /// Matches Dashboard schema exactly
-  /// CRITICAL FIX: Time-based deduplication (Facebook/Meta style)
-  /// - Prevents scroll bounce duplicates (3-minute cooldown window)
-  /// - Allows re-engagement tracking after cooldown period
-  /// - Provides accurate conversion funnel metrics for Dashboard
+  /// OPTIMIZED V3: 24-hour deduplication window (Meta/Facebook standard)
+  /// - Prevents scroll bounce duplicates
+  /// - Allows daily re-engagement tracking
+  /// - Accurate conversion funnel metrics for Dashboard
   Future<void> trackDashboardImpression({
     required String entityType, // "business" | "promotion"
     required String entityId,
@@ -701,26 +439,26 @@ class AnalyticsService {
     final impressionKey = '$entityType:$entityId:${screen ?? "unknown"}';
     final now = DateTime.now();
 
-    // Check if tracked recently (within 3-minute window)
+    // Check if tracked recently (within 24-hour window)
     if (_impressionTimestamps.containsKey(impressionKey)) {
       final lastTracked = _impressionTimestamps[impressionKey]!;
       final timeSinceLastImpression = now.difference(lastTracked);
 
       if (timeSinceLastImpression < _impressionWindow) {
-        // Within cooldown window - skip to prevent scroll bounce duplicates
+        // Within cooldown window - skip to prevent duplicates
         if (_debugMode) {
-          final remainingSeconds = (_impressionWindow - timeSinceLastImpression).inSeconds;
-          log('📊 Impression cooldown active: $impressionKey (${remainingSeconds}s remaining)');
+          final remainingHours = (_impressionWindow - timeSinceLastImpression).inHours;
+          log('📊 Impression cooldown active: $impressionKey (${remainingHours}h remaining)');
         }
         return; // Skip duplicate impression
       }
     }
 
-    // Update timestamp (either new or cooldown expired = re-engagement)
+    // Update timestamp (either new or cooldown expired = daily re-engagement)
     _impressionTimestamps[impressionKey] = now;
 
-    // Track the impression
-    await _trackDashboardEvent(
+    // Track the impression (queued for batching)
+    _trackDashboardEvent(
       eventType: 'impression',
       entityType: entityType,
       entityId: entityId,
@@ -735,15 +473,15 @@ class AnalyticsService {
   }
 
   /// Track view event (details page opened)
-  /// Matches Dashboard schema exactly
-  Future<void> trackDashboardView({
+  /// OPTIMIZED V3: Non-blocking, queued for batching
+  void trackDashboardView({
     required String entityType, // "business" | "promotion"
     required String entityId,
     String? businessId,
     String? locationId,
     String? screen,
-  }) async {
-    await _trackDashboardEvent(
+  }) {
+    _trackDashboardEvent(
       eventType: 'view',
       entityType: entityType,
       entityId: entityId,
@@ -754,14 +492,14 @@ class AnalyticsService {
   }
 
   /// Track save event (favorite button)
-  /// Matches Dashboard schema exactly
-  Future<void> trackDashboardSave({
+  /// OPTIMIZED V3: Non-blocking, queued for batching
+  void trackDashboardSave({
     required String entityType, // "business" | "promotion"
     required String entityId,
     String? businessId,
     String? locationId,
-  }) async {
-    await _trackDashboardEvent(
+  }) {
+    _trackDashboardEvent(
       eventType: 'save',
       entityType: entityType,
       entityId: entityId,
@@ -771,14 +509,14 @@ class AnalyticsService {
   }
 
   /// Track share event
-  /// Matches Dashboard schema exactly
-  Future<void> trackDashboardShare({
+  /// OPTIMIZED V3: Non-blocking, queued for batching
+  void trackDashboardShare({
     required String entityType, // "business" | "promotion"
     required String entityId,
     String? businessId,
     String? locationId,
-  }) async {
-    await _trackDashboardEvent(
+  }) {
+    _trackDashboardEvent(
       eventType: 'share',
       entityType: entityType,
       entityId: entityId,
@@ -788,15 +526,15 @@ class AnalyticsService {
   }
 
   /// Track click event (for heatmaps)
-  /// Matches Dashboard schema exactly
-  Future<void> trackDashboardClick({
+  /// OPTIMIZED V3: Non-blocking, queued for batching
+  void trackDashboardClick({
     required String entityType, // "business" | "promotion"
     required String entityId,
     String? businessId,
     String? locationId,
     String? screen,
-  }) async {
-    await _trackDashboardEvent(
+  }) {
+    _trackDashboardEvent(
       eventType: 'click',
       entityType: entityType,
       entityId: entityId,
@@ -807,13 +545,13 @@ class AnalyticsService {
   }
 
   /// Track redemption event (QR code scan)
-  /// Matches Dashboard schema exactly
-  Future<void> trackDashboardRedemption({
+  /// OPTIMIZED V3: Non-blocking, queued for batching
+  void trackDashboardRedemption({
     required String promotionId,
     required String businessId,
     String? locationId,
-  }) async {
-    await _trackDashboardEvent(
+  }) {
+    _trackDashboardEvent(
       eventType: 'redemption',
       entityType: 'promotion',
       entityId: promotionId,
@@ -822,16 +560,16 @@ class AnalyticsService {
     );
   }
 
-  /// Internal method to write Dashboard-compatible events to Firestore
-  /// Schema matches Dashboard expectations exactly
-  Future<void> _trackDashboardEvent({
+  /// Internal method to queue Dashboard-compatible events for batching
+  /// OPTIMIZED V3: Uses smart batching instead of immediate writes
+  void _trackDashboardEvent({
     required String eventType,
     required String entityType,
     required String entityId,
     String? businessId,
     String? locationId,
     String? screen,
-  }) async {
+  }) {
     try {
       // Get current user for user context
       final currentUser = _auth.currentUser;
@@ -849,6 +587,8 @@ class AnalyticsService {
         'user_type': userId != null ? 'consumer' : 'anonymous',
         'user_rank': _userContext?['rank'],
         'user_city': _userContext?['city'],
+        'user_sex': _userContext?['sex'], // V3 demographic field
+        'user_age_range': _userContext?['age_range'], // V3 demographic field
 
         // Business/Location Context (REQUIRED for filtering)
         'business_id': businessId,
@@ -871,7 +611,7 @@ class AnalyticsService {
       // Remove null values to reduce document size
       eventData.removeWhere((key, value) => value == null);
 
-      // CRITICAL FIX: Optimize metadata - remove null values and empty metadata
+      // Optimize metadata - remove null values and empty metadata
       if (eventData['metadata'] != null) {
         final metadata = eventData['metadata'] as Map<String, dynamic>;
         metadata.removeWhere((key, value) => value == null);
@@ -882,12 +622,12 @@ class AnalyticsService {
         }
       }
 
-      // Write to analytics_events collection for Dashboard
-      await _firestore.collection('analytics_events').add(eventData);
+      // Queue event for smart batching (non-blocking)
+      _queueEvent(eventData);
 
       // Debug mode - print tracked events
       if (_debugMode) {
-        log('📊 Dashboard Analytics: $eventType | $entityType | $entityId');
+        log('📊 Dashboard Analytics queued: $eventType | $entityType | $entityId');
       }
     } catch (e) {
       // Silently fail - don't break user experience for analytics

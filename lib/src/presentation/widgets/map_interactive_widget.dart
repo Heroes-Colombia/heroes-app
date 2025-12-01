@@ -44,6 +44,7 @@ class _MapInteractiveWidgetState extends State<MapInteractiveWidget> {
       //If not, get the user location and use it to get the map preview
       locator<AppMethods>().getUserLocation().then((value) {
         if (value == null) return;
+        if (!mounted) return;
 
         setState(() {
           latitude = value.latitude;
@@ -58,9 +59,10 @@ class _MapInteractiveWidgetState extends State<MapInteractiveWidget> {
     var theme = Theme.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(widget.borderRadius),
-      child: latitude != null
-          ? mapWidget(theme.brightness)
-          : const SizedBox.shrink(),
+      child:
+          latitude != null
+              ? mapWidget(theme.brightness)
+              : const SizedBox.shrink(),
     );
   }
 
@@ -80,21 +82,19 @@ class _MapInteractiveWidgetState extends State<MapInteractiveWidget> {
           'latitude': latitude,
           'longitude': longitude,
         });
-        AutoRouter.of(context).push(
-          MapView(initialCameraLocation: userLocationData),
-        );
+        AutoRouter.of(
+          context,
+        ).push(MapView(initialCameraLocation: userLocationData));
       },
       compassEnabled: false,
-      cloudMapId: appTheme == Brightness.light
-          ? locator.get<AppConstants>().lightMapTheme
-          : locator.get<AppConstants>().darkMapTheme,
+      cloudMapId:
+          appTheme == Brightness.light
+              ? locator.get<AppConstants>().lightMapTheme
+              : locator.get<AppConstants>().darkMapTheme,
       buildingsEnabled: false,
       mapType: MapType.normal,
       initialCameraPosition: CameraPosition(
-        target: LatLng(
-          latitude!,
-          longitude!,
-        ),
+        target: LatLng(latitude!, longitude!),
         zoom: 15,
       ),
     );

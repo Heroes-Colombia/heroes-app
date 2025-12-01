@@ -368,7 +368,7 @@ class AuthCubit extends Cubit<AuthState> {
         return;
       }
 
-      // V2: Initialize analytics session with user context
+      // V2: Initialize analytics session with user context (including V3 demographics)
       try {
         final analyticsService = locator.get<AnalyticsService>();
         analyticsService.initializeSession(
@@ -376,6 +376,8 @@ class AuthCubit extends Cubit<AuthState> {
           userContext: {
             'rank': user.rank,
             'city': user.city ?? 'Bogotá', // City from GPS or default to Bogotá
+            if (user.sex != null) 'sex': user.sex!, // V3 demographic
+            if (user.ageRange != null) 'age_range': user.ageRange!, // V3 demographic
           },
         );
       } catch (e) {

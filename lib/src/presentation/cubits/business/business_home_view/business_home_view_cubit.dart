@@ -164,13 +164,13 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       final promotionsCollection =
           locator.get<AppConstants>().advertisementCollection;
 
-      // Fetch first page of promotions (10 items) with pagination
+      // Fetch promotions to ensure fair business distribution
       final promotionsResponse = await locator
           .get<FirestoreService>()
           .readActiveDocumentsWithPagination(
             promotionsCollection,
-            orderByField: 'created_at',
-            limit: 10,
+            orderByField: 'expired_at',
+            limit: 100,
           );
 
       final rawPromotions =
@@ -188,16 +188,26 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
               )
               .toList();
 
+      // Apply fair distribution: Limit each business to max 1 promotion in carousel
+      // This ensures all businesses get equal visibility
+      final diversifiedPromotions = _diversifyPromotions(
+        allPromotions,
+        maxPerBusiness: 1,
+      );
+
       // Fetch business names for all promotions (JOIN operation)
       final uniqueBusinessIds =
-          allPromotions.map((promo) => promo.businessId).toSet().toList();
+          diversifiedPromotions
+              .map((promo) => promo.businessId)
+              .toSet()
+              .toList();
 
       final businessNamesMap = await locator<FirestoreService>()
           .readBusinessNamesByIds(businessCollection, uniqueBusinessIds);
 
       // Populate businessName field in each promotion
       final promotionsWithNames =
-          allPromotions.map((promo) {
+          diversifiedPromotions.map((promo) {
             return promo.copyWith(
               businessName: businessNamesMap[promo.businessId],
             );
@@ -277,13 +287,14 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
           locator.get<AppConstants>().advertisementCollection;
       final businessCollection = locator.get<AppConstants>().businessCollection;
 
-      // Fetch next page using cursor
+      // Fetch MANY MORE promotions than needed to ensure fair business distribution
+      // Larger batch size needed to get diverse businesses when some create 20+ promotions
       final promotionsResponse = await locator
           .get<FirestoreService>()
           .readActiveDocumentsWithPagination(
             promotionsCollection,
             orderByField: 'created_at',
-            limit: 10,
+            limit: 100,
             startAfterDocument: state.lastPromotionDoc,
           );
 
@@ -299,16 +310,34 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
               )
               .toList();
 
+      // Apply fair distribution considering ALREADY LOADED businesses
+      // Get business IDs that are already in the carousel
+      final alreadyLoadedBusinessIds =
+          state.featuredPromotions
+              .map((p) => p.businessId)
+              .toSet()
+              .cast<String>();
+
+      // Diversify new promotions while respecting already loaded businesses
+      final diversifiedNewPromotions = _diversifyPromotionsWithExisting(
+        newPromotions,
+        alreadyLoadedBusinessIds: alreadyLoadedBusinessIds,
+        maxPerBusiness: 1,
+      );
+
       // Fetch business names for new promotions (JOIN operation)
       final uniqueBusinessIds =
-          newPromotions.map((promo) => promo.businessId).toSet().toList();
+          diversifiedNewPromotions
+              .map((promo) => promo.businessId)
+              .toSet()
+              .toList();
 
       final businessNamesMap = await locator<FirestoreService>()
           .readBusinessNamesByIds(businessCollection, uniqueBusinessIds);
 
       // Populate businessName field in each promotion
       final promotionsWithNames =
-          newPromotions.map((promo) {
+          diversifiedNewPromotions.map((promo) {
             return promo.copyWith(
               businessName: businessNamesMap[promo.businessId],
             );
@@ -445,5 +474,57 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
         "city": city, // For analytics demographics
       },
     );
+  }
+
+  /// Helper method: Diversify promotions to ensure fair business representation
+  /// Limits each business to a maximum number of promotions in the carousel
+  List<Promotion> _diversifyPromotions(
+    List<Promotion> promotions, {
+    required int maxPerBusiness,
+  }) {
+    final Map<String, int> businessCount = {};
+    final List<Promotion> diversified = [];
+
+    // Iterate through promotions (already sorted by expired_at desc)
+    for (final promo in promotions) {
+      final currentCount = businessCount[promo.businessId] ?? 0;
+
+      if (currentCount < maxPerBusiness) {
+        diversified.add(promo);
+        businessCount[promo.businessId] = currentCount + 1;
+      }
+
+      // Stop once we have enough promotions (10 for carousel)
+      if (diversified.length >= 10) break;
+    }
+
+    return diversified;
+  }
+
+  /// Helper method: Diversify promotions considering already loaded businesses
+  /// Used for pagination to ensure fair distribution across pages
+  /// Skips businesses that already have their quota in the existing carousel
+  List<Promotion> _diversifyPromotionsWithExisting(
+    List<Promotion> newPromotions, {
+    required Set<String> alreadyLoadedBusinessIds,
+    required int maxPerBusiness,
+  }) {
+    final List<Promotion> diversified = [];
+
+    // Iterate through new promotions (already sorted by expired_at desc)
+    for (final promo in newPromotions) {
+      // If maxPerBusiness is 1 and business already loaded, skip
+      if (maxPerBusiness == 1 &&
+          alreadyLoadedBusinessIds.contains(promo.businessId)) {
+        continue;
+      }
+
+      diversified.add(promo);
+
+      // Stop once we have enough promotions (10 for each page)
+      if (diversified.length >= 10) break;
+    }
+
+    return diversified;
   }
 }

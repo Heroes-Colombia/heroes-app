@@ -80,6 +80,21 @@ class AppRouter extends RootStackRouter {
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
     CustomRoute(
+      page: EditPreferencesView.page,
+      path: '/editPreferences',
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute(
+      page: InviteFamilyView.page,
+      path: '/inviteFamily',
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute(
+      page: MyFamilyMembersView.page,
+      path: '/myFamilyMembers',
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute(
       page: UnverifiedUserView.page,
       path: '/unverifiedUser',
       transitionsBuilder: TransitionsBuilders.slideLeft,

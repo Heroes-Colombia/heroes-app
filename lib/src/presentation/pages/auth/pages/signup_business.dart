@@ -10,6 +10,7 @@ import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/business_model.dart';
 import 'package:heroes_app/src/domain/models/user_model.dart';
+import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 import 'package:heroes_app/src/presentation/widgets/async_button_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
@@ -431,12 +432,54 @@ class _SignUpBusinessViewState extends State<SignUpBusinessView> {
     //create a modifiable copy of the form data safely
     final rawFormData = _formKeySignUpBusiness.currentState!.value;
     var formData = <String, dynamic>{};
-    
+
     // Safely copy form data, filtering out problematic values
     for (final entry in rawFormData.entries) {
       if (entry.value != null && entry.value.toString().isNotEmpty) {
         formData[entry.key] = entry.value;
       }
+    }
+
+    // Check if email already exists before proceeding
+    final email = formData['email']?.toString();
+    if (email == null || email.isEmpty) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor ingresa un email válido'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final authService = locator.get<AuthService>();
+      final emailExists = await authService.isEmailRegistered(email);
+
+      if (emailExists) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Este correo electrónico ya está registrado. Usa otro email o inicia sesión.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      String errorMessage = 'Error al verificar el email';
+      if (e.toString().contains('Email format is invalid')) {
+        errorMessage = 'El formato del email no es válido';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
     }
 
     //If the user wants to create a new business attached to the new account

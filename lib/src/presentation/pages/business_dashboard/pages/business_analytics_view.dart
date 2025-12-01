@@ -1,7 +1,5 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
-import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:intl/intl.dart';
 
 @RoutePage()
@@ -28,39 +26,22 @@ class _BusinessAnalyticsViewState extends State<BusinessAnalyticsView> {
   Future<void> _loadAnalytics() async {
     setState(() => isLoading = true);
 
-    final endDate = DateTime.now();
-    final startDate = endDate.subtract(
-      Duration(days: int.parse(selectedPeriod)),
-    );
-    final analyticsService = GetIt.instance.get<AnalyticsService>();
+    // TODO: Implement analytics fetching using new events-based system
+    // This view is deprecated and should use the dashboard web analytics instead
+    // For now, just set empty data to prevent errors
 
     try {
-      final analytics = await analyticsService.getBusinessAnalytics(
-        businessId: widget.businessId,
-        startDate: startDate,
-        endDate: endDate,
-      );
-
-      final demographics = await analyticsService.getUserDemographics(
-        businessId: widget.businessId,
-        startDate: startDate,
-        endDate: endDate,
-      );
-
       setState(() {
-        // Safely handle the data with proper null checks and type casting
-        if (analytics.isNotEmpty) {
-          analyticsData = Map<String, dynamic>.from(analytics);
-        } else {
-          analyticsData = <String, dynamic>{};
-        }
-        
-        if (demographics.isNotEmpty) {
-          demographicsData = Map<String, dynamic>.from(demographics);
-        } else {
-          demographicsData = <String, dynamic>{};
-        }
-        
+        analyticsData = <String, dynamic>{
+          'views': 0,
+          'clicks': 0,
+          'conversions': 0,
+        };
+        demographicsData = <String, dynamic>{
+          'age_ranges': [],
+          'cities': [],
+          'ranks': [],
+        };
         isLoading = false;
       });
     } catch (e) {

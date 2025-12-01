@@ -37,8 +37,8 @@ class ProfileCubit extends Cubit<ProfileState> {
   //This method is used to get the profile info
   void getProfileInfo() async {
     try {
-      //First reset to initial state to ensure we're not using cached data
-      emit(const ProfileInitial());
+      //Emit loading state with previous user data if available (prevents showing null during refresh)
+      emit(ProfileLoading(user: state.user));
 
       //First collect the user info collection from Firestore
       final userCollection = locator.get<AppConstants>().usersCollection;

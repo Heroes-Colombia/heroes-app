@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,21 +7,21 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:heroes_app/src/domain/models/user_model.dart';
-import 'package:heroes_app/src/domain/models/verification_models.dart';
+import 'package:heroes_app/src/domain/models/business_category.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
+import 'package:heroes_app/assets/app_enums.dart';
 import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/searchable_rank_selector.dart';
+import 'package:heroes_app/src/presentation/widgets/sex_toggle_widget.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:ionicons/ionicons.dart';
-import 'package:heroes_app/src/domain/services/military_verification_service.dart';
-import 'package:heroes_app/src/domain/repositories/firestorage_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:heroes_app/src/domain/services/family_invitation_service.dart';
+import 'package:intl/intl.dart';
 
-// Enum for signup steps
-enum SignupStep { formEntry, militaryVerification, accountCreation, completed }
+// Enum for simplified 3-step signup flow
+enum SignupStep { account, personalDetails, familyAndPreferences }
 
 @RoutePage()
 class SignUpView extends StatefulWidget {
@@ -37,26 +35,55 @@ class SignUpView extends StatefulWidget {
 class _SignUpViewState extends State<SignUpView> {
   final _pageController = PageController();
   final locator = GetIt.instance;
-  
+
   // State management
-  SignupStep _currentStep = SignupStep.formEntry;
+  SignupStep _currentStep = SignupStep.account;
   Map<String, dynamic> _formData = {};
   bool _isLoading = false;
-  
-  // Key to force form rebuild when returning with saved data
-  GlobalKey<FormBuilderState> _formBuilderKey = GlobalKey<FormBuilderState>();
-  
-  // Military verification state
-  final ImagePicker _imagePicker = ImagePicker();
-  final MilitaryVerificationService _verificationService = MilitaryVerificationService();
-  int _currentAttempt = 1;
-  VerificationResult? _lastResult;
+
+  // Form keys for each step
+  final _accountFormKey = GlobalKey<FormBuilderState>();
+  final _personalDetailsFormKey = GlobalKey<FormBuilderState>();
+  final _preferencesFormKey = GlobalKey<FormBuilderState>();
+
+  // Categories state
+  List<BusinessCategory> _allCategories = [];
+  List<String> _selectedCategories = [];
+
+  // Invite code state (for beneficiaries joining via invite)
+  final _inviteCodeController = TextEditingController();
+  String? _invitedByMilitaryUid;
+  String? _selectedRelationship;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _verificationService.dispose();
+    _inviteCodeController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance
+              .collection('business_categories')
+              .get();
+
+      setState(() {
+        _allCategories =
+            snapshot.docs
+                .map((doc) => BusinessCategory.fromJson(doc.data()))
+                .toList();
+      });
+    } catch (e) {
+      // Silently fail - categories are optional
+    }
   }
 
   @override
@@ -65,9 +92,9 @@ class _SignUpViewState extends State<SignUpView> {
     final theme = Theme.of(context);
 
     return PopScope(
-      canPop: _currentStep == SignupStep.formEntry,
+      canPop: _currentStep == SignupStep.account,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && _currentStep != SignupStep.formEntry) {
+        if (!didPop && _currentStep != SignupStep.account) {
           _goToPreviousStep();
         }
       },
@@ -82,50 +109,49 @@ class _SignUpViewState extends State<SignUpView> {
             ),
           ),
           backgroundColor: Colors.transparent,
-          leading: _currentStep != SignupStep.formEntry
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: _goToPreviousStep,
-                )
-              : null,
+          leading:
+              _currentStep != SignupStep.account
+                  ? IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: _goToPreviousStep,
+                  )
+                  : null,
         ),
-      body: Column(
-        children: [
-          // Progress indicator
-          _buildProgressIndicator(theme),
-          // Page content
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(), // Disable swipe
-              children: [
-                _buildFormEntryStep(texts, theme),
-                _buildMilitaryVerificationStep(texts, theme),
-                _buildAccountCreationStep(texts, theme),
-              ],
+        body: Column(
+          children: [
+            // Progress indicator
+            _buildProgressIndicator(theme),
+            // Page content
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildAccountStep(texts, theme),
+                  _buildPersonalDetailsStep(texts, theme),
+                  _buildFamilyAndPreferencesStep(texts, theme),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
 
   // Navigation method for back button
   void _goToPreviousStep() {
-    if (_currentStep == SignupStep.militaryVerification) {
+    if (_currentStep == SignupStep.personalDetails) {
       setState(() {
-        _currentStep = SignupStep.formEntry;
-        // Force form rebuild with saved data by generating new key
-        _formBuilderKey = GlobalKey<FormBuilderState>();
+        _currentStep = SignupStep.account;
       });
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-    } else if (_currentStep == SignupStep.accountCreation) {
+    } else if (_currentStep == SignupStep.familyAndPreferences) {
       setState(() {
-        _currentStep = SignupStep.militaryVerification;
+        _currentStep = SignupStep.personalDetails;
       });
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
@@ -140,17 +166,22 @@ class _SignUpViewState extends State<SignUpView> {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          _buildStepIndicator(1, 'Información', _currentStep.index >= 0, theme),
+          _buildStepIndicator(1, 'Cuenta', _currentStep.index >= 0, theme),
           Expanded(child: _buildProgressLine(_currentStep.index >= 1, theme)),
-          _buildStepIndicator(2, 'Verificación', _currentStep.index >= 1, theme),
+          _buildStepIndicator(2, 'Información', _currentStep.index >= 1, theme),
           Expanded(child: _buildProgressLine(_currentStep.index >= 2, theme)),
-          _buildStepIndicator(3, 'Cuenta', _currentStep.index >= 2, theme),
+          _buildStepIndicator(3, 'Familia', _currentStep.index >= 2, theme),
         ],
       ),
     );
   }
 
-  Widget _buildStepIndicator(int step, String label, bool isCompleted, ThemeData theme) {
+  Widget _buildStepIndicator(
+    int step,
+    String label,
+    bool isCompleted,
+    ThemeData theme,
+  ) {
     return Column(
       children: [
         Container(
@@ -158,29 +189,33 @@ class _SignUpViewState extends State<SignUpView> {
           height: 32,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isCompleted 
-              ? theme.colorScheme.primary 
-              : theme.colorScheme.outline.withValues(alpha: 0.3),
+            color:
+                isCompleted
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.outline.withValues(alpha: 0.3),
           ),
           child: Center(
-            child: isCompleted
-              ? Icon(Icons.check, color: theme.colorScheme.onPrimary, size: 18)
-              : Text(
-                  step.toString(),
-                  style: TextStyle(
-                    color: isCompleted 
-                      ? theme.colorScheme.onPrimary 
-                      : theme.colorScheme.onSurface,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+            child:
+                isCompleted
+                    ? Icon(
+                      Icons.check,
+                      color: theme.colorScheme.onPrimary,
+                      size: 18,
+                    )
+                    : Text(
+                      step.toString(),
+                      style: TextStyle(
+                        color:
+                            isCompleted
+                                ? theme.colorScheme.onPrimary
+                                : theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: theme.textTheme.labelSmall,
-        ),
+        Text(label, style: theme.textTheme.labelSmall),
       ],
     );
   }
@@ -189,20 +224,21 @@ class _SignUpViewState extends State<SignUpView> {
     return Container(
       height: 2,
       margin: const EdgeInsets.only(bottom: 16),
-      color: isCompleted 
-        ? theme.colorScheme.primary 
-        : theme.colorScheme.outline.withValues(alpha: 0.3),
+      color:
+          isCompleted
+              ? theme.colorScheme.primary
+              : theme.colorScheme.outline.withValues(alpha: 0.3),
     );
   }
 
-  // Step 1: Form Entry
-  Widget _buildFormEntryStep(Map<String, String> texts, ThemeData theme) {
+  // Step 1: Account Creation (Email + Password)
+  Widget _buildAccountStep(Map<String, String> texts, ThemeData theme) {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: FormBuilder(
-          key: _formBuilderKey,
+          key: _accountFormKey,
           initialValue: _formData,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -221,70 +257,183 @@ class _SignUpViewState extends State<SignUpView> {
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
-              
-              // License and ID fields (not on iOS)
-              if (!Platform.isIOS) ...[
-                FormBuilderTextField(
-                  name: 'license',
-                  key: const Key('license'),
-                  decoration: InputDecoration(
-                    labelText: texts['license-label']!,
-                    hintText: texts['license-hint']!,
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (value) => validateInputs(context, value),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
+              const SizedBox(height: 24),
+
+              // Welcome message
+              Text(
+                '¡Bienvenido!',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
                 ),
-                const SizedBox(height: 12),
-                FormBuilderTextField(
-                  name: 'identification_card',
-                  key: const Key('identification_card'),
-                  decoration: InputDecoration(
-                    labelText: texts['identification-card-label']!,
-                    hintText: texts['identification-card-hint']!,
-                    border: const OutlineInputBorder(),
-                  ),
-                  validator: (value) => validateInputs(context, value),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Creemos tu cuenta en segundos',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
-                const SizedBox(height: 12),
-              ],
-              
-              // Name fields
-              Row(
-                children: [
-                  Expanded(
-                    child: FormBuilderTextField(
-                      name: 'first_name',
-                      key: const Key('_register_first_name'),
-                      decoration: InputDecoration(
-                        labelText: texts['firstname-label']!,
-                        hintText: texts['firstname-hint']!,
-                        border: const OutlineInputBorder(),
-                      ),
-                      validator: (value) => validateInputs(context, value),
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FormBuilderTextField(
-                      name: 'second_name',
-                      key: const Key('_register_second_name'),
-                      decoration: InputDecoration(
-                        labelText: texts['secondname-label']!,
-                        hintText: texts['secondname-hint']!,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                ],
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+
+              // Email field
+              EmailInputWidget(
+                keyName: 'signup_email',
+                key: const Key('signup_email'),
+                name: 'email',
+                label: texts['email-label']!,
+                hintText: texts['email-hint']!,
               ),
               const SizedBox(height: 12),
-              
-              // Last name fields
+
+              // Password field
+              PasswordInput(
+                keyName: '_register_password',
+                name: 'password',
+                label: texts['password-label']!,
+                hintText: texts['password-hint']!,
+              ),
+              const SizedBox(height: 12),
+
+              // Confirm Password field
+              FormBuilderTextField(
+                name: 'confirm_password',
+                key: const Key('_register_confirm_password'),
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Confirmar Contraseña',
+                  hintText: 'Confirma tu contraseña',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: const Icon(Icons.lock_outline),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor confirma tu contraseña';
+                  }
+                  final password =
+                      _accountFormKey.currentState?.fields['password']?.value;
+                  if (value != password) {
+                    return 'Las contraseñas no coinciden';
+                  }
+                  return null;
+                },
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+              ),
+              const SizedBox(height: 16),
+
+              // Terms and Privacy acceptance
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    'Al continuar, aceptas nuestros ',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  GestureDetector(
+                    onTap:
+                        () =>
+                            context.router.push(const TermsAndConditionsView()),
+                    child: Text(
+                      'Términos y Condiciones',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  Text(' y ', style: theme.textTheme.bodySmall),
+                  GestureDetector(
+                    onTap: () => context.router.push(const PrivacyPolicyView()),
+                    child: Text(
+                      'Política de Privacidad',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  Text('.', style: theme.textTheme.bodySmall),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Continue button
+              ElevatedButton(
+                onPressed:
+                    _isLoading ? null : () => _proceedToPersonalDetails(texts),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child:
+                    _isLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : const Text('Continuar'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Step 2: Personal Details
+  Widget _buildPersonalDetailsStep(Map<String, String> texts, ThemeData theme) {
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: FormBuilder(
+          key: _personalDetailsFormKey,
+          initialValue: _formData,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Welcome message
+              Text(
+                'Cuéntanos sobre ti',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Para personalizar tu experiencia',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+
+              // First name
+              FormBuilderTextField(
+                name: 'first_name',
+                key: const Key('_register_first_name'),
+                decoration: InputDecoration(
+                  labelText: texts['firstname-label']!,
+                  hintText: texts['firstname-hint']!,
+                  border: const OutlineInputBorder(),
+                ),
+                validator: (value) => validateInputs(context, value),
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+              ),
+              const SizedBox(height: 12),
+
+              // Last names row
               Row(
                 children: [
                   Expanded(
@@ -315,6 +464,30 @@ class _SignUpViewState extends State<SignUpView> {
               ),
               const SizedBox(height: 12),
 
+              // Date of birth picker
+              FormBuilderDateTimePicker(
+                name: 'date_of_birth',
+                inputType: InputType.date,
+                format: DateFormat('dd/MM/yyyy'),
+                decoration: const InputDecoration(
+                  labelText: 'Fecha de Nacimiento',
+                  hintText: 'Selecciona tu fecha de nacimiento',
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+                validator: (value) {
+                  if (value == null) return 'Campo requerido';
+                  final age = DateTime.now().difference(value).inDays ~/ 365;
+                  if (age < 18) return 'Debes ser mayor de 18 años';
+                  return null;
+                },
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                initialDate: DateTime(2000, 1, 1),
+                firstDate: DateTime(1920, 1, 1),
+                lastDate: DateTime.now(),
+              ),
+              const SizedBox(height: 12),
+
               // Rank selector
               FormBuilderField<String>(
                 name: 'rank',
@@ -334,76 +507,42 @@ class _SignUpViewState extends State<SignUpView> {
                 },
               ),
               const SizedBox(height: 12),
-              
-              // Email field
-              EmailInputWidget(
-                keyName: 'signup_email',
-                key: const Key('signup_email'),
-                name: 'email',
-                label: texts['email-label']!,
-                hintText: texts['email-hint']!,
-              ),
-              const SizedBox(height: 12),
-              
-              // Password field
-              PasswordInput(
-                keyName: '_register_password',
-                name: 'password',
-                label: texts['password-label']!,
-                hintText: texts['password-hint']!,
-              ),
-              const SizedBox(height: 16),
 
-              // Terms and Privacy acceptance
-              Wrap(
-                alignment: WrapAlignment.center,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text(
-                    'Al continuar, aceptas nuestros ',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  GestureDetector(
-                    onTap: () => context.router.push(const TermsAndConditionsView()),
-                    child: Text(
-                      'Términos y Condiciones',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    ' y ',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  GestureDetector(
-                    onTap: () => context.router.push(const PrivacyPolicyView()),
-                    child: Text(
-                      'Política de Privacidad',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '.',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
+              // Sex toggle - compact switch below rank
+              FormBuilderField<String>(
+                name: 'sex',
+                validator: (value) => value == null ? 'Campo requerido' : null,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                builder: (field) {
+                  return SexToggleWidget(
+                    selectedSex: field.value,
+                    onSexChanged: (sex) => field.didChange(sex),
+                    errorText: field.errorText,
+                  );
+                },
               ),
               const SizedBox(height: 24),
 
               // Continue button
               ElevatedButton(
-                onPressed: _isLoading ? null : () => _proceedToVerification(texts),
+                onPressed:
+                    _isLoading ? null : () => _proceedToFamilyAndPreferences(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Continuar a Verificación'),
+                child:
+                    _isLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : const Text('Continuar'),
               ),
             ],
           ),
@@ -412,25 +551,83 @@ class _SignUpViewState extends State<SignUpView> {
     );
   }
 
-  // Step 2: Military Verification (full implementation)
-  Widget _buildMilitaryVerificationStep(Map<String, String> texts, ThemeData theme) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildInstructionCard(theme),
-          const SizedBox(height: 24),
-          if (_lastResult != null) _buildResultCard(theme),
-          const SizedBox(height: 24),
-          _buildCameraButton(theme),
-          if (_isLoading) _buildProcessingIndicator(theme),
-        ],
+  // Step 3: Family Invitations & Preferences
+  Widget _buildFamilyAndPreferencesStep(
+    Map<String, String> texts,
+    ThemeData theme,
+  ) {
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: FormBuilder(
+          key: _preferencesFormKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Welcome message
+              Text(
+                'Invita a tu familia',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Y descubre lo que te gusta',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+
+              // Invite code section
+              _buildInviteCodeSection(theme),
+              const SizedBox(height: 32),
+
+              // Preferences section
+              _buildPreferencesSection(theme),
+              const SizedBox(height: 24),
+
+              // Create account button
+              ElevatedButton(
+                onPressed: _isLoading ? null : () => _createAccount(texts),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child:
+                    _isLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : const Text('Crear Cuenta'),
+              ),
+              const SizedBox(height: 12),
+
+              // Skip button
+              if (!_isLoading)
+                TextButton(
+                  onPressed: () => _createAccount(texts),
+                  child: const Text('Saltar por ahora'),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildInstructionCard(ThemeData theme) {
+  Widget _buildInviteCodeSection(ThemeData theme) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -439,127 +636,122 @@ class _SignUpViewState extends State<SignUpView> {
           children: [
             Row(
               children: [
-                Icon(Ionicons.shield_checkmark, color: theme.colorScheme.primary),
+                Icon(Icons.card_giftcard, color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
-                  'Verificación de Identidad Militar',
+                  '¿Tienes un código de invitación?',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            const Text(
-              'Para verificar tu identidad militar, usa ÚNICAMENTE tu documento oficial que incluya:',
-            ),
             const SizedBox(height: 8),
-            _buildRequirementsList(),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Ionicons.warning, color: Colors.red, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'NO uses cédula de ciudadanía regular. Debe ser documento militar oficial.',
-                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ],
+            Text(
+              'Si un familiar te invitó, ingresa el código aquí (opcional)',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Ionicons.shield_checkmark, color: Colors.green, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '🔒 Privacidad: Tu foto NO se almacena. Solo se usa para verificación temporal y se elimina automáticamente.',
-                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+            const SizedBox(height: 16),
+
+            // Invite code input with prominent validation
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _inviteCodeController,
+                    decoration: const InputDecoration(
+                      labelText: 'Código de invitación',
+                      hintText: 'HEROES-ABC123',
+                      border: OutlineInputBorder(),
+                      helperText: 'Ingresa el código y presiona "Validar"',
+                      helperMaxLines: 2,
+                    ),
+                    textCapitalization: TextCapitalization.characters,
+                    onChanged: (value) {
+                      setState(() {
+                        if (_invitedByMilitaryUid != null) {
+                          _invitedByMilitaryUid = null;
+                          _selectedRelationship = null;
+                        }
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed:
+                      _inviteCodeController.text.isEmpty
+                          ? null
+                          : _validateInviteCode,
+                  icon: const Icon(Icons.check_circle),
+                  label: const Text('Validar'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+
+            // Show relationship selector if code is valid
+            if (_invitedByMilitaryUid != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.green),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '¡Código válido! Selecciona tu relación familiar',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.green[800],
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _selectedRelationship,
+                decoration: const InputDecoration(
+                  labelText: 'Relación familiar',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'spouse', child: Text('Esposo/a')),
+                  DropdownMenuItem(value: 'child', child: Text('Hijo/a')),
+                  DropdownMenuItem(value: 'parent', child: Text('Padre/Madre')),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    _selectedRelationship = value;
+                  });
+                },
+              ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRequirementsList() {
-    return Column(
-      children: [
-        _buildRequirementItem('✓ "MINISTERIO DE DEFENSA NACIONAL"'),
-        _buildRequirementItem('✓ "POLICIA NACIONAL" (o institución militar)'),
-        _buildRequirementItem('✓ "Grado del titular" con tu rango militar'),
-        _buildRequirementItem('✓ Tu nombre completo e identificación'),
-      ],
-    );
-  }
-
-  Widget _buildRequirementItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(width: 8),
-          Expanded(child: Text(text)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildResultCard(ThemeData theme) {
-    if (_lastResult == null) return const SizedBox.shrink();
-
-    final result = _lastResult!;
-    Color cardColor;
-    IconData icon;
-    String title;
-
-    switch (result.status) {
-      case VerificationStatus.approved:
-        cardColor = Colors.green;
-        icon = Icons.check_circle;
-        title = '¡Verificación Exitosa!';
-        break;
-      case VerificationStatus.retryRequired:
-        cardColor = Colors.orange;
-        icon = Icons.warning;
-        title = 'Verificación Parcial';
-        break;
-      case VerificationStatus.failed:
-        cardColor = Colors.red;
-        icon = Icons.error;
-        title = 'Verificación Fallida';
-        break;
-      case VerificationStatus.manualReview:
-        cardColor = Colors.blue;
-        icon = Icons.pending;
-        title = 'Revisión Manual Requerida';
-        break;
-    }
-
+  Widget _buildPreferencesSection(ThemeData theme) {
     return Card(
-      color: cardColor.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -567,237 +759,115 @@ class _SignUpViewState extends State<SignUpView> {
           children: [
             Row(
               children: [
-                Icon(icon, color: cardColor),
+                Icon(Icons.favorite, color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
-                Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: cardColor)),
+                Text(
+                  'Tus preferencias (opcional)',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ],
             ),
-            if (result.reason != null) ...[
-              const SizedBox(height: 8),
-              Text(result.reason!),
-            ],
-            if (result.mismatches.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Text('Discrepancias encontradas:', style: TextStyle(fontWeight: FontWeight.bold)),
-              ..._getRelevantMismatches(result.mismatches).map((mismatch) => Padding(
-                padding: const EdgeInsets.only(left: 16, top: 4),
-                child: Text('• ${_getFieldDisplayName(mismatch.fieldName)}: "${mismatch.userInput}" vs "${mismatch.ocrExtracted}"'),
-              )),
-            ],
-            const SizedBox(height: 12),
-            Text('Puntuación: ${(result.matchScore * 100).toStringAsFixed(1)}%'),
-            Text('Intento: ${result.attemptNumber}/3'),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCameraButton(ThemeData theme) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: _isLoading ? null : () => _showImageSourceDialog(theme),
-        icon: Icon(Ionicons.camera),
-        label: Text(_currentAttempt == 1 
-            ? 'Agregar Documento Militar' 
-            : 'Reintentar Verificación ($_currentAttempt/3)'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.all(16),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProcessingIndicator(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          CircularProgressIndicator(color: theme.colorScheme.primary),
-          const SizedBox(height: 8),
-          Text('Procesando documento militar...', style: theme.textTheme.bodyMedium, textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
-
-  // Image source selection dialog
-  void _showImageSourceDialog(ThemeData theme) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Seleccionar Documento Militar'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(Ionicons.camera_outline, color: theme.colorScheme.primary),
-                title: const Text('Tomar Foto'),
-                subtitle: const Text('Usar la cámara para fotografiar el documento'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _takePhoto(ImageSource.camera);
-                },
+            const SizedBox(height: 8),
+            Text(
+              'Selecciona tus categorías favoritas para recibir promociones personalizadas',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
-              ListTile(
-                leading: Icon(Ionicons.image_outline, color: theme.colorScheme.primary),
-                title: const Text('Seleccionar de Galería'),
-                subtitle: const Text('Elegir una foto existente'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _takePhoto(ImageSource.gallery);
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
             ),
+            const SizedBox(height: 16),
+
+            if (_allCategories.isEmpty)
+              const Center(child: CircularProgressIndicator())
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children:
+                    _allCategories.map((category) {
+                      final isSelected = _selectedCategories.contains(
+                        category.name,
+                      );
+                      return FilterChip(
+                        label: Text(category.name),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setState(() {
+                            if (selected) {
+                              _selectedCategories.add(category.name);
+                            } else {
+                              _selectedCategories.remove(category.name);
+                            }
+                          });
+                        },
+                        selectedColor: theme.colorScheme.primaryContainer,
+                      );
+                    }).toList(),
+              ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
-  // Military verification methods
-  Future<void> _takePhoto(ImageSource source) async {
+  Future<void> _validateInviteCode() async {
+    final code = _inviteCodeController.text.trim().toUpperCase();
+    if (code.isEmpty) return;
+
     try {
-      // Only request camera permission when using camera
-      if (source == ImageSource.camera) {
-        final permissionStatus = await Permission.camera.request();
-        if (permissionStatus != PermissionStatus.granted) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Permiso de cámara requerido')),
-          );
-          return;
-        }
-      }
-
-      final XFile? image = await _imagePicker.pickImage(
-        source: source,
-        imageQuality: 80,
-      );
-
-      if (image == null) return;
-
-      setState(() {
-        _isLoading = true;
-      });
-
-      // Convert form data to the required format
-      final userEnteredData = <String, String>{};
-      for (final entry in _formData.entries) {
-        if (entry.value != null) {
-          userEnteredData[entry.key] = entry.value.toString();
-        }
-      }
-
-      final result = await _verificationService.verifyMilitaryIdentity(
-        userEnteredData: userEnteredData,
-        militaryIdImage: image,
-        userId: 'temp_user_id', // We don't have a user ID yet
-        attemptNumber: _currentAttempt,
-      );
+      final familyService = locator.get<FamilyInvitationService>();
+      final militaryUser = await familyService.validateInviteCode(code);
 
       if (!mounted) return;
 
+      if (militaryUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Código inválido. Verifica e intenta de nuevo'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Code is valid
       setState(() {
-        _isLoading = false;
-        _lastResult = result;
-        // Only increment if not approved (so user can see current attempt number correctly)
-        if (result.status != VerificationStatus.approved) {
-          _currentAttempt++;
-        }
+        _invitedByMilitaryUid = militaryUser['uid'] as String;
+        _inviteCodeController.text = code;
       });
 
-      // Handle the result
-      if (result.status == VerificationStatus.approved) {
-        // Move to account creation
-        _proceedToAccountCreation();
-      } else if (result.status == VerificationStatus.manualReview) {
-        // Create user account for manual review and save image
-        await _handleManualReview(image);
-      } else if (_currentAttempt > 3) {
-        // Max attempts reached - create user account for manual review
-        await _handleManualReview(image);
-      }
-      // Otherwise, user can retry with the feedback shown
-    } catch (e) {
-      if (!mounted) return;
-      
-      setState(() {
-        _isLoading = false;
-      });
-      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text(
+            '¡Código válido! Invitado por ${militaryUser['first_name']}',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al validar código: $e'),
           backgroundColor: Colors.red,
         ),
       );
     }
   }
 
-  // Step 3: Account Creation
-  Widget _buildAccountCreationStep(Map<String, String> texts, ThemeData theme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (_isLoading) ...[
-            const CircularProgressIndicator(),
-            const SizedBox(height: 24),
-            Text('Creando tu cuenta...', style: theme.textTheme.headlineMedium, textAlign: TextAlign.center),
-          ] else ...[
-            Icon(Icons.person_add, size: 70, color: theme.colorScheme.primary),
-            const SizedBox(height: 24),
-            Text('Crear Cuenta', style: theme.textTheme.headlineMedium, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            Text('Verificación completa. Crea tu cuenta y accede a todas las promociones que tenemos para ti.', style: theme.textTheme.headlineMedium, textAlign: TextAlign.center),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => _createAccount(texts),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-              ),
-              child: const Text('Crear Cuenta'),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   // Navigation methods
-  Future<void> _proceedToVerification(Map<String, String> texts) async {
-    // Get the current FormBuilder state using the dynamic key
-    final formBuilderState = _formBuilderKey.currentState;
-    if (formBuilderState == null) return;
-    
-    // Validate form
-    final formIsValid = formBuilderState.saveAndValidate();
-    if (!formIsValid) return;
+  Future<void> _proceedToPersonalDetails(Map<String, String> texts) async {
+    final formState = _accountFormKey.currentState;
+    if (formState == null) return;
+
+    if (!formState.saveAndValidate()) return;
 
     // Save form data
-    final rawFormData = formBuilderState.value;
-    _formData = <String, dynamic>{};
-    
-    for (final entry in rawFormData.entries) {
-      if (entry.value != null && entry.value.toString().isNotEmpty) {
-        _formData[entry.key] = entry.value;
-      }
-    }
+    final rawFormData = formState.value;
+    _formData.addAll(rawFormData);
 
-    // Check if email already exists before proceeding
+    // Check if email already exists
     final email = _formData['email']?.toString();
     if (email == null || email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -816,59 +886,67 @@ class _SignUpViewState extends State<SignUpView> {
     try {
       final authService = locator.get<AuthService>();
       final emailExists = await authService.isEmailRegistered(email);
-      
+
       if (!mounted) return;
-      
+
       if (emailExists) {
         setState(() {
           _isLoading = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Este correo electrónico ya está registrado. Usa otro email o inicia sesión.'),
+            content: Text(
+              'Este correo electrónico ya está registrado. Usa otro email o inicia sesión.',
+            ),
             backgroundColor: Colors.red,
           ),
         );
         return;
       }
 
-      // Email is available, proceed to verification
+      // Email is available, proceed to personal details
       setState(() {
         _isLoading = false;
-        _currentStep = SignupStep.militaryVerification;
+        _currentStep = SignupStep.personalDetails;
       });
-      
+
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } catch (e) {
       if (!mounted) return;
-      
+
       setState(() {
         _isLoading = false;
       });
-      
+
       String errorMessage = 'Error al verificar el email';
       if (e.toString().contains('Email format is invalid')) {
         errorMessage = 'El formato del email no es válido';
       }
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
       );
     }
   }
 
-  void _proceedToAccountCreation() {
+  void _proceedToFamilyAndPreferences() {
+    final formState = _personalDetailsFormKey.currentState;
+    if (formState == null) return;
+
+    if (!formState.saveAndValidate()) return;
+
+    // Save form data
+    final rawFormData = formState.value;
+    _formData.addAll(rawFormData);
+
     setState(() {
-      _currentStep = SignupStep.accountCreation;
+      _currentStep = SignupStep.familyAndPreferences;
     });
-    
+
     _pageController.nextPage(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -881,17 +959,104 @@ class _SignUpViewState extends State<SignUpView> {
     });
 
     try {
-      final userData = User.toInitialFirebaseJson(_formData, null);
+      // Add preferences to form data
+      if (_selectedCategories.isNotEmpty) {
+        _formData['preferred_categories'] = _selectedCategories;
+      }
+
+      // Determine if this is a beneficiary (invited family member) or regular user
+      final isBeneficiary =
+          _invitedByMilitaryUid != null &&
+          _inviteCodeController.text.isNotEmpty;
+
+      if (isBeneficiary && _selectedRelationship == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Por favor selecciona tu relación familiar'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final userData = User.toInitialFirebaseJson(
+        _formData,
+        isBeneficiary ? UserPermissions.beneficiary : null,
+      );
+
+      // Add beneficiary-specific fields if using invite code
+      if (isBeneficiary) {
+        userData['user_type'] = 'consumer';
+        userData['verified'] = true; // Auto-verify family members
+        userData['status'] = 'active';
+        userData['rank'] = 'OTROS_GRADOS_Beneficiarios';
+      }
+
       final result = await context.read<AuthCubit>().signUp(userData);
 
       if (!mounted) return;
 
       if (result.success) {
-        // Success - navigate to dashboard
+        // If beneficiary, create family relationship
+        bool familyLinkCreated = false;
+        if (isBeneficiary && result.userId != null) {
+          try {
+            final familyService = locator.get<FamilyInvitationService>();
+            await familyService.createFamilyRelationship(
+              inviteCode: _inviteCodeController.text.toUpperCase(),
+              militaryUid: _invitedByMilitaryUid!,
+              beneficiaryUid: result.userId!,
+              relationship: _selectedRelationship!,
+              beneficiaryName:
+                  '${_formData['first_name']} ${_formData['first_last_name']}',
+            );
+            familyLinkCreated = true;
+          } catch (e) {
+            // Log error and show warning but don't fail the signup
+            debugPrint('Error creating family relationship: $e');
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                    '⚠️ Tu cuenta fue creada, pero hubo un problema al vincular con tu familiar. '
+                    'Por favor contacta a soporte para completar la vinculación.',
+                  ),
+                  backgroundColor: Colors.orange,
+                  duration: const Duration(seconds: 6),
+                  action: SnackBarAction(
+                    label: 'OK',
+                    textColor: Colors.white,
+                    onPressed: () {},
+                  ),
+                ),
+              );
+            }
+          }
+        }
+
+        if (!mounted) return;
+
+        // Success - navigate to dashboard with appropriate message
+        String successMessage;
+        if (isBeneficiary) {
+          if (familyLinkCreated) {
+            successMessage =
+                "¡Bienvenido a Héroes Colombia! Tu cuenta ha sido vinculada exitosamente con tu familiar.";
+          } else {
+            successMessage =
+                "Tu cuenta ha sido creada. Nota: La vinculación familiar requiere atención - por favor contacta a soporte.";
+          }
+        } else {
+          successMessage =
+              "Tu cuenta ha sido creada exitosamente. Ya puedes acceder a todas las promociones.";
+        }
+
         locator.get<AppMethods>().showDialogAlert(
           context,
           "¡Cuenta Creada!",
-          "Tu cuenta ha sido creada exitosamente. Ya puedes acceder a todas las promociones.",
+          successMessage,
           "Continuar",
           () => AutoRouter.of(context).replaceAll([DashBoardView()]),
         );
@@ -906,7 +1071,7 @@ class _SignUpViewState extends State<SignUpView> {
       }
     } catch (e) {
       if (!mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
@@ -919,116 +1084,6 @@ class _SignUpViewState extends State<SignUpView> {
           _isLoading = false;
         });
       }
-    }
-  }
-
-  Future<void> _handleManualReview(XFile militaryIdImage) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Create user account with pending status for manual review
-      final userData = User.toInitialFirebaseJson(_formData, null);
-      
-      // Override status to pending and active to false for manual review
-      userData['status'] = 'pending';
-      userData['active'] = false;
-      userData['verified'] = false;
-      userData['requires_manual_review'] = true;
-      
-      final result = await context.read<AuthCubit>().signUp(userData);
-
-      if (!mounted) return;
-
-      if (result.success) {
-        // Upload the military ID image for admin review
-        try {
-          final fireStorageService = locator.get<FireStorageService>();
-          final userId = result.userId;
-          
-          if (userId != null) {
-            await fireStorageService.uploadUserIdentification(militaryIdImage, userId);
-          }
-        } catch (e) {
-          // Log error but don't fail the whole process - image upload is not critical
-        }
-
-        // Show manual review message and navigate to unverified user view
-        if (!mounted) return;
-        locator.get<AppMethods>().showDialogAlert(
-          context,
-          "Revisión Manual Requerida",
-          "Tu documento será revisado por nuestro equipo en 24-48 horas. Te notificaremos por email cuando esté listo.",
-          "Entendido",
-          () => AutoRouter.of(context).replaceAll([UnverifiedUserView()]),
-        );
-      } else {
-        // Registration failed - show error and go back to login
-        if (!mounted) return;
-        locator.get<AppMethods>().showDialogAlert(
-          context,
-          "Error en el registro",
-          result.errorMessage ?? "No se pudo crear la cuenta. Intenta nuevamente.",
-          "Entendido",
-          () => AutoRouter.of(context).replaceAll([LoginView(onResult: (callback) {})]),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al procesar revisión manual: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      
-      // Navigate back to login on error
-      AutoRouter.of(context).replaceAll([LoginView(onResult: (callback) {})]);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  // Helper method to filter out duplicate and irrelevant mismatches
-  List<FieldMismatch> _getRelevantMismatches(List<FieldMismatch> allMismatches) {
-    // Priority order: show most user-relevant comparisons only
-    final relevantFields = ['identification', 'first_name', 'apellidos_compound'];
-    final filteredMismatches = <FieldMismatch>[];
-    
-    for (final field in relevantFields) {
-      final mismatch = allMismatches.firstWhere(
-        (m) => m.fieldName == field,
-        orElse: () => FieldMismatch(fieldName: '', userInput: '', ocrExtracted: '', similarity: 1.0),
-      );
-      
-      if (mismatch.fieldName.isNotEmpty && mismatch.similarity < 0.8) {
-        filteredMismatches.add(mismatch);
-      }
-    }
-    
-    return filteredMismatches;
-  }
-  
-  // Helper method to translate field names to user-friendly Spanish
-  String _getFieldDisplayName(String fieldName) {
-    switch (fieldName) {
-      case 'identification':
-        return 'Número de identificación';
-      case 'first_name':
-        return 'Nombres';
-      case 'apellidos_compound':
-        return 'Apellidos';
-      case 'first_last_name':
-        return 'Primer apellido';
-      case 'second_last_name':
-        return 'Segundo apellido';
-      default:
-        return fieldName; // Fallback to original name
     }
   }
 

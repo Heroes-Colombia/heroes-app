@@ -14,6 +14,7 @@ import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:heroes_app/src/domain/services/military_id_ocr_service.dart';
 import 'package:heroes_app/src/domain/services/military_verification_service.dart';
 import 'package:heroes_app/src/domain/services/cache_service.dart';
+import 'package:heroes_app/src/domain/services/family_invitation_service.dart';
 
 final locator = GetIt.instance;
 
@@ -51,4 +52,7 @@ Future<void> initializeDependencies() async {
 
   // Register Cache Service
   locator.registerSingleton<CacheService>(CacheService());
+
+  // Register Family Invitation Service
+  locator.registerSingleton<FamilyInvitationService>(FamilyInvitationService());
 }

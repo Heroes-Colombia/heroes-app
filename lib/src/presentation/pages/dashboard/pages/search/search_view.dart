@@ -11,6 +11,7 @@ import 'package:heroes_app/src/domain/models/business_filter.dart';
 import 'package:heroes_app/src/domain/models/listable_business_model.dart';
 import 'package:heroes_app/src/domain/models/promotion_filter.dart';
 import 'package:heroes_app/src/domain/models/promotion_model.dart';
+import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:heroes_app/src/presentation/cubits/business/business_home_view/business_home_view_cubit.dart';
 import 'package:heroes_app/src/presentation/pages/dashboard/pages/search/delegates/search_business_delegate.dart';
 import 'package:heroes_app/src/presentation/widgets/horizontal_card_widget.dart';
@@ -110,9 +111,9 @@ class _SearchViewState extends State<SearchView> {
         // Featured promotions carousel (only show if there are promotions)
         if (state.featuredPromotions.isNotEmpty) ...[
           doubleTitle(theme, "Ofertas Destacadas", texts["seeAll"], () {
-            AutoRouter.of(context).push(
-              AllPromotionsView(filter: const PromotionFilter.featured()),
-            );
+            AutoRouter.of(
+              context,
+            ).push(AllPromotionsView(filter: const PromotionFilter.featured()));
           }),
           featuredPromotionsCarousel(state.featuredPromotions, context),
         ],
@@ -473,6 +474,10 @@ class _SearchViewState extends State<SearchView> {
             }
 
             final promotion = promotions[index] as Promotion;
+            _trackPromotionImpression(
+              promotion.documentId ?? '',
+              promotion.businessId,
+            );
             return PromotionCard(
               promotion: promotion,
               callback: () {
@@ -493,6 +498,17 @@ class _SearchViewState extends State<SearchView> {
                   : 0),
         ),
       ),
+    );
+  }
+
+  // V2: Track promotion impression in featured carousel
+  void _trackPromotionImpression(String promotionId, String businessId) {
+    final analyticsService = GetIt.instance.get<AnalyticsService>();
+    analyticsService.trackDashboardImpression(
+      entityType: 'promotion',
+      entityId: promotionId,
+      businessId: businessId,
+      screen: 'home_feed',
     );
   }
 }

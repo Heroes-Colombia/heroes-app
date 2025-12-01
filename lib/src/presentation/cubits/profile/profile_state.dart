@@ -12,6 +12,10 @@ final class ProfileInitial extends ProfileState {
   const ProfileInitial({super.user});
 }
 
+final class ProfileLoading extends ProfileState {
+  const ProfileLoading({super.user});
+}
+
 final class ProfileLoaded extends ProfileState {
   const ProfileLoaded({super.user});
 }

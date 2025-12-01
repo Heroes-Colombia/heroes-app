@@ -29,6 +29,7 @@ class _ProfileViewState extends State<ProfileView> {
   @override
   void initState() {
     super.initState();
+    context.read<ProfileCubit>().getProfileInfo();
 
     initTopics();
   }
@@ -93,6 +94,76 @@ class _ProfileViewState extends State<ProfileView> {
                     ),
                     title: Text(texts['delete-account-title']!),
                     onTap: () => deleteAccount(context, texts),
+                  ),
+                  // Family sections - only for military personnel
+                  BlocBuilder<ProfileCubit, ProfileState>(
+                    builder: (context, state) {
+                      final user = state.user;
+                      if (user == null || !user.canInviteFamily) {
+                        return const SizedBox.shrink();
+                      }
+
+                      return Column(
+                        children: [
+                          ListTile(
+                            leading: Icon(
+                              Ionicons.people_outline,
+                              color: theme.colorScheme.primary,
+                            ),
+                            title: const Text('Invitar Familiar'),
+                            subtitle: const Text(
+                              'Comparte tu código de invitación',
+                            ),
+                            trailing: const Icon(Ionicons.chevron_forward),
+                            onTap:
+                                () => context.router.push(
+                                  const InviteFamilyView(),
+                                ),
+                          ),
+                          ListTile(
+                            leading: Icon(
+                              Ionicons.heart_circle_outline,
+                              color: theme.colorScheme.primary,
+                            ),
+                            title: const Text('Mi Familia'),
+                            subtitle: const Text('Ver miembros registrados'),
+                            trailing: const Icon(Ionicons.chevron_forward),
+                            onTap:
+                                () => context.router.push(
+                                  const MyFamilyMembersView(),
+                                ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  // Preferences section - for all users
+                  BlocBuilder<ProfileCubit, ProfileState>(
+                    builder: (context, state) {
+                      final user = state.user;
+                      if (user == null) return const SizedBox.shrink();
+
+                      final preferredCount =
+                          user.preferredCategories?.length ?? 0;
+
+                      return ListTile(
+                        leading: Icon(
+                          Ionicons.heart_outline,
+                          color: theme.colorScheme.primary,
+                        ),
+                        title: const Text('Mis Preferencias'),
+                        subtitle: Text(
+                          preferredCount > 0
+                              ? '$preferredCount categorías seleccionadas'
+                              : 'Personaliza tus promociones',
+                        ),
+                        trailing: const Icon(Ionicons.chevron_forward),
+                        onTap:
+                            () => context.router.push(
+                              const EditPreferencesView(),
+                            ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   Text(
