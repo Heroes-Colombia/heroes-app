@@ -14,6 +14,7 @@ import 'package:heroes_app/src/domain/models/review_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 import 'package:heroes_app/src/domain/services/location_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 part 'business_details_state.dart';
 
@@ -177,9 +178,9 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
     final userFavouriteBusinesses = user!.favouriteBusinesses;
 
     if (userFavouriteBusinesses.contains(businessId)) {
-      emit(state.copyWith(isFavourite: true));
+      emit(state.copyWith(isFavourite: true, favouriteIsLoading: false));
     } else {
-      emit(state.copyWith(isFavourite: false));
+      emit(state.copyWith(isFavourite: false, favouriteIsLoading: false));
     }
   }
 
@@ -297,11 +298,11 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
         'favourite_businesses': copyOfUserFavouriteBusinesses,
       });
 
-      //We update the state
-      emit(state.copyWith(isFavourite: state.isFavourite));
+      //We update the state with favouriteIsLoading set to false
+      emit(state.copyWith(isFavourite: state.isFavourite, favouriteIsLoading: false));
     } catch (e) {
       //If the update fails, we revert the state
-      emit(state.copyWith(isFavourite: !state.isFavourite));
+      emit(state.copyWith(isFavourite: !state.isFavourite, favouriteIsLoading: false));
       log(
         'Error: $e, Function: setBusinessAsFavourite, File: business_details_cubit.dart',
       );
@@ -323,5 +324,49 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       address: state.business!.address,
       texts: texts,
     );
+  }
+
+  //This method is used to open the business website
+  void openWebsite(String website) async {
+    // Ensure the URL has a proper scheme (http:// or https://)
+    String url = website.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://$url';
+    }
+
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  //This method is used to call the business
+  void callBusiness(String phoneNumber) async {
+    final uri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
+  //This method is used to open WhatsApp with the business phone number
+  void openWhatsApp(String phoneNumber) async {
+    // Remove any spaces, dashes, or special characters from phone number
+    String cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+
+    // Check if phone number starts with a country code (starts with + or has more than 10 digits)
+    // If not, add Colombia country code (+57) by default
+    if (!cleanPhone.startsWith('+') && cleanPhone.length <= 10) {
+      cleanPhone = '57$cleanPhone';
+    } else if (cleanPhone.startsWith('+')) {
+      // Remove the + for wa.me URL
+      cleanPhone = cleanPhone.substring(1);
+    }
+
+    // Try WhatsApp URL first (works on both platforms)
+    final whatsappUrl = Uri.parse('https://wa.me/$cleanPhone');
+
+    if (await canLaunchUrl(whatsappUrl)) {
+      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+    }
   }
 }

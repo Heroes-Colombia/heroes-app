@@ -188,24 +188,31 @@ class _AllPromotionsViewState extends State<AllPromotionsView> {
   //Widgets
   Widget promotionsList(List<Promotion> promotions, theme, texts) {
     return promotions.isNotEmpty
-        ? SliverList.builder(
+        ? SliverGrid.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.85,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+          ),
           itemCount: promotions.length,
           itemBuilder: (context, index) {
             final promotion = promotions[index];
-            _trackPromotionImpression(promotion.documentId ?? '', promotion.businessId);
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: PromotionCard(
-                promotion: promotion,
-                callback: () {
-                  AutoRouter.of(context).push(
-                    PromotionDetailsView(
-                      promotionId: promotion.documentId ?? '',
-                      promotion: promotion,
-                    ),
-                  );
-                },
-              ),
+            _trackPromotionImpression(
+              promotion.documentId ?? '',
+              promotion.businessId,
+            );
+            return PromotionCard(
+              promotion: promotion,
+              isOnGrid: true,
+              callback: () {
+                AutoRouter.of(context).push(
+                  PromotionDetailsView(
+                    promotionId: promotion.documentId ?? '',
+                    promotion: promotion,
+                  ),
+                );
+              },
             );
           },
         )
@@ -229,7 +236,9 @@ class _AllPromotionsViewState extends State<AllPromotionsView> {
             categories: state.categories,
             selectedCategoryId: state.selectedCategoryId,
             onCategorySelected: (categoryId) {
-              context.read<AllPromotionsCubit>().setSelectedCategoryId(categoryId ?? '');
+              context.read<AllPromotionsCubit>().setSelectedCategoryId(
+                categoryId ?? '',
+              );
             },
             allCategoriesText: texts["all-categories"],
           ),

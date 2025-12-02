@@ -26,7 +26,7 @@ class PromotionCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      width: isOnGrid ? null : 280,
+      width: isOnGrid ? null : 240,
       margin: isOnGrid ? EdgeInsets.zero : const EdgeInsets.only(right: 12),
       child: InkWell(
         onTap: callback,
@@ -61,7 +61,7 @@ class PromotionCard extends StatelessWidget {
                                 child: Image.network(
                                   promotion.featuredImage,
                                   width: double.infinity,
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.contain,
                                   // Performance optimizations
                                   cacheWidth:
                                       560, // 2x resolution for sharp display

@@ -56,24 +56,24 @@ class BusinessLocation extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        isPrimary,
-        type,
-        status,
-        phone,
-        email,
-        address,
-        location,
-        geoHash,
-        businessHours,
-        deliveryZones,
-        deliveryType,
-        whatsapp,
-        createdAt,
-        updatedAt,
-        distanceKm,
-      ];
+    id,
+    name,
+    isPrimary,
+    type,
+    status,
+    phone,
+    email,
+    address,
+    location,
+    geoHash,
+    businessHours,
+    deliveryZones,
+    deliveryType,
+    whatsapp,
+    createdAt,
+    updatedAt,
+    distanceKm,
+  ];
 
   /// Check if this is a physical location (has address and coordinates)
   bool get isPhysical => type == 'physical';
@@ -95,7 +95,10 @@ class BusinessLocation extends Equatable {
     return name;
   }
 
-  factory BusinessLocation.fromJson(Map<String, dynamic> json, String documentId) {
+  factory BusinessLocation.fromJson(
+    Map<String, dynamic> json,
+    String documentId,
+  ) {
     // Handle GeoPoint conversion - it could be a GeoPoint or a Map
     GeoPoint? geoPoint;
     if (json['location'] != null) {
@@ -109,6 +112,26 @@ class BusinessLocation extends Equatable {
             (locMap['longitude'] as num).toDouble(),
           );
         }
+      }
+    } else if (json['geo_hash'] != null) {
+      // Fallback to geo_hash if location is missing
+      try {
+        final geoHash = json['geo_hash'] as Map<String, dynamic>;
+        final geopointData = geoHash['geopoint'];
+
+        if (geopointData is GeoPoint) {
+          geoPoint = geopointData;
+        } else if (geopointData is Map) {
+          final locMap = geopointData as Map<String, dynamic>;
+          if (locMap['latitude'] != null && locMap['longitude'] != null) {
+            geoPoint = GeoPoint(
+              (locMap['latitude'] as num).toDouble(),
+              (locMap['longitude'] as num).toDouble(),
+            );
+          }
+        }
+      } catch (e) {
+        // Ignore parsing errors for fallback
       }
     }
 
@@ -124,9 +147,10 @@ class BusinessLocation extends Equatable {
       location: geoPoint,
       geoHash: json['geo_hash'] as Map<String, dynamic>?,
       businessHours: json['business_hours'] as Map<String, dynamic>?,
-      deliveryZones: json['delivery_zones'] != null
-          ? List<String>.from(json['delivery_zones'] as List)
-          : null,
+      deliveryZones:
+          json['delivery_zones'] != null
+              ? List<String>.from(json['delivery_zones'] as List)
+              : null,
       deliveryType: json['delivery_type'] as String?,
       whatsapp: json['whatsapp'] as String?,
       createdAt: json['created_at'] as Timestamp?,
@@ -203,7 +227,8 @@ class BusinessLocation extends Equatable {
     final double dLat = _toRadians(location!.latitude - userLat);
     final double dLng = _toRadians(location!.longitude - userLng);
 
-    final double a = sin(dLat / 2) * sin(dLat / 2) +
+    final double a =
+        sin(dLat / 2) * sin(dLat / 2) +
         cos(_toRadians(userLat)) *
             cos(_toRadians(location!.latitude)) *
             sin(dLng / 2) *

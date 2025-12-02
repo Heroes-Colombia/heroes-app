@@ -87,14 +87,14 @@ class _ProfileViewState extends State<ProfileView> {
                     title: Text(texts['logout']!),
                     onTap: () => doLogOut(context, texts),
                   ),
-                  ListTile(
-                    leading: Icon(
-                      Ionicons.trash_outline,
-                      color: theme.colorScheme.primary,
-                    ),
-                    title: Text(texts['delete-account-title']!),
-                    onTap: () => deleteAccount(context, texts),
-                  ),
+                  // ListTile(
+                  //   leading: Icon(
+                  //     Ionicons.trash_outline,
+                  //     color: theme.colorScheme.primary,
+                  //   ),
+                  //   title: Text(texts['delete-account-title']!),
+                  //   onTap: () => deleteAccount(context, texts),
+                  // ),
                   // Family sections - only for military personnel
                   BlocBuilder<ProfileCubit, ProfileState>(
                     builder: (context, state) {

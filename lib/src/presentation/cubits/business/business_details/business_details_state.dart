@@ -34,8 +34,8 @@ final class BusinessDetailsState extends Equatable {
     List<UserReview>? allUserReviews,
     List<BusinessLocation>? locations,
     bool? isFavourite,
-    bool favouriteIsLoading = false,
-    bool isReviewLoading = false,
+    bool? favouriteIsLoading,
+    bool? isReviewLoading,
   }) {
     return BusinessDetailsState(
       businessId: businessId ?? this.businessId,
@@ -46,8 +46,8 @@ final class BusinessDetailsState extends Equatable {
       status: status ?? this.status,
       promotions: promotions ?? this.promotions,
       isFavourite: isFavourite ?? this.isFavourite,
-      favouriteIsLoading: favouriteIsLoading,
-      isReviewLoading: isReviewLoading,
+      favouriteIsLoading: favouriteIsLoading ?? this.favouriteIsLoading,
+      isReviewLoading: isReviewLoading ?? this.isReviewLoading,
     );
   }
 

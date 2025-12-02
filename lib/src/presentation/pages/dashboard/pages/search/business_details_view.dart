@@ -925,7 +925,6 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     final state = context.read<BusinessDetailsCubit>().state;
     if (state.business == null) return;
 
-    // CRITICAL FIX: Track BEFORE state changes, using inverted current state
     final willBeFavorite = !state.isFavourite;
 
     if (willBeFavorite) {
@@ -1128,47 +1127,18 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
   }
 
   //This method is used to open the business website
-  void openWebsite(String website) async {
-    // Ensure the URL has a proper scheme (http:// or https://)
-    String url = website.trim();
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://$url';
-    }
-
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+  void openWebsite(String website) {
+    context.read<BusinessDetailsCubit>().openWebsite(website);
   }
 
   //This method is used to call the business
-  void callBusiness(String phoneNumber) async {
-    final uri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
+  void callBusiness(String phoneNumber) {
+    context.read<BusinessDetailsCubit>().callBusiness(phoneNumber);
   }
 
   //This method is used to open WhatsApp with the business phone number
-  void openWhatsApp(String phoneNumber) async {
-    // Remove any spaces, dashes, or special characters from phone number
-    String cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-
-    // Check if phone number starts with a country code (starts with + or has more than 10 digits)
-    // If not, add Colombia country code (+57) by default
-    if (!cleanPhone.startsWith('+') && cleanPhone.length <= 10) {
-      cleanPhone = '57$cleanPhone';
-    } else if (cleanPhone.startsWith('+')) {
-      // Remove the + for wa.me URL
-      cleanPhone = cleanPhone.substring(1);
-    }
-
-    // Try WhatsApp URL first (works on both platforms)
-    final whatsappUrl = Uri.parse('https://wa.me/$cleanPhone');
-
-    if (await canLaunchUrl(whatsappUrl)) {
-      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
-    }
+  void openWhatsApp(String phoneNumber) {
+    context.read<BusinessDetailsCubit>().openWhatsApp(phoneNumber);
   }
 
   //This method is used to open email client

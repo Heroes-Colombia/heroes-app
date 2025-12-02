@@ -6,6 +6,7 @@ import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:location/location.dart';
+import 'package:heroes_app/src/domain/services/analytics_service.dart';
 
 class MapInteractiveWidget extends StatefulWidget {
   final double borderRadius;
@@ -68,6 +69,7 @@ class _MapInteractiveWidgetState extends State<MapInteractiveWidget> {
 
   GoogleMap mapWidget(Brightness appTheme) {
     return GoogleMap(
+      key: UniqueKey(), // Prevents "recreating view" error
       zoomControlsEnabled: false,
       myLocationEnabled: true,
       myLocationButtonEnabled: false,
@@ -78,6 +80,14 @@ class _MapInteractiveWidgetState extends State<MapInteractiveWidget> {
       rotateGesturesEnabled: false,
       scrollGesturesEnabled: false,
       onTap: (LatLng latLng) {
+        // Track map widget interaction
+        final analyticsService = locator.get<AnalyticsService>();
+        analyticsService.trackDashboardClick(
+          entityType: 'business',
+          entityId: 'map_widget',
+          screen: 'map_interactive_widget',
+        );
+
         LocationData userLocationData = LocationData.fromMap({
           'latitude': latitude,
           'longitude': longitude,
