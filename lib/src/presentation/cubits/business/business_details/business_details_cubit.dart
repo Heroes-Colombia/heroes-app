@@ -13,6 +13,7 @@ import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/src/domain/models/review_model.dart';
 import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
+import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:heroes_app/src/domain/services/location_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -67,8 +68,6 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
         'Error: $e, Function: getBusinessDetails, File: business_details_cubit.dart',
         stackTrace: StackTrace.current,
       );
-      print('❌ DASHBOARD ERROR: $e');
-      print('Stack trace: $stackTrace');
       emit(state.copyWith(status: BusinessViewCubitStatus.error));
     }
   }
@@ -299,10 +298,20 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       });
 
       //We update the state with favouriteIsLoading set to false
-      emit(state.copyWith(isFavourite: state.isFavourite, favouriteIsLoading: false));
+      emit(
+        state.copyWith(
+          isFavourite: state.isFavourite,
+          favouriteIsLoading: false,
+        ),
+      );
     } catch (e) {
       //If the update fails, we revert the state
-      emit(state.copyWith(isFavourite: !state.isFavourite, favouriteIsLoading: false));
+      emit(
+        state.copyWith(
+          isFavourite: !state.isFavourite,
+          favouriteIsLoading: false,
+        ),
+      );
       log(
         'Error: $e, Function: setBusinessAsFavourite, File: business_details_cubit.dart',
       );
@@ -315,7 +324,21 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
   }
 
   //This method is used to navigate to the business in any map application compatible with the geo intent
-  void openUrl(BuildContext context, texts) async {
+  void openUrl(
+    BuildContext context,
+    texts, {
+    String screen = 'business_details',
+  }) async {
+    // Track navigation click
+    final analyticsService = locator.get<AnalyticsService>();
+    analyticsService.trackDashboardClick(
+      entityType: 'business',
+      entityId: state.businessId ?? '',
+      businessId: state.businessId ?? '',
+      screen: screen,
+      metadata: {'link_type': 'navigation', 'link_value': 'maps'},
+    );
+
     // Use shared navigation utility from AppMethods
     await locator.get<AppMethods>().navigateToLocation(
       context: context,
@@ -327,7 +350,17 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
   }
 
   //This method is used to open the business website
-  void openWebsite(String website) async {
+  void openWebsite(String website, {String screen = 'business_details'}) async {
+    // Track website click
+    final analyticsService = locator.get<AnalyticsService>();
+    analyticsService.trackDashboardClick(
+      entityType: 'business',
+      entityId: state.businessId ?? '',
+      businessId: state.businessId ?? '',
+      screen: screen,
+      metadata: {'link_type': 'website', 'link_value': website},
+    );
+
     // Ensure the URL has a proper scheme (http:// or https://)
     String url = website.trim();
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -341,7 +374,20 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
   }
 
   //This method is used to call the business
-  void callBusiness(String phoneNumber) async {
+  void callBusiness(
+    String phoneNumber, {
+    String screen = 'business_details',
+  }) async {
+    // Track phone call click
+    final analyticsService = locator.get<AnalyticsService>();
+    analyticsService.trackDashboardClick(
+      entityType: 'business',
+      entityId: state.businessId ?? '',
+      businessId: state.businessId ?? '',
+      screen: screen,
+      metadata: {'link_type': 'phone', 'link_value': phoneNumber},
+    );
+
     final uri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -349,7 +395,20 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
   }
 
   //This method is used to open WhatsApp with the business phone number
-  void openWhatsApp(String phoneNumber) async {
+  void openWhatsApp(
+    String phoneNumber, {
+    String screen = 'business_details',
+  }) async {
+    // Track WhatsApp click
+    final analyticsService = locator.get<AnalyticsService>();
+    analyticsService.trackDashboardClick(
+      entityType: 'business',
+      entityId: state.businessId ?? '',
+      businessId: state.businessId ?? '',
+      screen: screen,
+      metadata: {'link_type': 'whatsapp', 'link_value': phoneNumber},
+    );
+
     // Remove any spaces, dashes, or special characters from phone number
     String cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
 

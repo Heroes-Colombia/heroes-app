@@ -29,8 +29,11 @@ class AnalyticsService {
 
   // Smart batching configuration
   final List<Map<String, dynamic>> _eventQueue = [];
-  static const int _maxBatchSize = 50;  // Increased from 20 for better efficiency
-  static const Duration _flushInterval = Duration(seconds: 30);  // Time-based flushing
+  static const int _maxBatchSize =
+      50; // Increased from 20 for better efficiency
+  static const Duration _flushInterval = Duration(
+    seconds: 30,
+  ); // Time-based flushing
   Timer? _flushTimer;
 
   late String _sessionId;
@@ -129,7 +132,9 @@ class AnalyticsService {
       await batch.commit();
 
       if (_debugMode) {
-        log('✅ Analytics: Successfully wrote ${events.length} events to analytics_events');
+        log(
+          '✅ Analytics: Successfully wrote ${events.length} events to analytics_events',
+        );
       }
     } catch (e) {
       if (_debugMode) {
@@ -142,273 +147,6 @@ class AnalyticsService {
       }
     }
   }
-
-  /// Track when a user views a business
-  /// OPTIMIZED: Now uses V3 Dashboard schema only (single collection)
-  Future<void> trackBusinessView({
-    required String businessId,
-    required String businessName,
-    String? category,
-    GeoPoint? location,
-    String? searchContext,
-  }) async {
-    if (businessId.isEmpty || businessName.isEmpty) {
-      log('Analytics Error: Invalid parameters for trackBusinessView');
-      return;
-    }
-
-    if (_debugMode) {
-      log('Analytics: Business view - $businessName');
-    }
-
-    // Firebase Analytics (free, automatic funnel analysis)
-    await _analytics.logEvent(
-      name: 'business_viewed',
-      parameters: {
-        'business_id': businessId,
-        'business_name': businessName,
-        if (category != null) 'category': category,
-        if (searchContext != null) 'search_context': searchContext,
-      },
-    );
-
-    // Dashboard-compatible event (non-blocking, queued for batching)
-    trackDashboardView(
-      entityType: 'business',
-      entityId: businessId,
-      businessId: businessId,
-      screen: searchContext,
-    );
-  }
-
-  /// Track business search activity
-  /// OPTIMIZED: Firebase Analytics only (search events don't need Dashboard storage)
-  Future<void> trackBusinessSearch({
-    required String searchTerm,
-    required int resultsCount,
-    GeoPoint? userLocation,
-    Map<String, dynamic>? filters,
-  }) async {
-    if (searchTerm.isEmpty) {
-      log('Analytics Error: Empty search term in trackBusinessSearch');
-      return;
-    }
-
-    if (_debugMode) {
-      log('Analytics: Business search - "$searchTerm" returned $resultsCount results');
-    }
-
-    // Firebase Analytics (free search analysis)
-    await _analytics.logEvent(
-      name: 'business_search',
-      parameters: {
-        'search_term': searchTerm,
-        'results_count': resultsCount,
-        if (filters != null) 'filters_applied': filters.keys.join(','),
-      },
-    );
-  }
-
-  /// Track promotion view
-  /// OPTIMIZED: Uses V3 Dashboard schema only
-  Future<void> trackPromotionView({
-    required String promotionId,
-    required String businessId,
-    required String businessName,
-    required int discountPercentage,
-  }) async {
-    if (promotionId.isEmpty || businessId.isEmpty || businessName.isEmpty) {
-      log('Analytics Error: Invalid parameters for trackPromotionView');
-      return;
-    }
-
-    if (_debugMode) {
-      log('Analytics: Promotion view - $businessName ($discountPercentage% discount)');
-    }
-
-    // Firebase Analytics (free)
-    await _analytics.logEvent(
-      name: 'promotion_viewed',
-      parameters: {
-        'promotion_id': promotionId,
-        'business_id': businessId,
-        'business_name': businessName,
-        'discount_percentage': discountPercentage,
-      },
-    );
-
-    // Dashboard-compatible event (non-blocking, queued)
-    trackDashboardView(
-      entityType: 'promotion',
-      entityId: promotionId,
-      businessId: businessId,
-    );
-  }
-
-  /// Track promotion sharing
-  /// OPTIMIZED: Uses V3 Dashboard schema only
-  Future<void> trackPromotionShare({
-    required String promotionId,
-    required String businessId,
-    required String businessName,
-    required String shareMethod,
-  }) async {
-    if (promotionId.isEmpty || businessId.isEmpty) {
-      log('Analytics Error: Invalid parameters for trackPromotionShare');
-      return;
-    }
-
-    if (_debugMode) {
-      log('Analytics: Promotion shared - $businessName via $shareMethod');
-    }
-
-    // Firebase Analytics (free)
-    await _analytics.logEvent(
-      name: 'promotion_shared',
-      parameters: {
-        'promotion_id': promotionId,
-        'business_id': businessId,
-        'business_name': businessName,
-        'share_method': shareMethod,
-      },
-    );
-
-    // Dashboard-compatible event (non-blocking, queued)
-    trackDashboardShare(
-      entityType: 'promotion',
-      entityId: promotionId,
-      businessId: businessId,
-    );
-  }
-
-  /// Track promotion redemption
-  /// OPTIMIZED: Uses V3 Dashboard schema only
-  Future<void> trackPromotionRedemption({
-    required String promotionId,
-    required String businessId,
-    required String businessName,
-    required int discountPercentage,
-  }) async {
-    if (promotionId.isEmpty || businessId.isEmpty) {
-      log('Analytics Error: Invalid parameters for trackPromotionRedemption');
-      return;
-    }
-
-    if (_debugMode) {
-      log('Analytics: Promotion redeemed - $businessName ($discountPercentage% discount)');
-    }
-
-    // Firebase Analytics (free)
-    await _analytics.logEvent(
-      name: 'promotion_redeemed',
-      parameters: {
-        'promotion_id': promotionId,
-        'business_id': businessId,
-        'business_name': businessName,
-        'discount_percentage': discountPercentage,
-      },
-    );
-
-    // Dashboard-compatible event (non-blocking, queued)
-    trackDashboardRedemption(
-      promotionId: promotionId,
-      businessId: businessId,
-    );
-  }
-
-  /// Track when a user adds a business to favorites
-  /// OPTIMIZED: Uses V3 Dashboard schema only
-  Future<void> trackFavoriteAdded({
-    required String businessId,
-    required String businessName,
-    String? category,
-  }) async {
-    if (businessId.isEmpty || businessName.isEmpty) {
-      log('Analytics Error: Invalid parameters for trackFavoriteAdded');
-      return;
-    }
-
-    if (_debugMode) {
-      log('Analytics: Favorite added - $businessName');
-    }
-
-    // Firebase Analytics (free)
-    await _analytics.logEvent(
-      name: 'favorite_added',
-      parameters: {
-        'business_id': businessId,
-        'business_name': businessName,
-        if (category != null) 'category': category,
-      },
-    );
-
-    // Dashboard-compatible event (non-blocking, queued)
-    trackDashboardSave(
-      entityType: 'business',
-      entityId: businessId,
-      businessId: businessId,
-    );
-  }
-
-  /// Track when a user removes a business from favorites
-  /// OPTIMIZED: Firebase Analytics only (no Dashboard tracking needed for removals)
-  Future<void> trackFavoriteRemoved({
-    required String businessId,
-    required String businessName,
-  }) async {
-    if (businessId.isEmpty || businessName.isEmpty) {
-      log('Analytics Error: Invalid parameters for trackFavoriteRemoved');
-      return;
-    }
-
-    if (_debugMode) {
-      log('Analytics: Favorite removed - $businessName');
-    }
-
-    // Firebase Analytics only (removals don't need Dashboard tracking)
-    await _analytics.logEvent(
-      name: 'favorite_removed',
-      parameters: {
-        'business_id': businessId,
-        'business_name': businessName,
-      },
-    );
-  }
-
-  /// Track nearby business searches with location intelligence
-  /// OPTIMIZED: Firebase Analytics only
-  Future<void> trackNearbyBusinessesSearch({
-    required GeoPoint userLocation,
-    required double radiusKm,
-    required int resultsCount,
-    String? category,
-  }) async {
-    if (_debugMode) {
-      log('Analytics: Nearby search - ${radiusKm}km radius, $resultsCount results');
-    }
-
-    // Firebase Analytics only (geosearch doesn't need Dashboard tracking)
-    await _analytics.logEvent(
-      name: 'nearby_search',
-      parameters: {
-        'radius_km': radiusKm,
-        'results_count': resultsCount,
-        if (category != null) 'category': category,
-      },
-    );
-  }
-
-  // ============================================================================
-  // DEPRECATED V1 METHODS - Removed to eliminate dual-collection writes
-  // ============================================================================
-  //
-  // The following methods queried the legacy 'user_analytics' collection:
-  // - getBusinessAnalytics() → Use Dashboard queries on 'analytics_events' instead
-  // - getUserDemographics() → User demographics now stored in event metadata
-  //
-  // Migration: All analytics now use the V3 'analytics_events' collection
-  // which is queried directly by the Dashboard application.
-  // ============================================================================
 
   /// Flushes any remaining events in the queue
   /// Should be called when app is going to background or terminating
@@ -447,8 +185,11 @@ class AnalyticsService {
       if (timeSinceLastImpression < _impressionWindow) {
         // Within cooldown window - skip to prevent duplicates
         if (_debugMode) {
-          final remainingHours = (_impressionWindow - timeSinceLastImpression).inHours;
-          log('📊 Impression cooldown active: $impressionKey (${remainingHours}h remaining)');
+          final remainingHours =
+              (_impressionWindow - timeSinceLastImpression).inHours;
+          log(
+            '📊 Impression cooldown active: $impressionKey (${remainingHours}h remaining)',
+          );
         }
         return; // Skip duplicate impression
       }
@@ -473,13 +214,13 @@ class AnalyticsService {
   }
 
   /// Track view event (details page opened)
-  /// OPTIMIZED V3: Non-blocking, queued for batching
   void trackDashboardView({
     required String entityType, // "business" | "promotion"
     required String entityId,
     String? businessId,
     String? locationId,
     String? screen,
+    Map<String, dynamic>? metadata,
   }) {
     _trackDashboardEvent(
       eventType: 'view',
@@ -488,16 +229,17 @@ class AnalyticsService {
       businessId: businessId,
       locationId: locationId,
       screen: screen,
+      metadata: metadata,
     );
   }
 
   /// Track save event (favorite button)
-  /// OPTIMIZED V3: Non-blocking, queued for batching
   void trackDashboardSave({
     required String entityType, // "business" | "promotion"
     required String entityId,
     String? businessId,
     String? locationId,
+    Map<String, dynamic>? metadata,
   }) {
     _trackDashboardEvent(
       eventType: 'save',
@@ -505,16 +247,17 @@ class AnalyticsService {
       entityId: entityId,
       businessId: businessId,
       locationId: locationId,
+      metadata: metadata,
     );
   }
 
   /// Track share event
-  /// OPTIMIZED V3: Non-blocking, queued for batching
   void trackDashboardShare({
     required String entityType, // "business" | "promotion"
     required String entityId,
     String? businessId,
     String? locationId,
+    Map<String, dynamic>? metadata,
   }) {
     _trackDashboardEvent(
       eventType: 'share',
@@ -522,17 +265,18 @@ class AnalyticsService {
       entityId: entityId,
       businessId: businessId,
       locationId: locationId,
+      metadata: metadata,
     );
   }
 
   /// Track click event (for heatmaps)
-  /// OPTIMIZED V3: Non-blocking, queued for batching
   void trackDashboardClick({
     required String entityType, // "business" | "promotion"
     required String entityId,
     String? businessId,
     String? locationId,
     String? screen,
+    Map<String, dynamic>? metadata,
   }) {
     _trackDashboardEvent(
       eventType: 'click',
@@ -541,11 +285,11 @@ class AnalyticsService {
       businessId: businessId,
       locationId: locationId,
       screen: screen,
+      metadata: metadata,
     );
   }
 
   /// Track redemption event (QR code scan)
-  /// OPTIMIZED V3: Non-blocking, queued for batching
   void trackDashboardRedemption({
     required String promotionId,
     required String businessId,
@@ -561,7 +305,6 @@ class AnalyticsService {
   }
 
   /// Internal method to queue Dashboard-compatible events for batching
-  /// OPTIMIZED V3: Uses smart batching instead of immediate writes
   void _trackDashboardEvent({
     required String eventType,
     required String entityType,
@@ -569,11 +312,23 @@ class AnalyticsService {
     String? businessId,
     String? locationId,
     String? screen,
+    Map<String, dynamic>? metadata,
   }) {
     try {
       // Get current user for user context
       final currentUser = _auth.currentUser;
       final userId = currentUser?.uid ?? _userId;
+
+      // Build base metadata
+      final baseMetadata = {
+        'source': 'mobile_app',
+        'screen': screen,
+        'device': Platform.isIOS ? 'ios' : 'android',
+      };
+
+      // Merge with custom metadata if provided
+      final mergedMetadata =
+          metadata != null ? {...baseMetadata, ...metadata} : baseMetadata;
 
       // Build event data matching Dashboard schema
       final eventData = {
@@ -589,7 +344,6 @@ class AnalyticsService {
         'user_city': _userContext?['city'],
         'user_sex': _userContext?['sex'], // V3 demographic field
         'user_age_range': _userContext?['age_range'], // V3 demographic field
-
         // Business/Location Context (REQUIRED for filtering)
         'business_id': businessId,
         'location_id': locationId,
@@ -601,11 +355,7 @@ class AnalyticsService {
         'timestamp': FieldValue.serverTimestamp(),
 
         // Metadata (OPTIONAL)
-        'metadata': {
-          'source': 'mobile_app',
-          'screen': screen,
-          'device': Platform.isIOS ? 'ios' : 'android',
-        },
+        'metadata': mergedMetadata,
       };
 
       // Remove null values to reduce document size
@@ -627,7 +377,9 @@ class AnalyticsService {
 
       // Debug mode - print tracked events
       if (_debugMode) {
-        log('📊 Dashboard Analytics queued: $eventType | $entityType | $entityId');
+        log(
+          '📊 Dashboard Analytics queued: $eventType | $entityType | $entityId',
+        );
       }
     } catch (e) {
       // Silently fail - don't break user experience for analytics

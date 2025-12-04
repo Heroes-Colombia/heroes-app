@@ -39,8 +39,8 @@ android {
         applicationId = "com.heroes.heroes_app"
         minSdk = 28
         targetSdk = flutter.targetSdkVersion
-        versionCode = 21
-        versionName = "1.0.1"
+        versionCode = 23
+        versionName = "1.2.1"
     }
 
     signingConfigs {
@@ -54,6 +54,12 @@ android {
 
     buildTypes {
         release {
+            isMinifyEnabled = true
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             signingConfig = signingConfigs.getByName("release")
         }
     }

@@ -58,10 +58,9 @@ class _EntryPointViewState extends State<EntryPointView> {
   }
 
   Widget userNotLoggedInView(BuildContext context) {
-    //Redirect to the first time view and login
+    //Redirect to the first time view
     AutoRouter.of(context).replaceAll([
       FirstTimeView(),
-      LoginView(onResult: (guardCallback) {}),
     ]);
     return brandingWidget();
   }

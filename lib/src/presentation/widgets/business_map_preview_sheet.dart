@@ -6,10 +6,10 @@ import 'package:heroes_app/src/domain/models/promotion_model.dart';
 import 'package:heroes_app/assets/app_methods.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:heroes_app/assets/app_constants.dart';
 import 'package:heroes_app/src/presentation/cubits/business/business_details/business_details_cubit.dart';
 import 'package:heroes_app/src/domain/services/analytics_service.dart';
+import 'package:heroes_app/src/domain/repositories/firestore_service.dart';
 
 /// Bottom sheet preview for businesses on map
 /// Shows business info, action buttons, and active promotions
@@ -50,18 +50,18 @@ class _BusinessMapPreviewSheetState extends State<BusinessMapPreviewSheet> {
   @override
   void initState() {
     super.initState();
-    _loadPromotions();
+    getBusinessPromotions();
     _checkIfFavorite();
     _trackBusinessView();
   }
 
   void _trackBusinessView() {
     final analyticsService = locator.get<AnalyticsService>();
-    analyticsService.trackBusinessView(
+    analyticsService.trackDashboardView(
+      entityType: 'business',
+      entityId: widget.businessId,
       businessId: widget.businessId,
-      businessName: widget.businessName,
-      category: widget.categoryName,
-      searchContext: 'map',
+      screen: 'map',
     );
   }
 
@@ -74,37 +74,6 @@ class _BusinessMapPreviewSheetState extends State<BusinessMapPreviewSheet> {
   void _toggleFavorite() {
     // Call the parent callback which handles the favorite toggle
     widget.onFavoriteToggle();
-  }
-
-  Future<void> _loadPromotions() async {
-    try {
-      final promotionsCollection =
-          locator.get<AppConstants>().advertisementCollection;
-
-      final snapshot =
-          await FirebaseFirestore.instance
-              .collection(promotionsCollection)
-              .where('business_id', isEqualTo: widget.businessId)
-              .where('status', isEqualTo: 'active')
-              .where('expired_at', isGreaterThan: Timestamp.now())
-              .limit(5)
-              .get();
-
-      final promotions =
-          snapshot.docs
-              .map((doc) => Promotion.fromJson({...doc.data(), 'id': doc.id}))
-              .toList();
-
-      setState(() {
-        _promotions = promotions;
-        _isLoadingPromotions = false;
-      });
-    } catch (e) {
-      setState(() {
-        _promotions = [];
-        _isLoadingPromotions = false;
-      });
-    }
   }
 
   @override
@@ -535,6 +504,38 @@ class _BusinessMapPreviewSheetState extends State<BusinessMapPreviewSheet> {
     return '${date.day}/${date.month}/${date.year}';
   }
 
+  //this method is used to get the promotions of a business
+  Future<void> getBusinessPromotions() async {
+    try {
+      final firestoreService = locator.get<FirestoreService>();
+      final promotionsCollection =
+          locator.get<AppConstants>().advertisementCollection;
+
+      //We fetch the promotions from the database
+      final rawPromotions = await firestoreService
+          .readActiveDocumentsByCondition(
+            promotionsCollection,
+            'business_id',
+            widget.businessId,
+            999,
+          );
+
+      final promotions =
+          rawPromotions.map((e) => Promotion.fromJson(e)).toList();
+
+      //Then return the promotions
+      setState(() {
+        _promotions = promotions;
+        _isLoadingPromotions = false;
+      });
+    } catch (e) {
+      setState(() {
+        _promotions = [];
+        _isLoadingPromotions = false;
+      });
+    }
+  }
+
   void _navigateToBusiness() async {
     // Track navigation click
     final analyticsService = locator.get<AnalyticsService>();
@@ -543,6 +544,7 @@ class _BusinessMapPreviewSheetState extends State<BusinessMapPreviewSheet> {
       entityId: widget.businessId,
       businessId: widget.businessId,
       screen: 'map',
+      metadata: {'link_type': 'navigation', 'link_value': 'maps'},
     );
 
     final texts =
@@ -557,11 +559,17 @@ class _BusinessMapPreviewSheetState extends State<BusinessMapPreviewSheet> {
   }
 
   void openWhatsApp(String phoneNumber) {
-    context.read<BusinessDetailsCubit>().openWhatsApp(phoneNumber);
+    context.read<BusinessDetailsCubit>().openWhatsApp(
+      phoneNumber,
+      screen: 'map',
+    );
   }
 
   void callBusiness(String phoneNumber) {
-    context.read<BusinessDetailsCubit>().callBusiness(phoneNumber);
+    context.read<BusinessDetailsCubit>().callBusiness(
+      phoneNumber,
+      screen: 'map',
+    );
   }
 
   void _viewBusinessDetails() {
@@ -572,6 +580,10 @@ class _BusinessMapPreviewSheetState extends State<BusinessMapPreviewSheet> {
       entityId: widget.businessId,
       businessId: widget.businessId,
       screen: 'map',
+      metadata: {
+        'link_type': 'viewBusinessDetails',
+        'link_value': widget.businessId,
+      },
     );
 
     closeSheet();
@@ -585,11 +597,11 @@ class _BusinessMapPreviewSheetState extends State<BusinessMapPreviewSheet> {
   void _openPromotionDetails(Promotion promotion) {
     // Track promotion view
     final analyticsService = locator.get<AnalyticsService>();
-    analyticsService.trackPromotionView(
-      promotionId: promotion.documentId ?? '',
+    analyticsService.trackDashboardView(
+      entityType: 'promotion',
+      entityId: promotion.documentId ?? '',
       businessId: widget.businessId,
-      businessName: widget.businessName,
-      discountPercentage: promotion.percentage,
+      screen: 'map',
     );
 
     closeSheet();

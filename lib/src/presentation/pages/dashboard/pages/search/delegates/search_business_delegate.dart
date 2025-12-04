@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -73,11 +72,6 @@ class SearchBusinessDelegate extends SearchDelegate {
 
     return BlocBuilder<BusinessSearchResutlsCubit, BusinessSearchResutlsState>(
       builder: (context, state) {
-        // Track search analytics when results are loaded
-        if (!state.isSearching && !hasNavigated && query.isNotEmpty) {
-          _trackSearchAnalytics(query, state.businesses.length);
-        }
-
         if (state.isSearching) {
           return const Center(child: CircularProgressIndicator());
         } else if (state.businesses.isEmpty) {
@@ -143,16 +137,6 @@ class SearchBusinessDelegate extends SearchDelegate {
           ),
         ),
       ),
-    );
-  }
-
-  // Track search analytics
-  void _trackSearchAnalytics(String searchQuery, int resultsCount) {
-    final analyticsService = GetIt.instance.get<AnalyticsService>();
-    analyticsService.trackBusinessSearch(
-      searchTerm: searchQuery,
-      resultsCount: resultsCount,
-      userLocation: null, // You might want to get actual user location as GeoPoint
     );
   }
 

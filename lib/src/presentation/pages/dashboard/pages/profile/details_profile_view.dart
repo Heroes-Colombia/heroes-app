@@ -224,13 +224,13 @@ class DetailsProfileView extends StatelessWidget {
                     color: theme.colorScheme.onBackground.withOpacity(0.5),
                   ),
                   const SizedBox(height: 16),
-                  if (user.license.isNotEmpty) ...[
+                  if (user.license != null && user.license!.isNotEmpty) ...[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Text(
-                            user.license,
+                            user.license!,
                             style: TextStyle(
                               overflow: TextOverflow.ellipsis,
                               color: theme.colorScheme.onSurfaceVariant,
@@ -258,13 +258,14 @@ class DetailsProfileView extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                   ],
-                  if (user.identificationCard.isNotEmpty) ...[
+                  if (user.identificationCard != null &&
+                      user.identificationCard!.isNotEmpty) ...[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Text(
-                            user.identificationCard,
+                            user.identificationCard!,
                             style: TextStyle(
                               overflow: TextOverflow.ellipsis,
                               color: theme.colorScheme.onSurfaceVariant,

@@ -148,14 +148,6 @@ class MapViewState extends State<MapView> {
               useSearchResults = true;
             });
 
-            // Track search
-            final mapState = context.read<MapCubit>().state;
-            final analyticsService = locator.get<AnalyticsService>();
-            analyticsService.trackBusinessSearch(
-              searchTerm: query,
-              resultsCount: mapState.searchedMarkers.length,
-            );
-
             context.read<MapCubit>().onSearchSubmitted(query, context);
           },
           onQueryChanged: (query) {

@@ -52,6 +52,18 @@ class AuthCubit extends Cubit<AuthState> {
       );
       final user = User.fromJson(userJson);
 
+      //Check if the user is a business - block them from logging in via mobile app
+      if (user.permission == UserPermissions.business) {
+        // Log out the business user immediately
+        await getIt<AuthService>().signOut();
+
+        // Return error message directing them to web dashboard
+        return AuthResult.failure(
+          errorMessage:
+              'Esta cuenta es de negocio, por favor use la plataforma web en app.heroescolombia.com',
+        );
+      }
+
       //Check if the user has a device notification token and if not, we save it
       await locator.get<CloudMessageService>().handleDeviceNotificationToken(
         user.deviceNotificationToken,
@@ -67,18 +79,19 @@ class AuthCubit extends Cubit<AuthState> {
         return AuthResult.unverified();
       }
 
+      //IT IS DISABLED FOR NOW AS BUSINESSES WILL USE THE DASHBOARD WEB
       //Check if the user is a business
-      if (user.permission == UserPermissions.business) {
-        if (!context.mounted)
-          return AuthResult.failure(errorMessage: 'Context no disponible');
-        //We suscribe the user to the business user channel
-        final businessTopic = locator.get<AppConstants>().businessUserTopic;
-        locator.get<CloudMessageService>().subscribeToTopic(businessTopic);
-        emit(const AuthState(authStatus: AuthStatus.businessLoggedIn));
-        //And we replace the current route with the business dashboard
-        AutoRouter.of(context).replaceAll([const BusinessDashBoardView()]);
-        return AuthResult.success();
-      }
+      // if (user.permission == UserPermissions.business) {
+      //   if (!context.mounted)
+      //     return AuthResult.failure(errorMessage: 'Context no disponible');
+      //   //We suscribe the user to the business user channel
+      //   final businessTopic = locator.get<AppConstants>().businessUserTopic;
+      //   locator.get<CloudMessageService>().subscribeToTopic(businessTopic);
+      //   emit(const AuthState(authStatus: AuthStatus.businessLoggedIn));
+      //   //And we replace the current route with the business dashboard
+      //   AutoRouter.of(context).replaceAll([const BusinessDashBoardView()]);
+      //   return AuthResult.success();
+      // }
 
       //If the user is a normal user, we suscribe the user to the default topics
       await setInitialTopicsForUser();
@@ -195,7 +208,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       // Delete user from Firebase Auth
       await getIt<AuthService>().deleteAccount();
-      
+
       log('Successfully cleaned up user account: $userId');
     } catch (e) {
       log('Error deleting user account $userId: $e');
@@ -327,9 +340,9 @@ class AuthCubit extends Cubit<AuthState> {
 
       //Check if the user status is active (Verified)
       final userUid = getIt.get<AuthService>().getUserId();
-      
+
       late final User user;
-      
+
       try {
         final userJson = await getIt.get<FirestoreService>().readDocumentById(
           getIt.get<AppConstants>().usersCollection,
@@ -340,8 +353,10 @@ class AuthCubit extends Cubit<AuthState> {
       } catch (e) {
         // User has Firebase Auth session but no Firestore document
         // This can happen if signup was incomplete or account was partially deleted
-        log('User document not found for UID: $userUid. Cleaning up auth session.');
-        
+        log(
+          'User document not found for UID: $userUid. Cleaning up auth session.',
+        );
+
         // Sign out the orphaned auth session
         await getIt<AuthService>().signOut();
         emit(const AuthState(authStatus: AuthStatus.userNotLoggedIn));
@@ -351,7 +366,9 @@ class AuthCubit extends Cubit<AuthState> {
         // Check if user is in the middle of verification process
         if (user.status == UserStatus.pending) {
           // User just signed up and needs to complete verification
-          log('User $userUid is in pending verification status - redirecting to verification flow');
+          log(
+            'User $userUid is in pending verification status - redirecting to verification flow',
+          );
           emit(const AuthState(authStatus: AuthStatus.userNeedsVerification));
           return;
         } else {
@@ -377,7 +394,8 @@ class AuthCubit extends Cubit<AuthState> {
             'rank': user.rank,
             'city': user.city ?? 'Bogotá', // City from GPS or default to Bogotá
             if (user.sex != null) 'sex': user.sex!, // V3 demographic
-            if (user.ageRange != null) 'age_range': user.ageRange!, // V3 demographic
+            if (user.ageRange != null)
+              'age_range': user.ageRange!, // V3 demographic
           },
         );
       } catch (e) {

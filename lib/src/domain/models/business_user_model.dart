@@ -30,35 +30,37 @@ class BusinessUser extends Equatable {
 
   @override
   List<Object?> get props => [
-        uid,
-        email,
-        license,
-        firstName,
-        secondName,
-        firstLastName,
-        secondLastName,
-        permission,
-        rank,
-        verified,
-        ownedBusinesses
-      ];
+    uid,
+    email,
+    license,
+    firstName,
+    secondName,
+    firstLastName,
+    secondLastName,
+    permission,
+    rank,
+    verified,
+    ownedBusinesses,
+  ];
 
   factory BusinessUser.fromJson(Map<String, dynamic> json) {
     return BusinessUser(
       uid: json['uid'] as String,
       email: json['email'] as String,
-      license: json['license'] as String,
-      firstName: json['first_name'] as String,
-      secondName: json['second_name'] as String,
-      firstLastName: json['first_last_name'] as String,
-      secondLastName: json['second_last_name'] as String,
-      rank: json['rank'] as String,
-      permission: UserPermissions.values.firstWhere((element) =>
-          element.toString().split('.').last == json['permission']),
+      license: json['license'] ?? "",
+      firstName: json['first_name'] ?? "",
+      secondName: json['second_name'] ?? "",
+      firstLastName: json['first_last_name'] ?? "",
+      secondLastName: json['second_last_name'] ?? "",
+      rank: json['rank'] ?? "",
+      permission: UserPermissions.values.firstWhere(
+        (element) => element.toString().split('.').last == json['permission'],
+      ),
       verified: json['verified'] as bool,
-      ownedBusinesses: json['owned_businesses'] != null
-          ? List<String>.from(json['owned_businesses'])
-          : [],
+      ownedBusinesses:
+          json['owned_businesses'] != null
+              ? List<String>.from(json['owned_businesses'])
+              : [],
     );
   }
 

@@ -3,12 +3,12 @@ import 'package:heroes_app/assets/app_enums.dart';
 
 class User extends Equatable {
   final String uid;
-  final String license;
-  final String identificationCard;
+  final String? license;
+  final String? identificationCard;
   final String firstName;
-  final String secondName;
+  final String? secondName;
   final String firstLastName;
-  final String secondLastName;
+  final String? secondLastName;
   final UserPermissions
   permission; // V1 field - kept for backward compatibility
   final String rank;
@@ -40,12 +40,12 @@ class User extends Equatable {
 
   const User({
     required this.uid,
-    required this.license,
-    required this.identificationCard,
+    this.license,
+    this.identificationCard,
     required this.firstName,
-    required this.secondName,
+    this.secondName,
     required this.firstLastName,
-    required this.secondLastName,
+    this.secondLastName,
     required this.permission,
     required this.rank,
     required this.email,
@@ -93,8 +93,8 @@ class User extends Equatable {
     return User(
       uid: json['uid'] as String,
       email: json['email'] as String,
-      license: json['license'] as String,
-      identificationCard: json['identification_card'] as String,
+      license: json['license'] as String?,
+      identificationCard: json['identification_card'] as String?,
       firstName: json['first_name'] as String,
       secondName: json['second_name'] ?? "",
       firstLastName: json['first_last_name'] as String,

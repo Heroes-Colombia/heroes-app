@@ -553,6 +553,7 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
       entityId: _business!.ownerUid,
       businessId: _business!.ownerUid,
       screen: 'promotion_details',
+      metadata: {'link_type': 'navigation', 'link_value': 'maps'},
     );
 
     await locator.get<AppMethods>().navigateToLocation(
@@ -573,6 +574,10 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
       entityId: promotion.businessId,
       businessId: promotion.businessId,
       screen: 'promotion_details',
+      metadata: {
+        'link_type': 'viewBusinessDetails',
+        'link_value': promotion.businessId,
+      },
     );
 
     AutoRouter.of(
@@ -583,13 +588,19 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
   // Call business
   void _callBusiness() {
     if (_business?.phoneNumber == null) return;
-    context.read<BusinessDetailsCubit>().callBusiness(_business!.phoneNumber);
+    context.read<BusinessDetailsCubit>().callBusiness(
+      _business!.phoneNumber,
+      screen: 'promotion_details',
+    );
   }
 
   // Open WhatsApp
   void _openWhatsApp() {
     if (_business?.phoneNumber == null) return;
-    context.read<BusinessDetailsCubit>().openWhatsApp(_business!.phoneNumber);
+    context.read<BusinessDetailsCubit>().openWhatsApp(
+      _business!.phoneNumber,
+      screen: 'promotion_details',
+    );
   }
 
   // Analytics tracking method - V2 Dashboard-compatible
@@ -609,7 +620,6 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
   void _setPromotionAsFavourite(Promotion promotion) {
     final promotionId = promotion.documentId ?? widget.promotionId;
 
-    // CRITICAL FIX: Add null safety check with logging
     if (promotionId == null) {
       log('Warning: Cannot favorite promotion - missing ID');
       return;
