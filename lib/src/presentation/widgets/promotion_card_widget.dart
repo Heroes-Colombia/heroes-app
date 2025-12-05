@@ -26,308 +26,266 @@ class PromotionCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      width: isOnGrid ? null : 240,
+      width: isOnGrid ? null : 280,
       margin: isOnGrid ? EdgeInsets.zero : const EdgeInsets.only(right: 12),
       child: InkWell(
         onTap: callback,
         borderRadius: BorderRadius.circular(16),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: theme.colorScheme.surfaceContainerHighest.withValues(
-              alpha: 0.5,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Image with discount badge overlay
-              Stack(
-                children: [
-                  // Use AspectRatio to maintain consistent proportions
-                  AspectRatio(
-                    aspectRatio: 2 / 1, // 2:1 ratio (landscape)
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        topRight: Radius.circular(16),
-                      ),
-                      child:
-                          promotion.featuredImage.isNotEmpty
-                              ? Container(
-                                color:
-                                    theme.colorScheme.surfaceContainerHighest,
-                                child: Image.network(
-                                  promotion.featuredImage,
-                                  width: double.infinity,
-                                  fit: BoxFit.contain,
-                                  // Performance optimizations
-                                  cacheWidth:
-                                      560, // 2x resolution for sharp display
-                                  cacheHeight: 280,
-                                  filterQuality: FilterQuality.medium,
-                                  loadingBuilder: (
-                                    context,
-                                    child,
-                                    loadingProgress,
-                                  ) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      width: double.infinity,
-                                      color:
-                                          theme
-                                              .colorScheme
-                                              .surfaceContainerHighest,
-                                      child: Center(
-                                        child: SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            value:
-                                                loadingProgress
-                                                            .expectedTotalBytes !=
-                                                        null
-                                                    ? loadingProgress
-                                                            .cumulativeBytesLoaded /
-                                                        loadingProgress
-                                                            .expectedTotalBytes!
-                                                    : null,
-                                          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Image with discount badge overlay
+            Stack(
+              children: [
+                // Use AspectRatio to maintain consistent proportions
+                AspectRatio(
+                  aspectRatio: 4 / 3, // 4:3 ratio (taller, more Rappi-style)
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child:
+                        promotion.featuredImage.isNotEmpty
+                            ? Container(
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              child: Image.network(
+                                promotion.featuredImage,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                // Performance optimizations
+                                cacheWidth:
+                                    480, // 2x resolution for sharp display (240 * 2)
+                                cacheHeight:
+                                    360, // 2x resolution for 4:3 ratio (180 * 2)
+                                filterQuality: FilterQuality.medium,
+                                loadingBuilder: (
+                                  context,
+                                  child,
+                                  loadingProgress,
+                                ) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    width: double.infinity,
+                                    color:
+                                        theme
+                                            .colorScheme
+                                            .surfaceContainerHighest,
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          value:
+                                              loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                  : null,
                                         ),
                                       ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: double.infinity,
-                                      color:
-                                          theme
-                                              .colorScheme
-                                              .surfaceContainerHighest,
-                                      child: Icon(
-                                        Icons.image_not_supported,
-                                        size: 48,
-                                        color: theme
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: double.infinity,
+                                    color:
+                                        theme
                                             .colorScheme
-                                            .onSurfaceVariant
-                                            .withValues(alpha: 0.5),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              )
-                              : Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      theme.colorScheme.primaryContainer,
-                                      theme.colorScheme.secondaryContainer,
-                                    ],
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.local_offer,
-                                      size: 40,
-                                      color: theme
-                                          .colorScheme
-                                          .onPrimaryContainer
-                                          .withValues(alpha: 0.8),
+                                            .surfaceContainerHighest,
+                                    child: Icon(
+                                      Icons.image_not_supported,
+                                      size: 48,
+                                      color: theme.colorScheme.onSurfaceVariant
+                                          .withValues(alpha: 0.5),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      '${promotion.percentage}% OFF',
-                                      style: TextStyle(
-                                        color:
-                                            theme
-                                                .colorScheme
-                                                .onPrimaryContainer,
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Promoción Especial',
-                                      style: TextStyle(
-                                        color: theme
-                                            .colorScheme
-                                            .onPrimaryContainer
-                                            .withValues(alpha: 0.7),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                            : Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    theme.colorScheme.primaryContainer,
+                                    theme.colorScheme.secondaryContainer,
                                   ],
                                 ),
                               ),
-                    ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.local_offer,
+                                    size: 40,
+                                    color: theme.colorScheme.onPrimaryContainer
+                                        .withValues(alpha: 0.8),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '${promotion.percentage}% OFF',
+                                    style: TextStyle(
+                                      color:
+                                          theme.colorScheme.onPrimaryContainer,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Promoción Especial',
+                                    style: TextStyle(
+                                      color: theme
+                                          .colorScheme
+                                          .onPrimaryContainer
+                                          .withValues(alpha: 0.7),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                   ),
-                  // Category badge (top-left)
-                  if (categoryName != null)
-                    Positioned(
-                      top: 12,
-                      left: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          categoryName!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
-                  // Discount badge (top-right)
+                ),
+                // Category badge (top-left)
+                if (categoryName != null)
                   Positioned(
                     top: 12,
-                    right: 12,
+                    left: 12,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                        horizontal: 8,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.primary,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        '${promotion.percentage}% OFF',
-                        style: TextStyle(
-                          color: theme.colorScheme.onPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                        categoryName!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-              // Promotion details
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Business name (if available) - shown first
-                    if (_businessName != null) ...[
-                      Text(
-                        _businessName!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          fontSize: theme.textTheme.titleMedium!.fontSize,
-                          fontWeight: FontWeight.bold,
+                // Discount badge (top-right)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
+                      ],
+                    ),
+                    child: Text(
+                      '${promotion.percentage}% OFF',
+                      style: TextStyle(
+                        color: theme.colorScheme.onPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(height: 2),
-                    ],
-                    // Title (secondary to business name)
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Promotion details
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Business name (if available) - shown first
+                  if (_businessName != null) ...[
                     Text(
-                      promotion.title,
+                      _businessName!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: theme.colorScheme.onSurfaceVariant.withValues(
-                          alpha: _businessName != null ? 0.7 : 1.0,
-                        ),
-                        fontSize:
-                            _businessName != null
-                                ? theme.textTheme.labelMedium!.fontSize
-                                : theme.textTheme.titleMedium!.fontSize,
-                        fontWeight:
-                            _businessName != null
-                                ? FontWeight.normal
-                                : FontWeight.bold,
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: theme.textTheme.titleMedium!.fontSize,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (!promotion.shouldShowUrgencyBadge) ...[
-                      // Savings indicator
-                      const SizedBox(height: 4),
-                      Row(
+                    const SizedBox(height: 2),
+                  ],
+                  // Title (secondary to business name)
+                  Text(
+                    promotion.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurfaceVariant.withValues(
+                        alpha: _businessName != null ? 0.7 : 1.0,
+                      ),
+                      fontSize:
+                          _businessName != null
+                              ? theme.textTheme.labelMedium!.fontSize
+                              : theme.textTheme.titleMedium!.fontSize,
+                      fontWeight:
+                          _businessName != null
+                              ? FontWeight.normal
+                              : FontWeight.bold,
+                    ),
+                  ),
+                  if (promotion.shouldShowUrgencyBadge) ...[
+                    const SizedBox(height: 8),
+                    // Urgency badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getUrgencyColor(theme, promotion.urgencyLevel),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.savings,
+                          const Icon(
+                            Icons.access_time,
                             size: 14,
-                            color: Colors.green.shade600,
+                            color: Colors.white,
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 6),
                           Text(
-                            'Ahorra ${promotion.percentage}% en tu compra',
-                            style: TextStyle(
-                              color: Colors.green.shade600,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
+                            promotion.urgencyText,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
                       ),
-                    ],
-                    if (promotion.shouldShowUrgencyBadge) ...[
-                      const SizedBox(height: 8),
-                      // Urgency badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getUrgencyColor(
-                            theme,
-                            promotion.urgencyLevel,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.access_time,
-                              size: 14,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              promotion.urgencyText,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ],
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

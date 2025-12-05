@@ -451,7 +451,7 @@ class _SearchViewState extends State<SearchView> {
 
     return SliverToBoxAdapter(
       child: Container(
-        height: 260,
+        height: 280,
         margin: const EdgeInsets.symmetric(horizontal: 12),
         child: ListView.builder(
           padding: const EdgeInsets.all(0.0),

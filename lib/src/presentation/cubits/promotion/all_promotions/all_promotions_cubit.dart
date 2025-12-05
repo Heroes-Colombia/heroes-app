@@ -120,8 +120,15 @@ class AllPromotionsCubit extends Cubit<AllPromotionsState> {
         }).toList();
       }
 
-      // Sort by expiration date (expiring soon first)
-      promotions.sort((a, b) => b.expiredAt.compareTo(a.expiredAt));
+      // Sort promotions: Higher percentage first, then more urgent (fewer days until expiration)
+      promotions.sort((a, b) {
+        // Primary sort: Higher percentage first
+        final percentageComparison = b.percentage.compareTo(a.percentage);
+        if (percentageComparison != 0) return percentageComparison;
+
+        // Secondary sort: More urgent (fewer days) first
+        return a.daysUntilExpiration.compareTo(b.daysUntilExpiration);
+      });
 
       //We emit the state with the new promotions
       emit(

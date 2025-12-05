@@ -188,6 +188,16 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
               )
               .toList();
 
+      // Sort promotions: Higher percentage first, then more urgent (fewer days until expiration)
+      allPromotions.sort((a, b) {
+        // Primary sort: Higher percentage first
+        final percentageComparison = b.percentage.compareTo(a.percentage);
+        if (percentageComparison != 0) return percentageComparison;
+
+        // Secondary sort: More urgent (fewer days) first
+        return a.daysUntilExpiration.compareTo(b.daysUntilExpiration);
+      });
+
       // Apply fair distribution: Limit each business to max 1 promotion in carousel
       // This ensures all businesses get equal visibility
       final diversifiedPromotions = _diversifyPromotions(
@@ -309,6 +319,16 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
                     promo.status == PromotionStatus.active && !promo.isExpired,
               )
               .toList();
+
+      // Sort promotions: Higher percentage first, then more urgent (fewer days until expiration)
+      newPromotions.sort((a, b) {
+        // Primary sort: Higher percentage first
+        final percentageComparison = b.percentage.compareTo(a.percentage);
+        if (percentageComparison != 0) return percentageComparison;
+
+        // Secondary sort: More urgent (fewer days) first
+        return a.daysUntilExpiration.compareTo(b.daysUntilExpiration);
+      });
 
       // Apply fair distribution considering ALREADY LOADED businesses
       // Get business IDs that are already in the carousel
