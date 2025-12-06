@@ -144,7 +144,7 @@ class User extends Equatable {
     UserPermissions? permission,
   ) {
     return {
-      'email': json['email'],
+      'email': json['email']?.toString().toLowerCase().trim() ?? '',
       'license': json['license'] ?? "",
       'first_name': json['first_name'],
       'second_name': json['second_name'] ?? "",

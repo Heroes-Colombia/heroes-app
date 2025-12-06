@@ -297,7 +297,7 @@ class _FavoritesViewState extends State<FavoritesView>
                   ),
                   const SizedBox(height: 16),
                   SizedBox(
-                    height: 240,
+                    height: 280,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: recommendations.length,
@@ -322,7 +322,7 @@ class _FavoritesViewState extends State<FavoritesView>
                     icon: const Icon(Ionicons.search),
                     onPressed: () {
                       // Navigate to search/explore tab
-                      AutoRouter.of(context).navigate(SearchView());
+                      AutoRouter.of(context).navigate(AllPromotionsView());
                     },
                     label: const Text('Explorar más promociones'),
                   ),

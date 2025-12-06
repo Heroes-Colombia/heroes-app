@@ -54,12 +54,23 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
             businessCollection,
             "featured",
             true,
-            10,
+            15,
           );
 
       //We convert the raw data to a list of business
       final featuredBusiness =
           featuredBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
+
+      //Sort featured businesses: prioritize those with valid featured_image URL
+      featuredBusiness.sort((a, b) {
+        final bool aHasImage =
+            a.featuredImage.isNotEmpty && a.featuredImage.startsWith('http');
+        final bool bHasImage =
+            b.featuredImage.isNotEmpty && b.featuredImage.startsWith('http');
+        if (aHasImage && !bHasImage) return -1;
+        if (!aHasImage && bHasImage) return 1;
+        return 0; // Keep original order if both have or both don't have images
+      });
 
       //We get the normal businesses from firestore with pagination
       final normalBusinessResponse = await locator
@@ -67,7 +78,7 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
           .readActiveDocumentsWithPagination(
             businessCollection,
             orderByField: 'created_at',
-            limit: 10,
+            limit: 15,
             whereField: "type",
             whereValue: "physical",
           );
@@ -77,6 +88,17 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
           normalBusinessResponse['documents'] as List<Map<String, dynamic>>;
       final normalBusiness =
           normalBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
+
+      //Sort normal businesses: prioritize those with valid featured_image URL
+      normalBusiness.sort((a, b) {
+        final bool aHasImage =
+            a.featuredImage.isNotEmpty && a.featuredImage.startsWith('http');
+        final bool bHasImage =
+            b.featuredImage.isNotEmpty && b.featuredImage.startsWith('http');
+        if (aHasImage && !bHasImage) return -1;
+        if (!aHasImage && bHasImage) return 1;
+        return 0; // Keep original order if both have or both don't have images
+      });
 
       // Extract pagination metadata
       final lastNormalDoc =
@@ -112,12 +134,23 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
             businessCollection,
             "type",
             "online",
-            5,
+            15,
           );
 
       //we convert the raw data to a list of business
       final onlineBusiness =
           onlineBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
+
+      //Sort online businesses: prioritize those with valid featured_image URL
+      onlineBusiness.sort((a, b) {
+        final bool aHasImage =
+            a.featuredImage.isNotEmpty && a.featuredImage.startsWith('http');
+        final bool bHasImage =
+            b.featuredImage.isNotEmpty && b.featuredImage.startsWith('http');
+        if (aHasImage && !bHasImage) return -1;
+        if (!aHasImage && bHasImage) return 1;
+        return 0; // Keep original order if both have or both don't have images
+      });
 
       // Get user location for distance calculation
       // OPTIMIZED: Use LocationService with caching (fetches once on startup, caches for 30 min)
@@ -420,6 +453,17 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
           normalBusinessResponse['documents'] as List<Map<String, dynamic>>;
       final newBusinesses =
           normalBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
+
+      //Sort new businesses: prioritize those with valid featured_image URL
+      newBusinesses.sort((a, b) {
+        final bool aHasImage =
+            a.featuredImage.isNotEmpty && a.featuredImage.startsWith('http');
+        final bool bHasImage =
+            b.featuredImage.isNotEmpty && b.featuredImage.startsWith('http');
+        if (aHasImage && !bHasImage) return -1;
+        if (!aHasImage && bHasImage) return 1;
+        return 0; // Keep original order if both have or both don't have images
+      });
 
       // Get user location for distance calculation
       // OPTIMIZED: Use cached location from LocationService (instant response)

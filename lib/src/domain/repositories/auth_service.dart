@@ -115,19 +115,21 @@ class AuthService {
   }
 
   //This method is used to check if an email is already registered
-  //Due to Firebase deprecating fetchSignInMethodsForEmail for security reasons,
-  //we now check the users collection in Firestore directly
+  //Checks Firestore for existing user documents
+  //Note: Firebase Auth duplicate check happens during actual signup
   Future<bool> isEmailRegistered(String email) async {
     try {
-      // Query Firestore to check if a user with this email exists
+      final normalizedEmail = email.toLowerCase().trim();
+
+      // Check Firestore to see if a user document exists with this email
       final querySnapshot =
           await FirebaseFirestore.instance
               .collection('users')
-              .where('email', isEqualTo: email.toLowerCase().trim())
+              .where('email', isEqualTo: normalizedEmail)
               .limit(1)
               .get();
 
-      // If any documents are found, the email is already registered
+      // If any documents are found in Firestore, the email is already registered
       return querySnapshot.docs.isNotEmpty;
     } on FirebaseException catch (e) {
       log(

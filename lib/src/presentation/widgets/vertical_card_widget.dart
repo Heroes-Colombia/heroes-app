@@ -31,6 +31,14 @@ class VerticalCard extends StatelessWidget {
   final bool isFeatured; // Enterprise plan businesses get premium badge
   final int? physicalLocationsCount; // Count of physical locations
 
+  // Helper to normalize business name to title case
+  String _normalizeBusinessName(String name) {
+    return name.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+  }
+
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
@@ -124,7 +132,7 @@ class VerticalCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        title,
+                        _normalizeBusinessName(title),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: TextStyle(

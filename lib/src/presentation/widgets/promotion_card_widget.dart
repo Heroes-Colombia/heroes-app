@@ -21,6 +21,14 @@ class PromotionCard extends StatelessWidget {
   // Helper to get the business name (prioritizes parameter over model field)
   String? get _businessName => businessName ?? promotion.businessName;
 
+  // Helper to normalize business name to title case
+  String _normalizeBusinessName(String name) {
+    return name.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -208,6 +216,47 @@ class PromotionCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Urgency badge (bottom-left)
+                if (promotion.shouldShowUrgencyBadge)
+                  Positioned(
+                    bottom: 12,
+                    left: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getUrgencyColor(theme, promotion.urgencyLevel),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.access_time,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            promotion.urgencyText,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
               ],
             ),
             // Promotion details
@@ -220,7 +269,7 @@ class PromotionCard extends StatelessWidget {
                   // Business name (if available) - shown first
                   if (_businessName != null) ...[
                     Text(
-                      _businessName!,
+                      _normalizeBusinessName(_businessName!),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -250,38 +299,6 @@ class PromotionCard extends StatelessWidget {
                               : FontWeight.bold,
                     ),
                   ),
-                  if (promotion.shouldShowUrgencyBadge) ...[
-                    const SizedBox(height: 8),
-                    // Urgency badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getUrgencyColor(theme, promotion.urgencyLevel),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.access_time,
-                            size: 14,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            promotion.urgencyText,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),

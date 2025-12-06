@@ -10,7 +10,6 @@ import 'package:heroes_app/src/domain/models/user_model.dart';
 import 'package:heroes_app/src/domain/models/business_category.dart';
 import 'package:heroes_app/src/presentation/cubits/auth/auth_cubit.dart';
 import 'package:heroes_app/assets/app_enums.dart';
-import 'package:heroes_app/src/presentation/widgets/email_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/password_input_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/searchable_rank_selector.dart';
 import 'package:heroes_app/src/presentation/widgets/sex_toggle_widget.dart';
@@ -20,8 +19,8 @@ import 'package:heroes_app/src/domain/repositories/auth_service.dart';
 import 'package:heroes_app/src/domain/services/family_invitation_service.dart';
 import 'package:intl/intl.dart';
 
-// Enum for simplified 3-step signup flow
-enum SignupStep { account, personalDetails, familyAndPreferences }
+// Enum for 4-step signup flow with clear optional steps
+enum SignupStep { account, personalDetails, familyInvitation, preferences }
 
 @RoutePage()
 class SignUpView extends StatefulWidget {
@@ -44,6 +43,7 @@ class _SignUpViewState extends State<SignUpView> {
   // Form keys for each step
   final _accountFormKey = GlobalKey<FormBuilderState>();
   final _personalDetailsFormKey = GlobalKey<FormBuilderState>();
+  final _familyInvitationFormKey = GlobalKey<FormBuilderState>();
   final _preferencesFormKey = GlobalKey<FormBuilderState>();
 
   // Categories state
@@ -129,7 +129,8 @@ class _SignUpViewState extends State<SignUpView> {
                 children: [
                   _buildAccountStep(texts, theme),
                   _buildPersonalDetailsStep(texts, theme),
-                  _buildFamilyAndPreferencesStep(texts, theme),
+                  _buildFamilyInvitationStep(texts, theme),
+                  _buildPreferencesStep(texts, theme),
                 ],
               ),
             ),
@@ -149,9 +150,17 @@ class _SignUpViewState extends State<SignUpView> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-    } else if (_currentStep == SignupStep.familyAndPreferences) {
+    } else if (_currentStep == SignupStep.familyInvitation) {
       setState(() {
         _currentStep = SignupStep.personalDetails;
+      });
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } else if (_currentStep == SignupStep.preferences) {
+      setState(() {
+        _currentStep = SignupStep.familyInvitation;
       });
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
@@ -168,9 +177,16 @@ class _SignUpViewState extends State<SignUpView> {
         children: [
           _buildStepIndicator(1, 'Cuenta', _currentStep.index >= 0, theme),
           Expanded(child: _buildProgressLine(_currentStep.index >= 1, theme)),
-          _buildStepIndicator(2, 'Información', _currentStep.index >= 1, theme),
+          _buildStepIndicator(2, 'Personal', _currentStep.index >= 1, theme),
           Expanded(child: _buildProgressLine(_currentStep.index >= 2, theme)),
           _buildStepIndicator(3, 'Familia', _currentStep.index >= 2, theme),
+          Expanded(child: _buildProgressLine(_currentStep.index >= 3, theme)),
+          _buildStepIndicator(
+            4,
+            'Preferencias',
+            _currentStep.index >= 3,
+            theme,
+          ),
         ],
       ),
     );
@@ -278,13 +294,28 @@ class _SignUpViewState extends State<SignUpView> {
               ),
               const SizedBox(height: 32),
 
-              // Email field
-              EmailInputWidget(
-                keyName: 'signup_email',
-                key: const Key('signup_email'),
+              // Email field with async validation
+              FormBuilderTextField(
                 name: 'email',
-                label: texts['email-label']!,
-                hintText: texts['email-hint']!,
+                key: const Key('signup_email'),
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: texts['email-label']!,
+                  hintText: texts['email-hint']!,
+                  border: const OutlineInputBorder(),
+                  suffixIcon: const Icon(Icons.email_outlined),
+                ),
+                validator: (value) {
+                  // First validate email format
+                  final emailValidation = locator
+                      .get<AppMethods>()
+                      .validateEmail(value, texts);
+                  if (emailValidation != null) {
+                    return emailValidation;
+                  }
+                  return null;
+                },
+                autovalidateMode: AutovalidateMode.onUserInteraction,
               ),
               const SizedBox(height: 12),
 
@@ -478,7 +509,7 @@ class _SignUpViewState extends State<SignUpView> {
                 validator: (value) {
                   if (value == null) return 'Campo requerido';
                   final age = DateTime.now().difference(value).inDays ~/ 365;
-                  if (age < 18) return 'Debes ser mayor de 18 años';
+                  if (age < 10) return 'Debes tener al menos 10 años';
                   return null;
                 },
                 autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -526,7 +557,7 @@ class _SignUpViewState extends State<SignUpView> {
               // Continue button
               ElevatedButton(
                 onPressed:
-                    _isLoading ? null : () => _proceedToFamilyAndPreferences(),
+                    _isLoading ? null : () => _proceedToFamilyInvitation(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
@@ -551,11 +582,105 @@ class _SignUpViewState extends State<SignUpView> {
     );
   }
 
-  // Step 3: Family Invitations & Preferences
-  Widget _buildFamilyAndPreferencesStep(
+  // Step 3: Family Invitation (Optional)
+  Widget _buildFamilyInvitationStep(
     Map<String, String> texts,
     ThemeData theme,
   ) {
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: FormBuilder(
+          key: _familyInvitationFormKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Welcome message with optional badge
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Código de Invitación',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'OPCIONAL',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Si un familiar te invitó, úsalo aquí',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+
+              // Invite code section
+              _buildInviteCodeSection(theme),
+              const SizedBox(height: 24),
+
+              // Continue button
+              ElevatedButton(
+                onPressed: _isLoading ? null : () => _proceedToPreferences(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child:
+                    _isLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : const Text('Continuar'),
+              ),
+              const SizedBox(height: 12),
+
+              // Skip button - prominent
+              if (!_isLoading)
+                OutlinedButton(
+                  onPressed: () => _proceedToPreferences(),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text('Saltar - No tengo código'),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Step 4: Preferences (Optional)
+  Widget _buildPreferencesStep(Map<String, String> texts, ThemeData theme) {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: SingleChildScrollView(
@@ -565,28 +690,38 @@ class _SignUpViewState extends State<SignUpView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Welcome message
-              Text(
-                'Invita a tu familia',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-                textAlign: TextAlign.center,
+              // Welcome message with optional badge
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Tus Preferencias',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'OPCIONAL',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSecondaryContainer,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
-              Text(
-                'Y descubre lo que te gusta',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-
-              // Invite code section
-              _buildInviteCodeSection(theme),
-              const SizedBox(height: 32),
 
               // Preferences section
               _buildPreferencesSection(theme),
@@ -612,14 +747,6 @@ class _SignUpViewState extends State<SignUpView> {
                         )
                         : const Text('Crear Cuenta'),
               ),
-              const SizedBox(height: 12),
-
-              // Skip button
-              if (!_isLoading)
-                TextButton(
-                  onPressed: () => _createAccount(texts),
-                  child: const Text('Saltar por ahora'),
-                ),
             ],
           ),
         ),
@@ -776,14 +903,14 @@ class _SignUpViewState extends State<SignUpView> {
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
 
             if (_allCategories.isEmpty)
               const Center(child: CircularProgressIndicator())
             else
               Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 7,
+                runSpacing: 1,
                 children:
                     _allCategories.map((category) {
                       final isSelected = _selectedCategories.contains(
@@ -900,6 +1027,7 @@ class _SignUpViewState extends State<SignUpView> {
               'Este correo electrónico ya está registrado. Usa otro email o inicia sesión.',
             ),
             backgroundColor: Colors.red,
+            duration: Duration(seconds: 5),
           ),
         );
         return;
@@ -933,7 +1061,7 @@ class _SignUpViewState extends State<SignUpView> {
     }
   }
 
-  void _proceedToFamilyAndPreferences() {
+  void _proceedToFamilyInvitation() {
     final formState = _personalDetailsFormKey.currentState;
     if (formState == null) return;
 
@@ -944,7 +1072,19 @@ class _SignUpViewState extends State<SignUpView> {
     _formData.addAll(rawFormData);
 
     setState(() {
-      _currentStep = SignupStep.familyAndPreferences;
+      _currentStep = SignupStep.familyInvitation;
+    });
+
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _proceedToPreferences() {
+    // No validation needed for family invitation step as it's optional
+    setState(() {
+      _currentStep = SignupStep.preferences;
     });
 
     _pageController.nextPage(
@@ -1062,10 +1202,20 @@ class _SignUpViewState extends State<SignUpView> {
         );
       } else {
         // Error creating account
+        String errorMessage = result.errorMessage ?? 'Error creando la cuenta';
+
+        // Special handling for email-already-in-use errors
+        if (result.errorCode == 'email-already-in-use') {
+          errorMessage =
+              'Este correo electrónico ya está registrado. '
+              'Por favor usa otro email o inicia sesión con tu cuenta existente.';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result.errorMessage ?? 'Error creando la cuenta'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }

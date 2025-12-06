@@ -40,6 +40,9 @@ class _AllPromotionsViewState extends State<AllPromotionsView> {
       context.read<AllPromotionsCubit>().setSelectedCategoryId(
         widget.initialCategoryId,
       );
+    } else {
+      // Load all promotions when no filter or category is provided
+      context.read<AllPromotionsCubit>().getPromotions();
     }
   }
 

@@ -383,7 +383,7 @@ class _SearchViewState extends State<SearchView> {
   Widget horizontalList(List<ListableBusiness> featuredBusinesses) {
     return SliverToBoxAdapter(
       child: Container(
-        height: 220,
+        height: 250,
         margin: const EdgeInsets.symmetric(horizontal: 12),
         child: ListView.separated(
           padding: const EdgeInsets.all(0.0),

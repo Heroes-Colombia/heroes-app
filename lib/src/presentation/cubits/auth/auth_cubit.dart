@@ -36,9 +36,12 @@ class AuthCubit extends Cubit<AuthState> {
       // The profile state will be reset in the ProfileView during logout
       // This prevents dependency issues with GetIt
 
+      // Normalize email to lowercase and trim
+      final email = userData['email']?.toString().toLowerCase().trim() ?? '';
+
       //First we log in the user in firebase auth
       await getIt<AuthService>().signInWithEmailAndPassword(
-        userData['email'],
+        email,
         userData['password'],
       );
 
@@ -110,9 +113,13 @@ class AuthCubit extends Cubit<AuthState> {
   //This method is used to sign up the user (no image needed - will be verified via OCR later)
   Future<AuthResult> signUp(Map<String, dynamic> userData) async {
     try {
+      // Normalize email to lowercase and trim before creating account
+      final email = userData['email']?.toString().toLowerCase().trim() ?? '';
+      userData['email'] = email;
+
       //First we create the user in firebase auth
       final uid = await getIt<AuthService>().signUpWithEmailAndPassword(
-        userData['email'],
+        email,
         userData['password'],
       );
 
@@ -148,9 +155,13 @@ class AuthCubit extends Cubit<AuthState> {
     XFile? identification,
   ) async {
     try {
+      // Normalize email to lowercase and trim before creating account
+      final email = userData['email']?.toString().toLowerCase().trim() ?? '';
+      userData['email'] = email;
+
       //First we create the user from the business info in firebase auth
       final uid = await getIt<AuthService>().signUpWithEmailAndPassword(
-        userData['email'],
+        email,
         userData['password'],
       );
 
@@ -293,8 +304,10 @@ class AuthCubit extends Cubit<AuthState> {
   //This method is used to restore the password
   Future<AuthResult> restorePassword(String email) async {
     try {
+      // Normalize email to lowercase and trim
+      final normalizedEmail = email.toLowerCase().trim();
       //First we send the password reset email
-      await getIt<AuthService>().sendPasswordResetEmail(email);
+      await getIt<AuthService>().sendPasswordResetEmail(normalizedEmail);
       //Then we return success result
       return AuthResult.success();
     } catch (e) {
