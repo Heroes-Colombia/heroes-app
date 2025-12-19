@@ -25,10 +25,7 @@ import 'package:heroes_app/src/domain/services/onboarding_service.dart';
 class SearchView extends StatefulWidget {
   final GlobalKey? promotionsKey;
 
-  const SearchView({
-    super.key,
-    this.promotionsKey,
-  });
+  const SearchView({super.key, this.promotionsKey});
 
   @override
   State<SearchView> createState() => _SearchViewState();
@@ -98,25 +95,6 @@ class _SearchViewState extends State<SearchView> {
           stretch: true,
           pinned: true,
           actions: [
-            // DEBUG: Reset Onboarding Button - DELETE BEFORE PRODUCTION
-            IconButton(
-              onPressed: () async {
-                await locator.get<OnboardingService>().resetOnboarding();
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Onboarding reset! Restart app or logout to test.',
-                      ),
-                      duration: Duration(seconds: 3),
-                    ),
-                  );
-                }
-              },
-              icon: Icon(Icons.refresh, color: theme.colorScheme.error),
-              tooltip: 'DEBUG: Reset Onboarding',
-            ),
-            // END DEBUG
             IconButton(
               onPressed:
                   () => showSearch(
@@ -171,10 +149,7 @@ class _SearchViewState extends State<SearchView> {
               context,
             ).push(AllBusinessView(filter: const BusinessFilter.physical()));
           }),
-          verticalList(
-            state.normalBusinesses,
-            state.businessPromotions,
-          ),
+          verticalList(state.normalBusinesses, state.businessPromotions),
           // Loading indicator for pagination
           if (state.isLoadingMore)
             SliverToBoxAdapter(
@@ -612,5 +587,4 @@ class _SearchViewState extends State<SearchView> {
           (state.isLoadingMorePromotions && state.hasMorePromotions ? 1 : 0),
     );
   }
-
 }
