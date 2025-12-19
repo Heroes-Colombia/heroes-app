@@ -15,6 +15,8 @@ import 'package:heroes_app/src/domain/services/military_id_ocr_service.dart';
 import 'package:heroes_app/src/domain/services/military_verification_service.dart';
 import 'package:heroes_app/src/domain/services/cache_service.dart';
 import 'package:heroes_app/src/domain/services/family_invitation_service.dart';
+import 'package:heroes_app/src/domain/services/onboarding_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final locator = GetIt.instance;
 
@@ -55,4 +57,8 @@ Future<void> initializeDependencies() async {
 
   // Register Family Invitation Service
   locator.registerSingleton<FamilyInvitationService>(FamilyInvitationService());
+
+  // Register Onboarding Service
+  final prefs = await SharedPreferences.getInstance();
+  locator.registerSingleton<OnboardingService>(OnboardingService(prefs));
 }

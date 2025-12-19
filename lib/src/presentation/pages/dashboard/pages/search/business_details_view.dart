@@ -140,12 +140,13 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
     return CustomScrollView(
       physics: const NeverScrollableScrollPhysics(),
       slivers: [
-        SliverAppBar.large(
+        SliverAppBar.medium(
           title: Text(
             state.business!.name,
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               fontSize: theme.textTheme.headlineSmall!.fontSize,
             ),
           ),
@@ -214,18 +215,17 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (business.featuredImage.isNotEmpty)
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-                ),
+              AspectRatio(
+                aspectRatio: 4 / 3,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
                     business.featuredImage,
-                    height: 180,
+                    fit: BoxFit.cover,
+                    cacheWidth: 480,
+                    cacheHeight: 360,
                     width: double.infinity,
-                    fit: BoxFit.fitWidth,
+                    filterQuality: FilterQuality.medium,
                   ),
                 ),
               )
@@ -314,7 +314,6 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -354,11 +353,11 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
   Widget promotionsList(List<Promotion> promotions, texts, theme) {
     return promotions.isNotEmpty
         ? GridView.count(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 0.77,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 1,
+          childAspectRatio: 0.9,
           children:
               promotions
                   .where((element) => element.expiredAt.isAfter(DateTime.now()))
@@ -386,99 +385,152 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
           () => AutoRouter.of(
             context,
           ).push(PromotionDetailsView(promotion: promotion, promotionId: null)),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: Image.network(
-                promotion.featuredImage,
-                height: 90,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return SizedBox(
-                    height: 90,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        value:
-                            loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
-                      ),
-                    ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return Image.asset(
-                    height: 90,
-                    "assets/images/file-not-found.png",
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image with badges overlay
+          Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: 4 / 3,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    promotion.featuredImage,
+                    width: double.infinity,
                     fit: BoxFit.cover,
-                  );
-                },
+                    // Performance optimizations
+                    cacheWidth: 800,
+                    cacheHeight: 600,
+                    filterQuality: FilterQuality.medium,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value:
+                                loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        "assets/images/file-not-found.png",
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
+              // Discount badge (top-right)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
                   child: Text(
-                    promotion.title,
-                    overflow: TextOverflow.ellipsis,
+                    '${promotion.percentage}% OFF',
                     style: TextStyle(
-                      fontSize: theme.textTheme.labelLarge!.fontSize,
+                      color: theme.colorScheme.onPrimary,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  "${promotion.percentage}%",
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: theme.textTheme.labelLarge!.fontSize,
-                    fontWeight: FontWeight.bold,
+              ),
+              // Urgency badge (bottom-left)
+              if (promotion.shouldShowUrgencyBadge)
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _getUrgencyColor(theme, promotion.urgencyLevel),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.access_time,
+                          size: 12,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          promotion.urgencyText,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: Text(
-                promotion.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: theme.textTheme.labelLarge!.fontSize,
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              promotion.expiredAt.difference(DateTime.now()).inDays < 2
-                  ? texts["expires-today"]
-                  : "${texts["days-remaining"]}${promotion.expiredAt.difference(DateTime.now()).inDays} ${texts["days-remaining-end"]}",
+            ],
+          ),
+          // Promotion title underneath
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 4, right: 4),
+            child: Text(
+              promotion.title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: theme.textTheme.labelSmall!.fontSize,
-                fontWeight: theme.textTheme.labelSmall!.fontWeight,
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: theme.textTheme.titleMedium!.fontSize,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
+  }
+
+  Color _getUrgencyColor(ThemeData theme, String urgencyLevel) {
+    switch (urgencyLevel) {
+      case 'critical':
+        return theme.colorScheme.error;
+      case 'urgent':
+        return Colors.orange;
+      case 'normal':
+        return theme.colorScheme.primary;
+      default:
+        return theme.colorScheme.primary;
+    }
   }
 
   Widget informationTab(Business? business, ThemeData theme, texts) {

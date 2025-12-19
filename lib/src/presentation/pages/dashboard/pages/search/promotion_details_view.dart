@@ -134,12 +134,12 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
 
     return CustomScrollView(
       slivers: [
-        SliverAppBar.large(
+        SliverAppBar.medium(
           title: Text(
             texts['title']!,
             style: TextStyle(
               color: theme.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
               fontSize: theme.textTheme.headlineSmall!.fontSize,
             ),
           ),
@@ -155,12 +155,10 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                // Image section - show image or gradient placeholder
-                SizedBox(
-                  height: 300,
-                  width: double.infinity,
+                AspectRatio(
+                  aspectRatio: 4 / 3,
                   child: ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(16)),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
                     child:
                         promotion.featuredImage.isNotEmpty
                             ? Image.network(
@@ -414,7 +412,8 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
           Row(
             children: [
               // Navigate button (only for physical businesses)
-              if (_business?.isPhysical == true) ...[
+              if (_business?.isPhysical == true &&
+                  _business?.address != "") ...[
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () => _navigateToBusiness(theme),

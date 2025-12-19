@@ -23,10 +23,13 @@ class PromotionCard extends StatelessWidget {
 
   // Helper to normalize business name to title case
   String _normalizeBusinessName(String name) {
-    return name.split(' ').map((word) {
-      if (word.isEmpty) return word;
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
+    return name
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) return word;
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
   }
 
   @override
@@ -48,7 +51,7 @@ class PromotionCard extends StatelessWidget {
               children: [
                 // Use AspectRatio to maintain consistent proportions
                 AspectRatio(
-                  aspectRatio: 4 / 3, // 4:3 ratio (taller, more Rappi-style)
+                  aspectRatio: 4 / 3,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child:

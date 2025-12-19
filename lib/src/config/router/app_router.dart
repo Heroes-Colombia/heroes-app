@@ -29,6 +29,13 @@ class AppRouter extends RootStackRouter {
       ],
     ),
 
+    //Onboarding routes
+    CustomRoute(
+      page: IntroRouteView.page,
+      path: '/intro',
+      transitionsBuilder: TransitionsBuilders.fadeIn,
+    ),
+
     //Dashboard routes
     CustomRoute(
       page: DashBoardView.page,

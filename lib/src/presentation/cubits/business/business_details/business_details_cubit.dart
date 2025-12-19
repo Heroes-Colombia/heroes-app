@@ -399,16 +399,6 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
     String phoneNumber, {
     String screen = 'business_details',
   }) async {
-    // Track WhatsApp click
-    final analyticsService = locator.get<AnalyticsService>();
-    analyticsService.trackDashboardClick(
-      entityType: 'business',
-      entityId: state.businessId ?? '',
-      businessId: state.businessId ?? '',
-      screen: screen,
-      metadata: {'link_type': 'whatsapp', 'link_value': phoneNumber},
-    );
-
     // Remove any spaces, dashes, or special characters from phone number
     String cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
 
@@ -422,9 +412,22 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
     }
 
     // Try WhatsApp URL first (works on both platforms)
-    final whatsappUrl = Uri.parse('https://wa.me/$cleanPhone');
+    final message =
+        'Hola! Vi tu negocio ${state.business?.name ?? ""} en Heroes Colombia y me gustaría conocer más información.';
+    final whatsappUrl = Uri.parse(
+      'https://wa.me/$cleanPhone?text=${Uri.encodeComponent(message)}',
+    );
 
     if (await canLaunchUrl(whatsappUrl)) {
+      // Track WhatsApp click
+      final analyticsService = locator.get<AnalyticsService>();
+      analyticsService.trackDashboardClick(
+        entityType: 'business',
+        entityId: state.businessId ?? '',
+        businessId: state.businessId ?? '',
+        screen: screen,
+        metadata: {'link_type': 'whatsapp', 'link_value': phoneNumber},
+      );
       await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
     }
   }

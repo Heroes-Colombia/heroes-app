@@ -18,10 +18,17 @@ import 'package:heroes_app/src/presentation/widgets/horizontal_card_widget.dart'
 import 'package:heroes_app/src/presentation/widgets/map_interactive_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/promotion_card_widget.dart';
 import 'package:heroes_app/src/presentation/widgets/vertical_card_widget.dart';
+import 'package:showcaseview/showcaseview.dart';
+import 'package:heroes_app/src/domain/services/onboarding_service.dart';
 
 @RoutePage()
 class SearchView extends StatefulWidget {
-  const SearchView({super.key});
+  final GlobalKey? promotionsKey;
+
+  const SearchView({
+    super.key,
+    this.promotionsKey,
+  });
 
   @override
   State<SearchView> createState() => _SearchViewState();
@@ -91,6 +98,25 @@ class _SearchViewState extends State<SearchView> {
           stretch: true,
           pinned: true,
           actions: [
+            // DEBUG: Reset Onboarding Button - DELETE BEFORE PRODUCTION
+            IconButton(
+              onPressed: () async {
+                await locator.get<OnboardingService>().resetOnboarding();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Onboarding reset! Restart app or logout to test.',
+                      ),
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                }
+              },
+              icon: Icon(Icons.refresh, color: theme.colorScheme.error),
+              tooltip: 'DEBUG: Reset Onboarding',
+            ),
+            // END DEBUG
             IconButton(
               onPressed:
                   () => showSearch(
@@ -115,7 +141,10 @@ class _SearchViewState extends State<SearchView> {
               context,
             ).push(AllPromotionsView(filter: const PromotionFilter.featured()));
           }),
-          featuredPromotionsCarousel(state.featuredPromotions, context),
+          featuredPromotionsCarouselWithShowcase(
+            state.featuredPromotions,
+            context,
+          ),
         ],
         singleTitle(theme, texts["categories"]),
         categoriesList(state.businessCategories),
@@ -142,7 +171,10 @@ class _SearchViewState extends State<SearchView> {
               context,
             ).push(AllBusinessView(filter: const BusinessFilter.physical()));
           }),
-          verticalList(state.normalBusinesses, state.businessPromotions),
+          verticalList(
+            state.normalBusinesses,
+            state.businessPromotions,
+          ),
           // Loading indicator for pagination
           if (state.isLoadingMore)
             SliverToBoxAdapter(
@@ -511,4 +543,74 @@ class _SearchViewState extends State<SearchView> {
       screen: 'home_feed',
     );
   }
+
+  // Showcase-wrapped widgets for onboarding
+  Widget featuredPromotionsCarouselWithShowcase(
+    List<dynamic> promotions,
+    BuildContext context,
+  ) {
+    return SliverToBoxAdapter(
+      child: Showcase(
+        key: widget.promotionsKey ?? GlobalKey(),
+        description:
+            'Aquí encontrarás las mejores ofertas destacadas de negocios cercanos a ti.',
+        child: Container(
+          height: 280,
+          margin: const EdgeInsets.symmetric(horizontal: 12),
+          child: _buildPromotionsCarousel(promotions, context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPromotionsCarousel(
+    List<dynamic> promotions,
+    BuildContext context,
+  ) {
+    final cubit = context.read<BusinessHomeViewCubit>();
+    final state = context.watch<BusinessHomeViewCubit>().state;
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(0.0),
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) {
+        // Load more when reaching 3 items before the end
+        if (index == promotions.length - 3 &&
+            state.hasMorePromotions &&
+            !state.isLoadingMorePromotions) {
+          cubit.loadMorePromotions();
+        }
+
+        // Show loading indicator at the end
+        if (index == promotions.length) {
+          return Container(
+            width: 280,
+            margin: const EdgeInsets.only(right: 12),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        }
+
+        final promotion = promotions[index] as Promotion;
+        _trackPromotionImpression(
+          promotion.documentId ?? '',
+          promotion.businessId,
+        );
+        return PromotionCard(
+          promotion: promotion,
+          callback: () {
+            AutoRouter.of(context).push(
+              PromotionDetailsView(
+                promotionId: promotion.documentId ?? '',
+                promotion: promotion,
+              ),
+            );
+          },
+        );
+      },
+      itemCount:
+          promotions.length +
+          (state.isLoadingMorePromotions && state.hasMorePromotions ? 1 : 0),
+    );
+  }
+
 }

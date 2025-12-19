@@ -1198,7 +1198,7 @@ class _SignUpViewState extends State<SignUpView> {
           "¡Cuenta Creada!",
           successMessage,
           "Continuar",
-          () => AutoRouter.of(context).replaceAll([DashBoardView()]),
+          () => AutoRouter.of(context).replaceAll([const IntroRouteView()]),
         );
       } else {
         // Error creating account
