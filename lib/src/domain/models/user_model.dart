@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:heroes_app/assets/app_enums.dart';
 
@@ -38,6 +39,11 @@ class User extends Equatable {
   /// Beneficiaries (permission: beneficiary, userType: consumer) do NOT have codes
   final String? inviteCode;
 
+  // V5 Schema Fields - Audit Timestamps
+  final DateTime? createdAt; // When the user account was created
+  final DateTime? updatedAt; // Last update timestamp
+  final DateTime? lastLogin; // Last successful login timestamp
+
   const User({
     required this.uid,
     this.license,
@@ -61,6 +67,9 @@ class User extends Equatable {
     this.preferredCategories, // V3 field
     this.familyInvitations, // V3 field
     this.inviteCode, // V4 field
+    this.createdAt, // V5 field
+    this.updatedAt, // V5 field
+    this.lastLogin, // V5 field
   });
 
   @override
@@ -87,6 +96,9 @@ class User extends Equatable {
     preferredCategories,
     familyInvitations,
     inviteCode,
+    createdAt,
+    updatedAt,
+    lastLogin,
   ];
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -136,6 +148,25 @@ class User extends Equatable {
               : null,
       // V4 fields with backward compatibility
       inviteCode: json['invite_code'] as String?,
+      // V5 fields with backward compatibility
+      createdAt:
+          json['created_at'] != null
+              ? (json['created_at'] is String
+                  ? DateTime.parse(json['created_at'] as String)
+                  : (json['created_at'] as dynamic).toDate())
+              : null,
+      updatedAt:
+          json['updated_at'] != null
+              ? (json['updated_at'] is String
+                  ? DateTime.parse(json['updated_at'] as String)
+                  : (json['updated_at'] as dynamic).toDate())
+              : null,
+      lastLogin:
+          json['last_login'] != null
+              ? (json['last_login'] is String
+                  ? DateTime.parse(json['last_login'] as String)
+                  : (json['last_login'] as dynamic).toDate())
+              : null,
     );
   }
 
@@ -143,6 +174,24 @@ class User extends Equatable {
     Map<String, dynamic> json,
     UserPermissions? permission,
   ) {
+    // Determine the actual permission to use
+    final actualPermission = permission ?? UserPermissions.user;
+
+    // Map permission to user_type (V2 schema)
+    String userType;
+    switch (actualPermission) {
+      case UserPermissions.business:
+        userType = 'business_team';
+        break;
+      case UserPermissions.admin:
+        userType = 'admin';
+        break;
+      case UserPermissions.user:
+      case UserPermissions.beneficiary:
+        userType = 'consumer';
+        break;
+    }
+
     return {
       'email': json['email']?.toString().toLowerCase().trim() ?? '',
       'license': json['license'] ?? "",
@@ -152,15 +201,14 @@ class User extends Equatable {
       'second_last_name': json['second_last_name'] ?? "",
       'verified': true,
       'rank': json['rank'],
-      "permission":
-          permission != null
-              ? permission.toString().split(".").last
-              : UserPermissions.user.toString().split(".").last,
+      "permission": actualPermission.toString().split(".").last,
       "status": UserStatus.active.toString().split('.').last,
       "favourite_businesses": [],
       "favourite_promotions": [],
       "password": json['password'],
       "identification_card": json['identification_card'] ?? "",
+      // V2 field - user_type is REQUIRED for all new users
+      "user_type": userType,
       // V3 fields
       if (json['date_of_birth'] != null)
         'date_of_birth': (json['date_of_birth'] as DateTime).toIso8601String(),
@@ -169,6 +217,9 @@ class User extends Equatable {
         'preferred_categories': json['preferred_categories'],
       if (json['family_invitations'] != null)
         'family_invitations': json['family_invitations'],
+      // V5 fields - Audit timestamps
+      'created_at': FieldValue.serverTimestamp(),
+      'updated_at': FieldValue.serverTimestamp(),
     };
   }
 
@@ -195,6 +246,9 @@ class User extends Equatable {
     List<String>? preferredCategories,
     List<String>? familyInvitations,
     String? inviteCode,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? lastLogin,
   }) {
     return User(
       uid: uid ?? this.uid,
@@ -220,6 +274,9 @@ class User extends Equatable {
       preferredCategories: preferredCategories ?? this.preferredCategories,
       familyInvitations: familyInvitations ?? this.familyInvitations,
       inviteCode: inviteCode ?? this.inviteCode,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      lastLogin: lastLogin ?? this.lastLogin,
     );
   }
 

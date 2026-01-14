@@ -17,6 +17,9 @@ class AppConstants {
   final String promotionImages = "promotionsImages";
   final String featureImage = "featureImage";
 
+  //Promotion Display Settings
+  final int expiredPromotionsDaysThreshold = 30; // Show expired promotions from last 30 days
+
   //Map themes
   final String lightMapTheme = "7f1b54e9ff3283c0";
   final String darkMapTheme = "b3f5bac810144125";

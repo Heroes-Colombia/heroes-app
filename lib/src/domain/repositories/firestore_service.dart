@@ -46,6 +46,8 @@ class FirestoreService {
    This method is used to edit a document inside a collection with the data passed as parameter,
    where the id  of the property is equal to the id passed as parameter
    example 'usersCollectionName', '123', 'uid', '{name: 'John'}'
+
+   Note: Automatically adds updated_at timestamp to all updates for audit trail
   */
   Future<Map<String, dynamic>> editDocumentById(
     String collectionName,
@@ -59,7 +61,14 @@ class FirestoreService {
             .where(property, isEqualTo: id)
             .get();
     final docId = docSnapshot.docs.first.id;
-    await _firestore.collection(collectionName).doc(docId).update(data);
+
+    // Automatically add updated_at timestamp for audit trail
+    final dataWithTimestamp = {
+      ...data,
+      'updated_at': FieldValue.serverTimestamp(),
+    };
+
+    await _firestore.collection(collectionName).doc(docId).update(dataWithTimestamp);
     return data;
   }
 
@@ -67,6 +76,8 @@ class FirestoreService {
    This method is used to edit a document inside a collection with the data passed as parameter,
    where the document id is equal to the id passed as parameter
    example 'usersCollectionName', '123', 'uid', '{name: 'John'}'
+
+   Note: Automatically adds updated_at timestamp to all updates for audit trail
   */
   Future<Map<String, dynamic>> editDocumentByDocumentId(
     String collectionName,
@@ -79,7 +90,14 @@ class FirestoreService {
             .where(FieldPath.documentId, isEqualTo: id)
             .get();
     final docId = docSnapshot.docs.first.id;
-    await _firestore.collection(collectionName).doc(docId).update(data);
+
+    // Automatically add updated_at timestamp for audit trail
+    final dataWithTimestamp = {
+      ...data,
+      'updated_at': FieldValue.serverTimestamp(),
+    };
+
+    await _firestore.collection(collectionName).doc(docId).update(dataWithTimestamp);
     final documentId = docSnapshot.docs.first.id;
     Map<String, dynamic> copyOfData = Map.from(data);
     copyOfData["id"] = documentId;
@@ -747,5 +765,61 @@ class FirestoreService {
         .where('type', isEqualTo: 'physical')
         .snapshots()
         .map((querySnapshot) => querySnapshot.docs);
+  }
+
+  /*
+   This method fetches ALL active businesses for client-side search
+   Used for search functionality with case-insensitive and substring matching
+  */
+  Future<List<Map<String, dynamic>>> getAllActiveBusinessesForSearch(
+    String collectionName,
+  ) async {
+    try {
+      final docSnapshot =
+          await _firestore
+              .collection(collectionName)
+              .where("status", isEqualTo: "active")
+              .get();
+
+      final data =
+          docSnapshot.docs.map((e) {
+            final data = e.data();
+            data["id"] = e.id;
+            return data;
+          }).toList();
+
+      return data;
+    } catch (e) {
+      log('Error fetching all active businesses: $e');
+      return [];
+    }
+  }
+
+  /*
+   This method fetches ALL active promotions for client-side search
+   Used for search functionality with case-insensitive and substring matching
+  */
+  Future<List<Map<String, dynamic>>> getAllActivePromotionsForSearch(
+    String collectionName,
+  ) async {
+    try {
+      final docSnapshot =
+          await _firestore
+              .collection(collectionName)
+              .where("status", isEqualTo: "active")
+              .get();
+
+      final data =
+          docSnapshot.docs.map((e) {
+            final data = e.data();
+            data["id"] = e.id;
+            return data;
+          }).toList();
+
+      return data;
+    } catch (e) {
+      log('Error fetching all active promotions: $e');
+      return [];
+    }
   }
 }

@@ -418,17 +418,18 @@ class BusinessDetailsCubit extends Cubit<BusinessDetailsState> {
       'https://wa.me/$cleanPhone?text=${Uri.encodeComponent(message)}',
     );
 
-    if (await canLaunchUrl(whatsappUrl)) {
-      // Track WhatsApp click
-      final analyticsService = locator.get<AnalyticsService>();
-      analyticsService.trackDashboardClick(
-        entityType: 'business',
-        entityId: state.businessId ?? '',
-        businessId: state.businessId ?? '',
-        screen: screen,
-        metadata: {'link_type': 'whatsapp', 'link_value': phoneNumber},
-      );
-      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
-    }
+    // Track WhatsApp click
+    final analyticsService = locator.get<AnalyticsService>();
+    analyticsService.trackDashboardClick(
+      entityType: 'business',
+      entityId: state.businessId ?? '',
+      businessId: state.businessId ?? '',
+      screen: screen,
+      metadata: {'link_type': 'whatsapp', 'link_value': phoneNumber},
+    );
+
+    // Launch WhatsApp URL - will open WhatsApp app if installed,
+    // otherwise falls back to web browser with wa.me
+    await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
   }
 }

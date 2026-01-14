@@ -124,8 +124,6 @@ class _SearchViewState extends State<SearchView> {
             context,
           ),
         ],
-        singleTitle(theme, texts["categories"]),
-        categoriesList(state.businessCategories),
         singleTitle(theme, texts["nearPromotions"]),
         mapPreview(theme, context),
         doubleTitle(theme, texts["featuredBusiness"], texts["seeAll"], () {

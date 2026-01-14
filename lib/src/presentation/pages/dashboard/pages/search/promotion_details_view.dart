@@ -155,127 +155,172 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                AspectRatio(
-                  aspectRatio: 4 / 3,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    child:
-                        promotion.featuredImage.isNotEmpty
-                            ? Image.network(
-                              promotion.featuredImage,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              // Performance optimizations
-                              cacheWidth: 800,
-                              cacheHeight: 600,
-                              filterQuality: FilterQuality.medium,
-                              loadingBuilder: (
-                                context,
-                                child,
-                                loadingProgress,
-                              ) {
-                                if (loadingProgress == null) return child;
-                                return Container(
-                                  color:
-                                      theme.colorScheme.surfaceContainerHighest,
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      value:
-                                          loadingProgress.expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                              : null,
-                                    ),
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  height: 300,
+                // Image with discount badge overlay
+                Stack(
+                  children: [
+                    AspectRatio(
+                      aspectRatio: 4 / 3,
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(10),
+                        ),
+                        child:
+                            promotion.featuredImage.isNotEmpty
+                                ? Image.network(
+                                  promotion.featuredImage,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  // Performance optimizations
+                                  cacheWidth: 800,
+                                  cacheHeight: 600,
+                                  filterQuality: FilterQuality.medium,
+                                  loadingBuilder: (
+                                    context,
+                                    child,
+                                    loadingProgress,
+                                  ) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      color:
+                                          theme
+                                              .colorScheme
+                                              .surfaceContainerHighest,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          value:
+                                              loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                  : null,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      height: 300,
+                                      decoration: BoxDecoration(
+                                        color:
+                                            theme
+                                                .colorScheme
+                                                .surfaceContainerHighest,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.image_not_supported,
+                                            size: 64,
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant
+                                                .withValues(alpha: 0.5),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Imagen no disponible',
+                                            style: theme.textTheme.bodyMedium
+                                                ?.copyWith(
+                                                  color: theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant
+                                                      .withValues(alpha: 0.7),
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                )
+                                : Container(
+                                  width: double.infinity,
                                   decoration: BoxDecoration(
-                                    color:
-                                        theme
-                                            .colorScheme
-                                            .surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(16),
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        theme.colorScheme.primaryContainer,
+                                        theme.colorScheme.secondaryContainer,
+                                      ],
+                                    ),
                                   ),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
-                                        Icons.image_not_supported,
-                                        size: 64,
+                                        Icons.local_offer,
+                                        size: 80,
                                         color: theme
                                             .colorScheme
-                                            .onSurfaceVariant
-                                            .withValues(alpha: 0.5),
+                                            .onPrimaryContainer
+                                            .withValues(alpha: 0.8),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        '${promotion.percentage}% OFF',
+                                        style: TextStyle(
+                                          color:
+                                              theme
+                                                  .colorScheme
+                                                  .onPrimaryContainer,
+                                          fontSize: 48,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        'Imagen no disponible',
-                                        style: theme.textTheme.bodyMedium
-                                            ?.copyWith(
-                                              color: theme
-                                                  .colorScheme
-                                                  .onSurfaceVariant
-                                                  .withValues(alpha: 0.7),
-                                            ),
+                                        'Promoción Especial',
+                                        style: TextStyle(
+                                          color: theme
+                                              .colorScheme
+                                              .onPrimaryContainer
+                                              .withValues(alpha: 0.7),
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                );
-                              },
-                            )
-                            : Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    theme.colorScheme.primaryContainer,
-                                    theme.colorScheme.secondaryContainer,
-                                  ],
                                 ),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.local_offer,
-                                    size: 80,
-                                    color: theme.colorScheme.onPrimaryContainer
-                                        .withValues(alpha: 0.8),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    '${promotion.percentage}% OFF',
-                                    style: TextStyle(
-                                      color:
-                                          theme.colorScheme.onPrimaryContainer,
-                                      fontSize: 48,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Promoción Especial',
-                                    style: TextStyle(
-                                      color: theme
-                                          .colorScheme
-                                          .onPrimaryContainer
-                                          .withValues(alpha: 0.7),
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      ),
+                    ),
+                    // Discount badge overlay (top-right)
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
                             ),
-                  ),
+                          ],
+                        ),
+                        child: Text(
+                          '${promotion.percentage}% OFF',
+                          style: TextStyle(
+                            color: theme.colorScheme.onPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 // Action buttons row with favorite icon
@@ -290,7 +335,7 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
               left: 16,
               right: 16,
               bottom: 12,
-              top: 12,
+              top: 5,
             ),
             child: Text(
               promotion.title,
@@ -306,20 +351,17 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
         divider(theme),
         sectionTitle(texts['description-title']!, theme),
         sectionBody(theme, promotion.description),
-        sectionTitle(texts['instructions-title']!, theme),
-        sectionBody(theme, promotion.instructions),
+        if (promotion.instructions.isNotEmpty) ...[
+          sectionTitle(texts['instructions-title']!, theme),
+          sectionBody(theme, promotion.instructions),
+        ],
         divider(theme),
-        sectionDouble(
-          theme,
-          texts['discount-title']!,
-          "${promotion.percentage}%",
-        ),
         sectionDouble(
           theme,
           texts['expiration-title']!,
           getExpirationDate(promotion.expiredAt),
         ),
-        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+        SliverToBoxAdapter(child: SizedBox(height: 32)),
       ],
     );
   }

@@ -4,6 +4,8 @@ enum PromotionViewCubitStatus { initial, loading, success, error }
 
 final class AllPromotionsState extends Equatable {
   final List<Promotion> promotions;
+  final List<Promotion> activePromotions;
+  final List<Promotion> expiredPromotions;
   final PromotionViewCubitStatus status;
   final String selectedCategoryId;
   final List<BusinessCategory> categories;
@@ -11,6 +13,8 @@ final class AllPromotionsState extends Equatable {
 
   const AllPromotionsState({
     this.promotions = const [],
+    this.activePromotions = const [],
+    this.expiredPromotions = const [],
     this.status = PromotionViewCubitStatus.initial,
     this.selectedCategoryId = '',
     this.categories = const [],
@@ -19,6 +23,8 @@ final class AllPromotionsState extends Equatable {
 
   AllPromotionsState copyWith({
     List<Promotion>? promotions,
+    List<Promotion>? activePromotions,
+    List<Promotion>? expiredPromotions,
     PromotionViewCubitStatus? status,
     String? selectedCategoryId,
     List<BusinessCategory>? categories,
@@ -27,6 +33,8 @@ final class AllPromotionsState extends Equatable {
     return AllPromotionsState(
       status: status ?? this.status,
       promotions: promotions ?? this.promotions,
+      activePromotions: activePromotions ?? this.activePromotions,
+      expiredPromotions: expiredPromotions ?? this.expiredPromotions,
       selectedCategoryId: selectedCategoryId ?? this.selectedCategoryId,
       categories: categories ?? this.categories,
       filter: filter ?? this.filter,
@@ -36,6 +44,8 @@ final class AllPromotionsState extends Equatable {
   @override
   List<Object> get props => [
         promotions,
+        activePromotions,
+        expiredPromotions,
         status,
         selectedCategoryId,
         categories,

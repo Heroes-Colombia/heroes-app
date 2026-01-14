@@ -73,10 +73,25 @@ class AllPromotionsCubit extends Cubit<AllPromotionsState> {
       var promotions =
           rawPromotions.map((e) => Promotion.fromJson(e)).toList();
 
-      // Filter out expired promotions
-      promotions = promotions.where((promotion) {
-        return !promotion.isExpired;
-      }).toList();
+      // Separate active and recently expired promotions
+      final now = DateTime.now();
+      final expiredThresholdDays = locator.get<AppConstants>().expiredPromotionsDaysThreshold;
+      final thresholdDate = now.subtract(Duration(days: expiredThresholdDays));
+
+      var activePromotions = <Promotion>[];
+      var expiredPromotions = <Promotion>[];
+
+      for (final promotion in promotions) {
+        if (!promotion.isExpired) {
+          activePromotions.add(promotion);
+        } else if (promotion.expiredAt.isAfter(thresholdDate)) {
+          // Include expired promotions from last N days
+          expiredPromotions.add(promotion);
+        }
+      }
+
+      // Combine: active first, then recently expired
+      promotions = [...activePromotions, ...expiredPromotions];
 
       // Get unique business IDs from promotions
       final businessIds = promotions
@@ -103,8 +118,17 @@ class AllPromotionsCubit extends Cubit<AllPromotionsState> {
         }
       }
 
-      // Add business names and categories to promotions
-      promotions = promotions.map((promotion) {
+      // Add business names and categories to all promotions (active + expired)
+      activePromotions = activePromotions.map((promotion) {
+        final businessName = businessNamesMap[promotion.businessId];
+        final businessCategories = businessCategoriesMap[promotion.businessId];
+        return promotion.copyWith(
+          businessName: businessName,
+          businessCategories: businessCategories,
+        );
+      }).toList();
+
+      expiredPromotions = expiredPromotions.map((promotion) {
         final businessName = businessNamesMap[promotion.businessId];
         final businessCategories = businessCategoriesMap[promotion.businessId];
         return promotion.copyWith(
@@ -115,26 +139,40 @@ class AllPromotionsCubit extends Cubit<AllPromotionsState> {
 
       // Apply client-side category filter if specified
       if (state.filter.categoryId != null && state.filter.categoryId!.isNotEmpty) {
-        promotions = promotions.where((promotion) {
+        activePromotions = activePromotions.where((promotion) {
+          return promotion.businessCategories?.contains(state.filter.categoryId) ?? false;
+        }).toList();
+
+        expiredPromotions = expiredPromotions.where((promotion) {
           return promotion.businessCategories?.contains(state.filter.categoryId) ?? false;
         }).toList();
       }
 
-      // Sort promotions: Higher percentage first, then more urgent (fewer days until expiration)
-      promotions.sort((a, b) {
-        // Primary sort: Higher percentage first
+      // Sort active promotions: Higher percentage first, then more urgent
+      activePromotions.sort((a, b) {
         final percentageComparison = b.percentage.compareTo(a.percentage);
         if (percentageComparison != 0) return percentageComparison;
-
-        // Secondary sort: More urgent (fewer days) first
         return a.daysUntilExpiration.compareTo(b.daysUntilExpiration);
       });
 
-      //We emit the state with the new promotions
+      // Sort expired promotions: Most recently expired first
+      expiredPromotions.sort((a, b) {
+        return b.expiredAt.compareTo(a.expiredAt);
+      });
+
+      // Combine sorted lists: active first, then expired
+      promotions = [...activePromotions, ...expiredPromotions];
+
+      // For all_promotions_view: sort all promotions by percentage only (highest first)
+      promotions.sort((a, b) => b.percentage.compareTo(a.percentage));
+
+      //We emit the state with the new promotions (combined and separated)
       emit(
         state.copyWith(
           status: PromotionViewCubitStatus.success,
           promotions: promotions,
+          activePromotions: activePromotions,
+          expiredPromotions: expiredPromotions,
         ),
       );
     } catch (e) {

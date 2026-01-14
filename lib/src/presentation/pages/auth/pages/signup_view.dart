@@ -1127,7 +1127,7 @@ class _SignUpViewState extends State<SignUpView> {
 
       // Add beneficiary-specific fields if using invite code
       if (isBeneficiary) {
-        userData['user_type'] = 'consumer';
+        // user_type is now automatically set by toInitialFirebaseJson based on permission
         userData['verified'] = true; // Auto-verify family members
         userData['status'] = 'active';
         userData['rank'] = 'OTROS_GRADOS_Beneficiarios';

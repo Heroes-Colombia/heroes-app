@@ -196,7 +196,7 @@ class _AllBusinessViewState extends State<AllBusinessView> {
             childAspectRatio: 1,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            mainAxisExtent: 174,
+            mainAxisExtent: 185,
           ),
           itemCount: businesses.length,
           itemBuilder: (context, index) {

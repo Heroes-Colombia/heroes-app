@@ -33,10 +33,13 @@ class VerticalCard extends StatelessWidget {
 
   // Helper to normalize business name to title case
   String _normalizeBusinessName(String name) {
-    return name.split(' ').map((word) {
-      if (word.isEmpty) return word;
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
+    return name
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) return word;
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
   }
 
   @override
@@ -53,60 +56,75 @@ class VerticalCard extends StatelessWidget {
             color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(children: [
-            content(theme, category),
-            const SizedBox(width: 12),
-            // Use AspectRatio for consistent image display (square)
-            SizedBox(
-              height: 80,
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(12),
-                    bottomRight: Radius.circular(12)),
-                child: image.isNotEmpty
-                    ? Image.network(
-                        image,
-                        fit: BoxFit.cover,
-                        // Performance optimizations
-                        cacheWidth: 160, // 2x resolution for sharp display
-                        cacheHeight: 160,
-                        filterQuality: FilterQuality.medium,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: theme.colorScheme.surfaceContainerHighest,
-                            child: Center(
-                              child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              ),
+          child: Row(
+            children: [
+              content(theme, category),
+              const SizedBox(width: 12),
+              // Use AspectRatio for consistent image display (square)
+              SizedBox(
+                height: 80,
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
+                    ),
+                    child:
+                        image.isNotEmpty
+                            ? Image.network(
+                              image,
+                              fit: BoxFit.cover,
+                              // Performance optimizations
+                              cacheWidth:
+                                  160, // 2x resolution for sharp display
+                              cacheHeight: 160,
+                              filterQuality: FilterQuality.medium,
+                              loadingBuilder: (
+                                context,
+                                child,
+                                loadingProgress,
+                              ) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  color:
+                                      theme.colorScheme.surfaceContainerHighest,
+                                  child: Center(
+                                    child: SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        value:
+                                            loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                                : null,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  "assets/images/file-not-found.png",
+                                  fit: BoxFit.cover,
+                                );
+                              },
+                            )
+                            : Image.asset(
+                              "assets/images/file-not-found.png",
+                              fit: BoxFit.cover,
                             ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Image.asset(
-                            "assets/images/file-not-found.png",
-                            fit: BoxFit.cover,
-                          );
-                        },
-                      )
-                    : Image.asset(
-                        "assets/images/file-not-found.png",
-                        fit: BoxFit.cover,
-                      ),
+                  ),
                 ),
               ),
-            ),
-          ]),
+            ],
+          ),
         ),
       ),
     );
@@ -117,11 +135,7 @@ class VerticalCard extends StatelessWidget {
       child: Row(
         children: [
           if (category != null)
-            SvgPicture.network(
-              category.imageUrl,
-              width: 24,
-              height: 24,
-            ),
+            SvgPicture.network(category.imageUrl, width: 24, height: 24),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -162,43 +176,6 @@ class VerticalCard extends StatelessWidget {
                           color: theme.colorScheme.onPrimaryContainer,
                         ),
                       ),
-                    // Premium badge for Enterprise businesses
-                    if (isFeatured)
-                      Container(
-                        margin: const EdgeInsets.only(left: 4),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.amber.shade600,
-                              Colors.orange.shade700,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.workspace_premium,
-                              size: 10,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 2),
-                            Text(
-                              'PRO',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                   ],
                 ),
                 // Category and distance row
@@ -210,8 +187,9 @@ class VerticalCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: TextStyle(
-                          color: theme.colorScheme.onSurfaceVariant
-                              .withOpacity(0.8),
+                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
+                            0.8,
+                          ),
                           fontSize: theme.textTheme.labelMedium!.fontSize,
                           fontWeight: theme.textTheme.bodySmall!.fontWeight,
                         ),
@@ -237,15 +215,21 @@ class VerticalCard extends StatelessWidget {
                             ),
                           ),
                           // Show location count badge if >1 physical location
-                          if (physicalLocationsCount != null && physicalLocationsCount! > 1) ...[
+                          if (physicalLocationsCount != null &&
+                              physicalLocationsCount! > 1) ...[
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.secondaryContainer,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: theme.colorScheme.secondary.withValues(alpha: 0.3),
+                                  color: theme.colorScheme.secondary.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   width: 1,
                                 ),
                               ),
@@ -273,7 +257,10 @@ class VerticalCard extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: _getUrgencyColor(theme, urgentPromotion!.urgencyLevel),
+                      color: _getUrgencyColor(
+                        theme,
+                        urgentPromotion!.urgencyLevel,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(

@@ -219,47 +219,6 @@ class PromotionCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Urgency badge (bottom-left)
-                if (promotion.shouldShowUrgencyBadge)
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getUrgencyColor(theme, promotion.urgencyLevel),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.access_time,
-                            size: 14,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            promotion.urgencyText,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
               ],
             ),
             // Promotion details
@@ -309,18 +268,5 @@ class PromotionCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _getUrgencyColor(ThemeData theme, String urgencyLevel) {
-    switch (urgencyLevel) {
-      case 'critical':
-        return theme.colorScheme.error;
-      case 'urgent':
-        return Colors.orange;
-      case 'normal':
-        return theme.colorScheme.primary;
-      default:
-        return theme.colorScheme.primary;
-    }
   }
 }

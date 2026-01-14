@@ -360,7 +360,6 @@ class _BusinessDetailsViewState extends State<BusinessDetailsView> {
           childAspectRatio: 0.9,
           children:
               promotions
-                  .where((element) => element.expiredAt.isAfter(DateTime.now()))
                   .map((promotion) => promotionCard(promotion, theme, texts))
                   .toList(),
         )
