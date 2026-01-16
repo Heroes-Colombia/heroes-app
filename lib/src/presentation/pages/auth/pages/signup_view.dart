@@ -507,9 +507,10 @@ class _SignUpViewState extends State<SignUpView> {
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
                 validator: (value) {
-                  if (value == null) return 'Campo requerido';
-                  final age = DateTime.now().difference(value).inDays ~/ 365;
-                  if (age < 10) return 'Debes tener al menos 10 años';
+                  if (value != null) {
+                    final age = DateTime.now().difference(value).inDays ~/ 365;
+                    if (age < 10) return 'Debes tener al menos 10 años';
+                  }
                   return null;
                 },
                 autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -542,13 +543,11 @@ class _SignUpViewState extends State<SignUpView> {
               // Sex toggle - compact switch below rank
               FormBuilderField<String>(
                 name: 'sex',
-                validator: (value) => value == null ? 'Campo requerido' : null,
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 builder: (field) {
                   return SexToggleWidget(
                     selectedSex: field.value,
                     onSexChanged: (sex) => field.didChange(sex),
-                    errorText: field.errorText,
                   );
                 },
               ),
