@@ -68,7 +68,10 @@ class FirestoreService {
       'updated_at': FieldValue.serverTimestamp(),
     };
 
-    await _firestore.collection(collectionName).doc(docId).update(dataWithTimestamp);
+    await _firestore
+        .collection(collectionName)
+        .doc(docId)
+        .update(dataWithTimestamp);
     return data;
   }
 
@@ -97,7 +100,10 @@ class FirestoreService {
       'updated_at': FieldValue.serverTimestamp(),
     };
 
-    await _firestore.collection(collectionName).doc(docId).update(dataWithTimestamp);
+    await _firestore
+        .collection(collectionName)
+        .doc(docId)
+        .update(dataWithTimestamp);
     final documentId = docSnapshot.docs.first.id;
     Map<String, dynamic> copyOfData = Map.from(data);
     copyOfData["id"] = documentId;
@@ -199,6 +205,42 @@ class FirestoreService {
   }
 
   /*
+   This method is used to read all documents inside a collection,
+   where the condition of the property is equal to the propertyValue
+   passed as parameter and the status is active and the featured_image is not null
+  */
+  Future<List<Map<String, dynamic>>> readActiveFeaturedBusiness(
+    String collectionName,
+    String property,
+    Object propertyValue,
+    int limit,
+  ) async {
+    final docSnapshot =
+        await _firestore
+            .collection(collectionName)
+            .limit(limit)
+            .where("status", isEqualTo: "active")
+            .where("featured_image", isNotEqualTo: null)
+            .where(property, isEqualTo: propertyValue)
+            .get();
+    final data =
+        docSnapshot.docs
+            .map((e) {
+              final data = e.data();
+              data["id"] = e.id;
+              return data;
+            })
+            .where((element) {
+              final featuredImage = element["featured_image"];
+              return featuredImage != null &&
+                  featuredImage is String &&
+                  featuredImage.isNotEmpty;
+            })
+            .toList();
+    return data;
+  }
+
+  /*
    This method is used to read active documents with pagination support.
    Returns a map with 'documents', 'lastDocument' (cursor), and 'hasMore' flag.
    Use this for infinite scroll implementations.
@@ -236,11 +278,19 @@ class FirestoreService {
 
       // Extract documents and add id field
       final documents =
-          querySnapshot.docs.map((doc) {
-            final data = doc.data() as Map<String, dynamic>;
-            data['id'] = doc.id;
-            return data;
-          }).toList();
+          querySnapshot.docs
+              .map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                data['id'] = doc.id;
+                return data;
+              })
+              .where((element) {
+                final featuredImage = element["featured_image"];
+                return featuredImage != null &&
+                    featuredImage is String &&
+                    featuredImage.isNotEmpty;
+              })
+              .toList();
 
       final lastDoc =
           querySnapshot.docs.isNotEmpty ? querySnapshot.docs.last : null;

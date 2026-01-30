@@ -50,34 +50,21 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       //We get the featured businesses from firestore
       final featuredBusinessRaw = await locator
           .get<FirestoreService>()
-          .readActiveDocumentsByCondition(
-            businessCollection,
-            "featured",
-            true,
-            15,
-          );
+          .readActiveFeaturedBusiness(businessCollection, "featured", true, 15);
 
       //We convert the raw data to a list of business
       final featuredBusiness =
           featuredBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
 
-      //Sort featured businesses: prioritize those with valid featured_image URL
-      featuredBusiness.sort((a, b) {
-        final bool aHasImage =
-            a.featuredImage.isNotEmpty && a.featuredImage.startsWith('http');
-        final bool bHasImage =
-            b.featuredImage.isNotEmpty && b.featuredImage.startsWith('http');
-        if (aHasImage && !bHasImage) return -1;
-        if (!aHasImage && bHasImage) return 1;
-        return 0; // Keep original order if both have or both don't have images
-      });
+      //Randomize featured businesses to avoid showing the same ones all the time
+      featuredBusiness.shuffle();
 
       //We get the normal businesses from firestore with pagination
       final normalBusinessResponse = await locator
           .get<FirestoreService>()
           .readActiveDocumentsWithPagination(
             businessCollection,
-            orderByField: 'created_at',
+            orderByField: 'updated_at',
             limit: 15,
             whereField: "type",
             whereValue: "physical",
@@ -89,16 +76,8 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       final normalBusiness =
           normalBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
 
-      //Sort normal businesses: prioritize those with valid featured_image URL
-      normalBusiness.sort((a, b) {
-        final bool aHasImage =
-            a.featuredImage.isNotEmpty && a.featuredImage.startsWith('http');
-        final bool bHasImage =
-            b.featuredImage.isNotEmpty && b.featuredImage.startsWith('http');
-        if (aHasImage && !bHasImage) return -1;
-        if (!aHasImage && bHasImage) return 1;
-        return 0; // Keep original order if both have or both don't have images
-      });
+      //Randomize normal businesses to avoid showing the same ones all the time
+      normalBusiness.shuffle();
 
       // Extract pagination metadata
       final lastNormalDoc =
@@ -130,27 +109,14 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       //We get the online businesses from firestore
       final onlineBusinessRaw = await locator
           .get<FirestoreService>()
-          .readActiveDocumentsByCondition(
-            businessCollection,
-            "type",
-            "online",
-            15,
-          );
+          .readActiveFeaturedBusiness(businessCollection, "type", "online", 15);
 
       //we convert the raw data to a list of business
       final onlineBusiness =
           onlineBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
 
-      //Sort online businesses: prioritize those with valid featured_image URL
-      onlineBusiness.sort((a, b) {
-        final bool aHasImage =
-            a.featuredImage.isNotEmpty && a.featuredImage.startsWith('http');
-        final bool bHasImage =
-            b.featuredImage.isNotEmpty && b.featuredImage.startsWith('http');
-        if (aHasImage && !bHasImage) return -1;
-        if (!aHasImage && bHasImage) return 1;
-        return 0; // Keep original order if both have or both don't have images
-      });
+      //Randomize online businesses to avoid showing the same ones all the time
+      onlineBusiness.shuffle();
 
       // Get user location for distance calculation
       // OPTIMIZED: Use LocationService with caching (fetches once on startup, caches for 30 min)
@@ -221,15 +187,9 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
               )
               .toList();
 
-      // Sort promotions: Higher percentage first, then more urgent (fewer days until expiration)
-      allPromotions.sort((a, b) {
-        // Primary sort: Higher percentage first
-        final percentageComparison = b.percentage.compareTo(a.percentage);
-        if (percentageComparison != 0) return percentageComparison;
-
-        // Secondary sort: More urgent (fewer days) first
-        return a.daysUntilExpiration.compareTo(b.daysUntilExpiration);
-      });
+      // Filter promotions > 10% and randomize
+      allPromotions.removeWhere((promotion) => promotion.percentage < 10);
+      allPromotions.shuffle();
 
       // Apply fair distribution: Limit each business to max 1 promotion in carousel
       // This ensures all businesses get equal visibility
@@ -353,15 +313,8 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
               )
               .toList();
 
-      // Sort promotions: Higher percentage first, then more urgent (fewer days until expiration)
-      newPromotions.sort((a, b) {
-        // Primary sort: Higher percentage first
-        final percentageComparison = b.percentage.compareTo(a.percentage);
-        if (percentageComparison != 0) return percentageComparison;
-
-        // Secondary sort: More urgent (fewer days) first
-        return a.daysUntilExpiration.compareTo(b.daysUntilExpiration);
-      });
+      newPromotions.removeWhere((promotion) => promotion.percentage < 10);
+      newPromotions.shuffle();
 
       // Apply fair distribution considering ALREADY LOADED businesses
       // Get business IDs that are already in the carousel
@@ -441,7 +394,7 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
           .get<FirestoreService>()
           .readActiveDocumentsWithPagination(
             businessCollection,
-            orderByField: 'created_at',
+            orderByField: 'updated_at',
             limit: 10,
             startAfterDocument: state.lastNormalBusinessDoc,
             whereField: "type",
@@ -454,16 +407,8 @@ class BusinessHomeViewCubit extends Cubit<BusinessHomeViewState> {
       final newBusinesses =
           normalBusinessRaw.map((e) => ListableBusiness.fromJson(e)).toList();
 
-      //Sort new businesses: prioritize those with valid featured_image URL
-      newBusinesses.sort((a, b) {
-        final bool aHasImage =
-            a.featuredImage.isNotEmpty && a.featuredImage.startsWith('http');
-        final bool bHasImage =
-            b.featuredImage.isNotEmpty && b.featuredImage.startsWith('http');
-        if (aHasImage && !bHasImage) return -1;
-        if (!aHasImage && bHasImage) return 1;
-        return 0; // Keep original order if both have or both don't have images
-      });
+      //Randomize new businesses to avoid showing the same ones all the time
+      newBusinesses.shuffle();
 
       // Get user location for distance calculation
       // OPTIMIZED: Use cached location from LocationService (instant response)

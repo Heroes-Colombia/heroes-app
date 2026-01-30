@@ -6,7 +6,8 @@ class AppConstants {
   final String usersCollection = 'users';
   final String reviewsCollection = 'reviews';
   final String businessCollection = 'businesses';
-  final String advertisementCollection = 'promotions'; // V2: Renamed from 'advertisements' to 'promotions'
+  final String advertisementCollection =
+      'promotions'; // V2: Renamed from 'advertisements' to 'promotions'
   final String paymentMethodsCollection = 'payment_methods';
   final String transactionsCollection = 'business_transactions';
   final String businessCategoryCollection = 'business_categories';
@@ -18,7 +19,8 @@ class AppConstants {
   final String featureImage = "featureImage";
 
   //Promotion Display Settings
-  final int expiredPromotionsDaysThreshold = 30; // Show expired promotions from last 30 days
+  final int expiredPromotionsDaysThreshold =
+      30; // Show expired promotions from last 30 days
 
   //Map themes
   final String lightMapTheme = "7f1b54e9ff3283c0";
@@ -71,15 +73,6 @@ class AppConstants {
   //User Ranks
   Map<String, Map<String, List<String>>> ranks = {
     "POLICIA NACIONAL": {
-      "NIVEL EJECUTIVO": [
-        "Patrullero",
-        "Subintendente",
-        "Intendente",
-        "Intendente Jefe",
-        "Subcomisario",
-        "Comisario",
-        "pensionado",
-      ],
       "OFICIALES": [
         "Subteniente",
         "Teniente",
@@ -92,16 +85,50 @@ class AppConstants {
         "General",
         "Pensionado",
       ],
+      "NIVEL EJECUTIVO": [
+        "Patrullero",
+        "Subintendente",
+        "Intendente",
+        "Intendente Jefe",
+        "Subcomisario",
+        "Comisario",
+        "pensionado",
+      ],
+      "SUBOFICIALES": [
+        "Sargento Mayor",
+        "Sargento Primero",
+        "Sargento Viceprimero",
+        "Sargento Segundo",
+        "Cabo Primero",
+        "Cabo Segundo"
+            "Pensionado",
+      ],
       "GRADOS EN LAS ESCUELAS DE FORMACIÓN": [
         "Estudiante",
+        "Alferez",
+        "Cadete",
       ],
       "OTROS GRADOS": [
         "Personal no Uniformado",
         "Auxiliar de Policía",
+        "Dragoneante",
+        "Agente",
         "Beneficiario (padres, hijos, esposa)",
       ],
     },
     "EJÉRCITO NACIONAL": {
+      "OFICIALES": [
+        "Subteniente",
+        "Teniente",
+        "Capitán",
+        "Mayor",
+        "Teniente Coronel",
+        "Coronel",
+        "Brigadier General",
+        "Mayor General",
+        "General",
+        "Pensionado",
+      ],
       "SUBOFICIALES": [
         "Cabo Tercero",
         "Cabo Segundo",
@@ -114,41 +141,16 @@ class AppConstants {
         "Sargento Mayor de comando conjunto",
         "Pensionado",
       ],
-      "OFICIALES": [
-        "Subteniente",
-        "Teniente",
-        "Capitán",
-        "Mayor",
-        "Teniente Coronel",
-        "Coronel",
-        "Brigadier General",
-        "Mayor General",
-        "General",
-        "Pensionado",
-      ],
-      "GRADOS EN LAS ESCUELAS DE FORMACIÓN": [
-        "Estudiante",
-      ],
+      "GRADOS EN LAS ESCUELAS DE FORMACIÓN": ["Estudiante"],
       "OTROS GRADOS": [
         "Soldado",
         "Soldado Profesional",
+        "Dragoneante",
         "Personal no Uniformado",
-        "Beneficiarios"
+        "Beneficiarios",
       ],
     },
     "ARMADA NACIONAL": {
-      "SUBOFICIALES": [
-        "Marinero Segundo",
-        "Marinero Primero",
-        "Suboficial Tercero",
-        "Suboficial Segundo",
-        "Suboficial Primero",
-        "Suboficial Jefe",
-        "Suboficial Jefe técnico",
-        "Suboficial Jefe técnico de comando",
-        "Suboficial Jefe técnico de comando conjunto",
-        "Pensionado",
-      ],
       "OFICIALES": [
         "Teniente de Corbeta",
         "Teniente de Fragata",
@@ -161,6 +163,18 @@ class AppConstants {
         "Almirante",
         "Pensionado",
       ],
+      "SUBOFICIALES": [
+        "Marinero Segundo",
+        "Marinero Primero",
+        "Suboficial Tercero",
+        "Suboficial Segundo",
+        "Suboficial Primero",
+        "Suboficial Jefe",
+        "Suboficial Jefe técnico",
+        "Suboficial Jefe técnico de comando",
+        "Suboficial Jefe técnico de comando conjunto",
+        "Pensionado",
+      ],
       "OTROS GRADOS": [
         "Infante de Marina",
         "Alumno de Infantería",
@@ -170,17 +184,6 @@ class AppConstants {
       ],
     },
     "FUERZA AEROESPACIAL": {
-      "SUBOFICIALES": [
-        "Aerotécnico",
-        "Técnico Cuarto",
-        "Técnico Tercero",
-        "Técnico Segundo",
-        "Técnico Primero",
-        "Técnico Subjefe",
-        "Técnico Jefe",
-        "Técnico Jefe de comando",
-        "Pensionado",
-      ],
       "OFICIALES": [
         "Subteniente",
         "Teniente",
@@ -191,6 +194,18 @@ class AppConstants {
         "Brigadier General",
         "Mayor General",
         "General",
+        "Pensionado",
+      ],
+      "SUBOFICIALES": [
+        "Aerotécnico",
+        "Técnico Cuarto",
+        "Técnico Tercero",
+        "Técnico Segundo",
+        "Técnico Primero",
+        "Técnico Subjefe",
+        "Técnico Jefe",
+        "Técnico Jefe de comando",
+        "Técnico Jefe de comando conjunto",
         "Pensionado",
       ],
       "OTROS GRADOS": [

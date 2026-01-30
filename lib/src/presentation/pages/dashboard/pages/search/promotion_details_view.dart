@@ -355,12 +355,6 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
           sectionTitle(texts['instructions-title']!, theme),
           sectionBody(theme, promotion.instructions),
         ],
-        divider(theme),
-        sectionDouble(
-          theme,
-          texts['expiration-title']!,
-          getExpirationDate(promotion.expiredAt),
-        ),
         SliverToBoxAdapter(child: SizedBox(height: 32)),
       ],
     );
@@ -398,35 +392,6 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
     );
   }
 
-  SliverToBoxAdapter sectionDouble(ThemeData theme, title, text) {
-    return SliverToBoxAdapter(
-      child: Container(
-        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-        child: Row(
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: theme.textTheme.labelLarge!.fontSize,
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onBackground,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              text,
-              style: TextStyle(
-                fontSize: theme.textTheme.labelLarge!.fontSize,
-                fontWeight: theme.textTheme.bodySmall!.fontWeight,
-                color: theme.colorScheme.onBackground.withOpacity(0.8),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   SliverToBoxAdapter divider(ThemeData theme) {
     return SliverToBoxAdapter(
       child: Padding(
@@ -439,13 +404,10 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
     );
   }
 
-  String getExpirationDate(DateTime expirationDay) {
-    final formattedDate = DateFormat('dd/MM/yyyy').format(expirationDay);
-    return formattedDate;
-  }
-
   // Build action buttons row (Navigate, View Business, and action icons)
   Widget _buildActionButtons(ThemeData theme, Promotion promotion) {
+    final hasPhone =
+        _business?.phoneNumber != null && _business!.phoneNumber.isNotEmpty;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -454,32 +416,41 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
           Row(
             children: [
               // Navigate button (only for physical businesses)
-              if (_business?.isPhysical == true &&
-                  _business?.address != "") ...[
+              if (hasPhone) ...[
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: () => _navigateToBusiness(theme),
-                    icon: const Icon(Icons.navigation),
-                    label: const Text('Navegar'),
+                    onPressed: () => _openWhatsApp(),
+                    icon: const Icon(Ionicons.logo_whatsapp),
+                    label: const Text('Redimir'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-              ],
-              // View Business button
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _viewBusinessDetails(promotion),
-                  icon: const Icon(Icons.business),
-                  label: const Text('Ver Negocio'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                // Call button (conditional)
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _callBusiness(),
+                    icon: const Icon(Ionicons.call_outline),
+                    label: const Text('Llamar'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
                   ),
                 ),
-              ),
+              ] else ...[
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => _viewBusinessDetails(promotion),
+                    icon: const Icon(Icons.business),
+                    label: const Text('Ver negocio'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           // Action icons row (Favorite, Call, WhatsApp)
@@ -491,31 +462,28 @@ class _PromotionDetailsViewState extends State<PromotionDetailsView> {
 
   // Build action icons (Favorite, Call, WhatsApp)
   Widget _buildActionIcons(ThemeData theme, Promotion promotion) {
-    final hasPhone =
-        _business?.phoneNumber != null && _business!.phoneNumber.isNotEmpty;
+    final hasAddress = _business?.address != null;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        // Call button (conditional)
-        if (hasPhone) ...[
-          IconButton.filledTonal(
-            onPressed: () => _callBusiness(),
-            icon: const Icon(Ionicons.call_outline),
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(
-                theme.colorScheme.surfaceContainerHighest,
-              ),
+        // View Business button
+        IconButton.filledTonal(
+          onPressed: () => _viewBusinessDetails(promotion),
+          icon: const Icon(Icons.business),
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(
+              theme.colorScheme.surfaceContainerHighest,
             ),
           ),
-          const SizedBox(width: 8),
-        ],
+        ),
+        const SizedBox(width: 8),
 
-        // WhatsApp button (conditional)
-        if (hasPhone) ...[
+        // Navigation button (conditional)
+        if (hasAddress) ...[
           IconButton.filledTonal(
-            onPressed: () => _openWhatsApp(),
-            icon: const Icon(Ionicons.logo_whatsapp),
+            onPressed: () => _navigateToBusiness(theme),
+            icon: const Icon(Icons.navigation),
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(
                 theme.colorScheme.surfaceContainerHighest,

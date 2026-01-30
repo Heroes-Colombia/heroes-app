@@ -9,16 +9,26 @@ class ColombianMilitaryRanks {
       'MAYOR',
       'CAPITÁN',
       'TENIENTE',
-      'SUBTENIENTE'
+      'SUBTENIENTE',
     ],
     'suboficiales': [
       'SARGENTO MAYOR',
       'SARGENTO PRIMERO',
+      'SARGENTO VICEPRIMERO',
       'SARGENTO SEGUNDO',
       'CABO PRIMERO',
-      'CABO SEGUNDO'
+      'CABO SEGUNDO',
     ],
-    'nivel_ejecutivo': ['PATRULLERO', 'AGENTE', 'AUXILIAR DE POLICIA'],
+    'nivel_ejecutivo': [
+      "SUBINTENDENTE",
+      "INTENDENTE",
+      "INTENDENTE JEFE",
+      "SUBCOMISARIO",
+      "COMISARIO",
+      'PATRULLERO',
+      'AGENTE',
+      'AUXILIAR DE POLICIA',
+    ],
   };
 
   static const Map<String, List<String>> armyRanks = {
@@ -31,14 +41,14 @@ class ColombianMilitaryRanks {
       'MAYOR',
       'CAPITÁN',
       'TENIENTE',
-      'SUBTENIENTE'
+      'SUBTENIENTE',
     ],
     'suboficiales': [
       'SARGENTO MAYOR',
       'SARGENTO PRIMERO',
       'SARGENTO SEGUNDO',
       'CABO PRIMERO',
-      'CABO SEGUNDO'
+      'CABO SEGUNDO',
     ],
     'soldados': ['SOLDADO PROFESIONAL', 'SOLDADO'],
   };
@@ -53,14 +63,14 @@ class ColombianMilitaryRanks {
       'CAPITÁN DE CORBETA',
       'TENIENTE DE NAVÍO',
       'TENIENTE DE FRAGATA',
-      'ALFÉREZ DE NAVÍO'
+      'ALFÉREZ DE NAVÍO',
     ],
     'suboficiales': [
       'SUBOFICIAL MAYOR',
       'SUBOFICIAL PRIMERO',
       'SUBOFICIAL SEGUNDO',
       'MARINERO PRIMERO',
-      'MARINERO SEGUNDO'
+      'MARINERO SEGUNDO',
     ],
   };
 
@@ -74,20 +84,25 @@ class ColombianMilitaryRanks {
       'MAYOR',
       'CAPITÁN',
       'TENIENTE',
-      'SUBTENIENTE'
+      'SUBTENIENTE',
     ],
     'suboficiales': [
       'TÉCNICO MAYOR',
       'TÉCNICO PRIMERO',
       'TÉCNICO SEGUNDO',
       'SOLDADO PRIMERO',
-      'SOLDADO SEGUNDO'
+      'SOLDADO SEGUNDO',
     ],
   };
 
   static List<String> getAllValidRanks() {
     final allRanks = <String>[];
-    for (final institution in [policeRanks, armyRanks, navyRanks, airForceRanks]) {
+    for (final institution in [
+      policeRanks,
+      armyRanks,
+      navyRanks,
+      airForceRanks,
+    ]) {
       for (final ranks in institution.values) {
         allRanks.addAll(ranks);
       }
