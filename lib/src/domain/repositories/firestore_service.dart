@@ -458,49 +458,73 @@ class FirestoreService {
 
   /*
    This method is used to read all documents inside a collection,
-   where the passed ids are contained in the document ids
+   where the passed ids are contained in the document ids.
+   Batches requests in groups of 30 to respect Firestore's whereIn limit.
   */
   Future<List<Map<String, dynamic>>> readActiveDocumentsByDocumentIDs(
     String collectionName,
     List<String> ids,
   ) async {
-    final docSnapshot =
-        await _firestore
-            .collection(collectionName)
-            .where("status", isEqualTo: "active")
-            .where(FieldPath.documentId, whereIn: ids)
-            .get();
+    if (ids.isEmpty) return [];
 
-    final data =
-        docSnapshot.docs.map((e) {
-          final data = e.data();
-          data["id"] = e.id;
-          return data;
-        }).toList();
+    const batchSize = 30;
+    final List<Map<String, dynamic>> data = [];
+
+    for (var i = 0; i < ids.length; i += batchSize) {
+      final batchIds = ids.sublist(
+        i,
+        i + batchSize > ids.length ? ids.length : i + batchSize,
+      );
+
+      final docSnapshot =
+          await _firestore
+              .collection(collectionName)
+              .where("status", isEqualTo: "active")
+              .where(FieldPath.documentId, whereIn: batchIds)
+              .get();
+
+      for (var e in docSnapshot.docs) {
+        final docData = e.data();
+        docData["id"] = e.id;
+        data.add(docData);
+      }
+    }
 
     return data;
   }
 
   /*
    This method is used to read all documents inside a collection,
-   where the passed ids are contained in the document ids
+   where the passed ids are contained in the document ids.
+   Batches requests in groups of 30 to respect Firestore's whereIn limit.
   */
   Future<List<Map<String, dynamic>>> readAllDocumentsByDocumentIDs(
     String collectionName,
     List<String> ids,
   ) async {
-    final docSnapshot =
-        await _firestore
-            .collection(collectionName)
-            .where(FieldPath.documentId, whereIn: ids)
-            .get();
+    if (ids.isEmpty) return [];
 
-    final data =
-        docSnapshot.docs.map((e) {
-          final data = e.data();
-          data["id"] = e.id;
-          return data;
-        }).toList();
+    const batchSize = 30;
+    final List<Map<String, dynamic>> data = [];
+
+    for (var i = 0; i < ids.length; i += batchSize) {
+      final batchIds = ids.sublist(
+        i,
+        i + batchSize > ids.length ? ids.length : i + batchSize,
+      );
+
+      final docSnapshot =
+          await _firestore
+              .collection(collectionName)
+              .where(FieldPath.documentId, whereIn: batchIds)
+              .get();
+
+      for (var e in docSnapshot.docs) {
+        final docData = e.data();
+        docData["id"] = e.id;
+        data.add(docData);
+      }
+    }
 
     return data;
   }

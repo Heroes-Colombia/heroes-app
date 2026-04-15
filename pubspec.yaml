@@ -1,7 +1,7 @@
 name: heroes_app
 description: Encuentra promociones cercas de ti.
 
-version: 1.4.3+3
+version: 1.4.4+4
 
 environment:
   sdk: ^3.7.2
@@ -42,6 +42,9 @@ dependencies:
   flutter_dotenv: ^5.2.1
   firebase_messaging: ^15.2.5
   firebase_analytics: ^11.3.6
+  firebase_remote_config: ^5.4.4
+  package_info_plus: ^8.3.0
+  in_app_review: ^2.0.9
   flutter_local_notifications: ^19.0.0
   flutter_svg: ^2.0.17
   google_fonts: ^6.2.1

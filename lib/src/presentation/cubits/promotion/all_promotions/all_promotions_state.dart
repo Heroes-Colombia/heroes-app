@@ -10,6 +10,7 @@ final class AllPromotionsState extends Equatable {
   final String selectedCategoryId;
   final List<BusinessCategory> categories;
   final PromotionFilter filter;
+  final String? errorMessage;
 
   const AllPromotionsState({
     this.promotions = const [],
@@ -19,6 +20,7 @@ final class AllPromotionsState extends Equatable {
     this.selectedCategoryId = '',
     this.categories = const [],
     this.filter = const PromotionFilter(),
+    this.errorMessage,
   });
 
   AllPromotionsState copyWith({
@@ -29,6 +31,7 @@ final class AllPromotionsState extends Equatable {
     String? selectedCategoryId,
     List<BusinessCategory>? categories,
     PromotionFilter? filter,
+    String? errorMessage,
   }) {
     return AllPromotionsState(
       status: status ?? this.status,
@@ -38,6 +41,7 @@ final class AllPromotionsState extends Equatable {
       selectedCategoryId: selectedCategoryId ?? this.selectedCategoryId,
       categories: categories ?? this.categories,
       filter: filter ?? this.filter,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 
@@ -50,5 +54,6 @@ final class AllPromotionsState extends Equatable {
         selectedCategoryId,
         categories,
         filter,
+        errorMessage ?? '',
       ];
 }

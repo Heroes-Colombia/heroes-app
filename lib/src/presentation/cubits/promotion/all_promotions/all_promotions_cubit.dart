@@ -34,9 +34,7 @@ class AllPromotionsCubit extends Cubit<AllPromotionsState> {
 
   void setSelectedCategoryId(String? categoryId) {
     // Update both the selectedCategoryId and the filter
-    final updatedFilter = state.filter.copyWith(
-      categoryId: categoryId ?? '',
-    );
+    final updatedFilter = state.filter.copyWith(categoryId: categoryId ?? '');
     emit(
       state.copyWith(
         status: PromotionViewCubitStatus.loading,
@@ -62,7 +60,8 @@ class AllPromotionsCubit extends Cubit<AllPromotionsState> {
   void getPromotions() async {
     try {
       //We get the collection names from the app constants
-      final promotionsCollection = locator.get<AppConstants>().advertisementCollection;
+      final promotionsCollection =
+          locator.get<AppConstants>().advertisementCollection;
       final businessCollection = locator.get<AppConstants>().businessCollection;
 
       // Get all active promotions (no Firestore filtering, will filter client-side)
@@ -70,12 +69,12 @@ class AllPromotionsCubit extends Cubit<AllPromotionsState> {
           .readAllActiveDocuments(promotionsCollection);
 
       //Convert the raw promotions to a list of Promotion
-      var promotions =
-          rawPromotions.map((e) => Promotion.fromJson(e)).toList();
+      var promotions = rawPromotions.map((e) => Promotion.fromJson(e)).toList();
 
       // Separate active and recently expired promotions
       final now = DateTime.now();
-      final expiredThresholdDays = locator.get<AppConstants>().expiredPromotionsDaysThreshold;
+      final expiredThresholdDays =
+          locator.get<AppConstants>().expiredPromotionsDaysThreshold;
       final thresholdDate = now.subtract(Duration(days: expiredThresholdDays));
 
       var activePromotions = <Promotion>[];
@@ -94,10 +93,8 @@ class AllPromotionsCubit extends Cubit<AllPromotionsState> {
       promotions = [...activePromotions, ...expiredPromotions];
 
       // Get unique business IDs from promotions
-      final businessIds = promotions
-          .map((promotion) => promotion.businessId)
-          .toSet()
-          .toList();
+      final businessIds =
+          promotions.map((promotion) => promotion.businessId).toSet().toList();
 
       // Fetch full business data (names and categories) for all promotions
       final businessDataList = await locator<FirestoreService>()
@@ -112,40 +109,55 @@ class AllPromotionsCubit extends Cubit<AllPromotionsState> {
         businessNamesMap[businessId] = businessData['name'] as String? ?? '';
 
         if (businessData['categories'] != null) {
-          businessCategoriesMap[businessId] = List<String>.from(businessData['categories']);
+          businessCategoriesMap[businessId] = List<String>.from(
+            businessData['categories'],
+          );
         } else {
           businessCategoriesMap[businessId] = [];
         }
       }
 
       // Add business names and categories to all promotions (active + expired)
-      activePromotions = activePromotions.map((promotion) {
-        final businessName = businessNamesMap[promotion.businessId];
-        final businessCategories = businessCategoriesMap[promotion.businessId];
-        return promotion.copyWith(
-          businessName: businessName,
-          businessCategories: businessCategories,
-        );
-      }).toList();
+      activePromotions =
+          activePromotions.map((promotion) {
+            final businessName = businessNamesMap[promotion.businessId];
+            final businessCategories =
+                businessCategoriesMap[promotion.businessId];
+            return promotion.copyWith(
+              businessName: businessName,
+              businessCategories: businessCategories,
+            );
+          }).toList();
 
-      expiredPromotions = expiredPromotions.map((promotion) {
-        final businessName = businessNamesMap[promotion.businessId];
-        final businessCategories = businessCategoriesMap[promotion.businessId];
-        return promotion.copyWith(
-          businessName: businessName,
-          businessCategories: businessCategories,
-        );
-      }).toList();
+      expiredPromotions =
+          expiredPromotions.map((promotion) {
+            final businessName = businessNamesMap[promotion.businessId];
+            final businessCategories =
+                businessCategoriesMap[promotion.businessId];
+            return promotion.copyWith(
+              businessName: businessName,
+              businessCategories: businessCategories,
+            );
+          }).toList();
 
       // Apply client-side category filter if specified
-      if (state.filter.categoryId != null && state.filter.categoryId!.isNotEmpty) {
-        activePromotions = activePromotions.where((promotion) {
-          return promotion.businessCategories?.contains(state.filter.categoryId) ?? false;
-        }).toList();
+      if (state.filter.categoryId != null &&
+          state.filter.categoryId!.isNotEmpty) {
+        activePromotions =
+            activePromotions.where((promotion) {
+              return promotion.businessCategories?.contains(
+                    state.filter.categoryId,
+                  ) ??
+                  false;
+            }).toList();
 
-        expiredPromotions = expiredPromotions.where((promotion) {
-          return promotion.businessCategories?.contains(state.filter.categoryId) ?? false;
-        }).toList();
+        expiredPromotions =
+            expiredPromotions.where((promotion) {
+              return promotion.businessCategories?.contains(
+                    state.filter.categoryId,
+                  ) ??
+                  false;
+            }).toList();
       }
 
       // Sort active promotions: Higher percentage first, then more urgent
@@ -177,7 +189,9 @@ class AllPromotionsCubit extends Cubit<AllPromotionsState> {
       );
     } catch (e) {
       emit(state.copyWith(status: PromotionViewCubitStatus.error));
-      log('Error: $e, Function: getPromotions, File: all_promotions_cubit.dart');
+      log(
+        'Error: $e, Function: getPromotions, File: all_promotions_cubit.dart',
+      );
     }
   }
 

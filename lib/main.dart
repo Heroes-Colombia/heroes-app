@@ -28,6 +28,8 @@ import 'package:heroes_app/src/domain/services/analytics_service.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'src/config/router/app_router.dart';
+import 'package:heroes_app/src/domain/services/app_review_service.dart';
+import 'package:heroes_app/src/presentation/widgets/update_gate.dart';
 
 //This method is used to handle the notifications listeners on background
 @pragma('vm:entry-point')
@@ -65,6 +67,8 @@ Future<void> main() async {
   }
   //Formating locale
   await initializeDateFormatting('es', null);
+  //Request app review after threshold opens
+  AppReviewService().trackOpenAndRequestIfEligible();
   //Theme dependencies
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
 
@@ -125,9 +129,9 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'Heroes',
-        //We obtain the theme and darkTheme from the AdaptiveTheme builder
         theme: theme,
         darkTheme: darkTheme,
+        builder: (context, child) => UpdateGate(child: child ?? const SizedBox()),
         routerConfig: _appRouter.config(
           navigatorObservers:
               () => [GetIt.instance.get<AnalyticsService>().observer],

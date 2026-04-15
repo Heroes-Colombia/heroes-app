@@ -39,8 +39,8 @@ android {
         applicationId = "com.heroes.heroes_app"
         minSdk = 28
         targetSdk = flutter.targetSdkVersion
-        versionCode = 29
-        versionName = "1.4.3"
+        versionCode = 30
+        versionName = "1.4.4"
     }
 
     signingConfigs {
