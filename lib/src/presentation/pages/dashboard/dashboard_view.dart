@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:heroes_app/src/config/router/app_router.gr.dart';
@@ -7,6 +10,7 @@ import 'package:get_it/get_it.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:heroes_app/src/presentation/cubits/profile/profile_cubit.dart';
+import 'package:heroes_app/src/presentation/widgets/in_app_message_modal.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:heroes_app/src/domain/services/onboarding_service.dart';
 
@@ -32,11 +36,104 @@ class _DashBoardViewState extends State<DashBoardView> {
   // Track if showcase has been started to prevent multiple triggers
   bool _showcaseStarted = false;
 
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
+      _inAppSubscription;
+  // Tracks the last campaign shown so we don't repeat it in the same session
+  String? _lastShownCampaignId;
+
   @override
   void initState() {
     super.initState();
-    // Load user profile data when dashboard initializes
     context.read<ProfileCubit>().getProfileInfo();
+    _listenForInAppMessages();
+  }
+
+  @override
+  void dispose() {
+    _inAppSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenForInAppMessages() {
+    _inAppSubscription = FirebaseFirestore.instance
+        .collection('active_inapp_messages')
+        .doc('current')
+        .snapshots()
+        .listen((snapshot) {
+      if (!snapshot.exists || !mounted) return;
+
+      final data = snapshot.data()!;
+      final active = data['active'] as bool? ?? false;
+      final campaignId = data['campaign_id'] as String?;
+      final expiresAt = data['expires_at'] as Timestamp?;
+
+      if (!active) return;
+      if (campaignId == null || campaignId == _lastShownCampaignId) return;
+      if (expiresAt != null && expiresAt.toDate().isBefore(DateTime.now())) return;
+
+      _lastShownCampaignId = campaignId;
+
+      final ctx = context;
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (!ctx.mounted) return;
+        _showInAppMessage(ctx, data);
+      });
+    });
+  }
+
+  void _showInAppMessage(BuildContext ctx, Map<String, dynamic> data) {
+    final imageUrl = data['image_url'] as String?;
+    final buttonAction = data['button_action'] as String? ?? '';
+
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => InAppMessageModal(
+        title: data['title'] as String? ?? '',
+        body: data['body'] as String? ?? '',
+        imageUrl: (imageUrl != null && imageUrl.isNotEmpty) ? imageUrl : null,
+        buttonText: data['button_text'] as String? ?? 'Ver promociones',
+        onAction: _resolveAction(ctx, buttonAction),
+      ),
+    );
+  }
+
+  /// Parses a `heroescolombia://` deep-link and returns the matching navigation
+  /// callback, or null if no additional navigation is needed.
+  ///
+  /// Supported actions:
+  ///   heroescolombia://promotions          → home tab (already visible)
+  ///   heroescolombia://business?id=`<id>`    → business detail page
+  ///   heroescolombia://promotion?id=`<id>`   → promotion detail page
+  VoidCallback? _resolveAction(BuildContext ctx, String action) {
+    if (action.isEmpty) return null;
+
+    final uri = Uri.tryParse(action);
+    if (uri == null) return null;
+
+    final path = uri.host; // e.g. "promotions", "business", "promotion"
+
+    switch (path) {
+      case 'promotions':
+        // User is already on the dashboard — no further navigation needed.
+        return null;
+
+      case 'business':
+        final id = uri.queryParameters['id'];
+        if (id == null || id.isEmpty) return null;
+        return () => AutoRouter.of(ctx).push(BusinessDetailsView(businessId: id));
+
+      case 'promotion':
+        final id = uri.queryParameters['id'];
+        if (id == null || id.isEmpty) return null;
+        return () => AutoRouter.of(ctx).push(
+              PromotionDetailsView(promotion: null, promotionId: id),
+            );
+
+      default:
+        return null;
+    }
   }
 
   void _checkAndShowShowcase(BuildContext context) {
